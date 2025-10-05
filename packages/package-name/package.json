@@ -29,7 +29,7 @@
   "devDependencies": {
     "tsx": "^4.20.5",
     "vitest": "^3",
-    "@kb-labs/devkit": "workspace:*",
+    "@kb-labs/devkit": "github:KirillBaranov/kb-labs-devkit#main",
     "tsup": "^8"
   }
 }

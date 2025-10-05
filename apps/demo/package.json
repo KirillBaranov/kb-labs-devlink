@@ -31,7 +31,7 @@
     "vue": "^3.4.0"
   },
   "devDependencies": {
-    "@kb-labs/devkit": "workspace:*",
+    "@kb-labs/devkit": "github:KirillBaranov/kb-labs-devkit#main",
     "@vitejs/plugin-vue": "^5.0.0",
     "@vue/tsconfig": "^0.5.0",
     "typescript": "^5.0.0",
