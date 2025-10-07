@@ -1,0 +1,58 @@
+{
+  "name": "@kb-labs/devlink-core",
+  "version": "0.1.0",
+  "description": "Core engine for KB Labs DevLink — local linking and orchestration layer for multi-repository ecosystems.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "author": {
+    "name": "Kirill Baranov",
+    "url": "https://github.com/kirill-baranov"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kirill-baranov/kb-labs-devlink.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/kirill-baranov/kb-labs-devlink/issues"
+  },
+  "homepage": "https://github.com/kirill-baranov/kb-labs-devlink#readme",
+  "keywords": [
+    "devlink",
+    "linking",
+    "yalc",
+    "pnpm",
+    "monorepo",
+    "dependency-management"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run -c ../../vitest.config.ts",
+    "test:watch": "vitest -c ../../vitest.config.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.5",
+    "vitest": "^3",
+    "@kb-labs/devkit": "github:KirillBaranov/kb-labs-devkit#main",
+    "tsup": "^8"
+  }
+}
