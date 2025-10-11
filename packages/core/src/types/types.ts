@@ -1,5 +1,15 @@
 export type DepType = 'prod' | 'dev' | 'peer';
 
+export interface PackageJson {
+  name: string;
+  version: string;
+  private?: boolean;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  [key: string]: any;
+}
+
 export interface PkgRef {
   name: string;
   version: string;
@@ -26,7 +36,7 @@ export interface DevlinkState {
 export type SourceMode = 'auto' | 'local' | 'npm';
 
 export interface VersionPolicy {
-  pin: 'exact' | 'range';
+  pin: 'exact' | 'range' | 'caret';
   upgrade: 'none' | 'patch' | 'minor';
   prerelease: 'allow' | 'block';
 }

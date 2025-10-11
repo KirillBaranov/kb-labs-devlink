@@ -1,20 +1,105 @@
-import type { DevlinkState, PlanEntry, PlanSnapshot, SourceMode, VersionPolicy, LockSnapshot } from './types';
-import { logger } from './logger';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { existsSync } from 'node:fs';
+import type { DevLinkPolicy } from '../devlink/types';
+import type { DevlinkState, PlanEntry, PlanSnapshot, SourceMode, VersionPolicy, LockSnapshot } from '../types';
+import { logger } from '../utils/logger';
+
+export type { DevLinkPolicy as DevLinkPolicyType } from "../devlink/types";
+
+/**
+ * Базовые значения политики на случай, если файл/override не заданы
+ */
+const DEFAULT_POLICY: DevLinkPolicy = {
+  allow: [],
+  deny: [],
+  forceLocal: [],
+  forceNpm: [],
+  pin: "caret",           // или 'exact' — зависит от твоей схемы
+  prerelease: "allow",    // 'allow' | 'block'
+  upgrade: "none",        // 'none' | 'patch' | 'minor' | 'major'
+};
+
+/**
+ * Безопасное чтение JSON (без падений при отсутствии/битом файле)
+ */
+function readJsonSafe<T = unknown>(absPath: string): T | null {
+  try {
+    const raw = readFileSync(absPath, "utf8");
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Слить массивы с дедупликацией и фильтрацией пустых
+ */
+function mergeStrArrays(a?: string[], b?: string[]): string[] {
+  const out = new Set<string>();
+  (a ?? []).forEach((x) => x && out.add(x));
+  (b ?? []).forEach((x) => x && out.add(x));
+  return Array.from(out);
+}
+
+/**
+ * Нормализуем и сливаем поля политики
+ */
+function mergeObjects(base: DevLinkPolicy, over?: Partial<DevLinkPolicy>): DevLinkPolicy {
+  if (!over) return base;
+
+  return {
+    allow: mergeStrArrays(base.allow, over.allow),
+    deny: mergeStrArrays(base.deny, over.deny),
+    forceLocal: mergeStrArrays(base.forceLocal, over.forceLocal),
+    forceNpm: mergeStrArrays(base.forceNpm, over.forceNpm),
+    pin: over.pin ?? base.pin,
+    prerelease: over.prerelease ?? base.prerelease,
+    upgrade: over.upgrade ?? base.upgrade,
+  };
+}
+
+/**
+ * mergePolicy:
+ * 1) берет DEFAULT_POLICY
+ * 2) опционально подмешивает содержимое файла `.kb/devlink.policy.json` в корне репозитория
+ * 3) сверху накладывает явные overrides из опций команды
+ */
+export async function mergePolicy(
+  repoRoot: string,
+  override?: Partial<DevLinkPolicy>
+): Promise<DevLinkPolicy> {
+  // 1. default
+  let result = { ...DEFAULT_POLICY };
+
+  // 2. файл политики (опционально)
+  const fileCandidates = [
+    join(repoRoot, ".kb", "devlink.policy.json"),
+    join(repoRoot, "devlink.policy.json"),
+  ];
+  for (const p of fileCandidates) {
+    if (existsSync(p)) {
+      const filePolicy = readJsonSafe<Partial<DevLinkPolicy>>(p);
+      if (filePolicy) {
+        result = mergeObjects(result, filePolicy);
+        break;
+      }
+    }
+  }
+
+  // 3. overrides из CLI/опций
+  result = mergeObjects(result, override);
+
+  return result;
+}
+
 
 // В этом MVP считаем, что "локальная сборка" доступна,
 // если пакет присутствует в state (т.е. локально найден)
 // и пользователь хочет local/auto.
-function localBuildAvailable(state: DevlinkState, name: string): boolean {
-  return state.packages.some(p => p.name === name);
-}
+function localBuildAvailable(state: DevlinkState, name: string): boolean { return state.packages.some(p => p.name === name); }
 
-function pinVersion(version: string, pin: VersionPolicy['pin']): string {
-  if (pin === 'exact') { return version; }
-  // range — грубо нормализуем к ^major.minor.patch
-  const m = version.match(/^(\d+)\.(\d+)\.(\d+)/);
-  if (!m) { return version; }
-  return `^${m[1]}.${m[2]}.${m[3]}`;
-}
+function pinVersion(version: string, pin: VersionPolicy['pin']): string { if (pin === 'exact') { return version; } const m = version.match(/^(\d+)\.(\d+)\.(\d+)/); if (!m) { return version; } return `^${m[1]}.${m[2]}.${m[3]}`; }
 
 export function computePlan(
   state: DevlinkState,
@@ -58,7 +143,7 @@ export function computePlan(
   };
 }
 
-export function freezeToLock(plan: PlanSnapshot): LockSnapshot {
+export function freezePlanToLock(plan: PlanSnapshot): LockSnapshot {
   const lock: LockSnapshot = {};
   for (const e of plan.entries) {
     // freeze всегда npm, согласно ADR-0012
