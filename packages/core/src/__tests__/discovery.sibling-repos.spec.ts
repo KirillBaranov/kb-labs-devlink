@@ -222,8 +222,8 @@ describe("Discovery: Workspace Detection & Sibling Repos", () => {
 
       // Should prefer the one from current working directory (repo1Dir)
       // Version check is sufficient - cwd version should win
-      expect(repo1Packages[0].version).toBe("1.0.0");
-      expect(repo1Packages[0].pathAbs).toContain("repo1");
+      expect(repo1Packages[0]!.version).toBe("1.0.0");
+      expect(repo1Packages[0]!.pathAbs).toContain("repo1");
     } finally {
       process.chdir(originalCwd);
     }

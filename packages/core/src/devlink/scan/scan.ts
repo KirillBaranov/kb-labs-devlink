@@ -96,21 +96,19 @@ export async function scanPackages(opts: ScanOptions): Promise<{
   const { rootDir } = opts;
   const roots = ((opts as any).roots as string[] | undefined)?.filter(Boolean);
 
-  const effectiveRoots = roots?.length ? roots : [rootDir];
-
   logger.info(
     roots?.length
       ? `Scanning multiple roots`
       : `Scanning workspace: ${rootDir}`,
-    roots?.length ? { roots: effectiveRoots } : { rootDir },
+    roots?.length ? { roots } : { rootDir },
   );
 
   // discovery already supports multi-root aggregation with de-dup
-  const state = await discover({ roots: effectiveRoots });
+  const state = await discover(roots?.length ? { roots } : {});
 
   const graph = buildGraph(state);
   // choose first root as index root (for deterministic behavior)
-  const index = buildIndex(state, effectiveRoots[0]!);
+  const index = buildIndex(state, roots?.length ? roots[0]! : rootDir);
 
   logger.info(`Scan complete`, {
     packages: Object.keys(index.packages).length,
