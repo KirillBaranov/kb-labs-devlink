@@ -152,10 +152,30 @@ All DevLink operations produce explicit state files under `.kb/devlink/`:
 
 ```
 .kb/devlink/
-├── state.json      # Current package graph and discovery results
-├── plan.json       # Generated linking plan (before execution)
-├── lock.json       # Frozen state (for reproducibility)
-└── backups/        # Historical snapshots for rollback
+├── state.json           # Current package graph and discovery results
+├── plan.json            # Generated linking plan (before execution)
+├── lock.json            # Frozen state (for reproducibility)
+├── last-apply.json      # Journal of last operation (for undo)
+└── backups/             # Timestamped backups of package.json files
+    └── 2025-10-11T18-54-53.261Z/
+        ├── packages/a/package.json
+        └── packages/b/package.json
+```
+
+### Safety Features
+
+DevLink includes built-in safety mechanisms to prevent accidental data loss:
+
+- **Git Dirty Detection**: Warns when uncommitted changes exist in `package.json` or lockfiles
+- **Automatic Backups**: Creates timestamped backups before mutating files
+- **Confirmation Prompts**: Blocks operations unless `--yes` flag is provided (in CI/CD)
+- **Dry Run Mode**: Preview changes without executing (`--dry-run`)
+
+Example warning:
+```bash
+⚠️  Uncommitted changes detected in: packages/a/package.json (and 2 more)
+   DevLink will modify package.json files. Consider committing first.
+   Use --yes to skip this warning and proceed anyway.
 ```
 
 ## Architecture Flow
@@ -232,8 +252,11 @@ All DevLink operations produce explicit state files under `.kb/devlink/`:
 --prerelease=allow   # Allow prereleases
 --prerelease=only    # Only use prereleases
 
-# Other options
+# Safety options
+--yes                # Skip confirmation prompts (for CI/CD)
 --dry-run            # Show what would happen without executing
+
+# Other options
 --verbose            # Detailed output
 --json               # JSON output for scripting
 --force              # Force operation even with warnings
@@ -263,6 +286,7 @@ This monorepo includes:
 - **Composable**: CLI is a thin wrapper; all logic in `@kb-labs/devlink-core`
 - **Isolated**: Never mutates `node_modules` directly; uses Yalc
 - **Observable**: Everything produces explicit state and plan files
+- **Safe**: Built-in preflight checks, backups, and confirmation prompts
 - **Fast**: Optimized for PNPM workspaces and large monorepos
 
 ## ⚖️ Comparison
@@ -368,14 +392,27 @@ devlink scan ~/projects/app ~/projects/lib-a ~/projects/lib-b
 # Generate plan with exact versions
 devlink plan --pin=exact
 
-# Apply the plan
+# Apply the plan (with safety confirmation)
 devlink link
 
 # Freeze for reproducibility
 devlink freeze
 ```
 
-### Example 3: Testing prerelease versions
+### Example 3: CI/CD Integration
+
+```bash
+# In CI, skip confirmation prompts
+devlink link --yes
+
+# Or use dry-run to validate without executing
+devlink link --dry-run
+
+# Restore from lock file in CI
+devlink link --from-lock --yes
+```
+
+### Example 4: Testing prerelease versions
 
 ```bash
 # Allow prerelease versions
@@ -408,6 +445,8 @@ devlink rollback
 - **Links not working?** — Run `devlink status --check` to see if state has drifted.
 - **Version conflicts?** — Use `--pin=exact` to force exact versions, or adjust upgrade policy.
 - **Need to start fresh?** — Run `devlink clean` to remove all DevLink state, then re-scan.
+- **Blocked by git warnings?** — Commit your changes or use `--yes` to proceed anyway.
+- **Need to restore a backup?** — Check `.kb/devlink/backups/` for timestamped copies of your files.
 
 ## Contributing
 
