@@ -1,6 +1,6 @@
 import { promises as fsp } from 'fs';
-import { join, resolve } from 'path';
-import { readJson, exists, repoNameFromPath, pkgJsonPath, walkPatterns } from '../utils/fs';
+import { join, resolve, dirname } from 'path';
+import { exists, repoNameFromPath, pkgJsonPath, walkPatterns } from '../utils/fs';
 import { sha1 } from '../utils/hash';
 import type { PkgRef, DevlinkState, DepEdge, DepType } from '../types';
 import { logger } from '../utils/logger';
@@ -26,6 +26,23 @@ async function listDirImmediate(p: string) {
   try {
     const ents = await fsp.readdir(p, { withFileTypes: true });
     return ents.filter(e => e.isDirectory()).map(e => join(p, e.name));
+  } catch {
+    return [];
+  }
+}
+
+async function subRepoRoots(rootAbs: string): Promise<string[]> {
+  try {
+    const ents = await fsp.readdir(rootAbs, { withFileTypes: true });
+    const dirs = ents.filter(e => e.isDirectory()).map(e => join(rootAbs, e.name));
+    const out: string[] = [];
+    for (const d of dirs) {
+      const pj = pkgJsonPath(d);
+      if (await exists(pj)) {
+        out.push(resolve(d));
+      }
+    }
+    return out;
   } catch {
     return [];
   }
@@ -98,7 +115,39 @@ function collectDeps(out: DepEdge[], pkg: any, fromName: string) {
 }
 
 export async function discover(options: DiscoverOptions = {}): Promise<DevlinkState> {
-  const roots = options.roots?.length ? options.roots : [process.cwd()];
+  const rootAbs = resolve(process.cwd());
+  const roots = options.roots?.length ? options.roots.map(r => resolve(r)) : [rootAbs];
+
+  // Auto-discover sibling repos if no explicit roots and no buckets under current root
+  if (!options.roots?.length) {
+    // buckets: packages/*, apps/*
+    const buckets = walkPatterns(rootAbs).slice(1);
+    let hasBucketChildren = false;
+    for (const b of buckets) {
+      const children = await listDirImmediate(b);
+      if (children.length) {
+        hasBucketChildren = true;
+        break;
+      }
+    }
+    if (!hasBucketChildren) {
+      // Look for sibling repos at parent level
+      const parentDir = dirname(rootAbs);
+      const siblings = await subRepoRoots(parentDir);
+      if (siblings.length) {
+        // add, de-dup, keep root first
+        const seen = new Set(roots.map(r => resolve(r)));
+        for (const s of siblings) {
+          if (!seen.has(s)) {
+            roots.push(s);
+            seen.add(s);
+          }
+        }
+        logger.info('auto-discovered additional roots', { count: siblings.length });
+      }
+    }
+  }
+
   const pkgsAll: PkgRef[] = [];
   const hashes: Record<string, string> = {};
   const depsAll: DepEdge[] = [];
