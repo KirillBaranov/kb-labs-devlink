@@ -6,3 +6,8 @@ export * from './graph';
 export * from './policy';
 export * from './rollback';
 export * from './state';
+export * from './utils';
+export * from './devlink';
+
+// Facade API - primary entry point for CLI
+export * from './api';
