@@ -1,10 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { join, dirname } from "path";
+import { join } from "path";
 import { mkdtemp, rm, mkdir, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { discover } from "../discovery";
+import {
+  detectWorkspaceContainerRoots,
+  isMonorepoRoot,
+  findChildRepoRoots
+} from "../discovery/workspace";
 
-describe("Discovery: Sibling Repos Auto-Discovery", () => {
+describe("Discovery: Workspace Detection & Sibling Repos", () => {
   let tmpParent: string;
   let repo1Dir: string;
   let repo2Dir: string;
@@ -322,6 +327,84 @@ describe("Discovery: Sibling Repos Auto-Discovery", () => {
     } finally {
       process.chdir(originalCwd);
     }
+  });
+
+  describe("Workspace Container Detection", () => {
+    it("should detect workspace container with multiple child repos", async () => {
+      // tmpParent has 3 child repos
+      const containerChildren = await detectWorkspaceContainerRoots(tmpParent);
+
+      expect(containerChildren.length).toBeGreaterThanOrEqual(3);
+      expect(containerChildren).toContain(repo1Dir);
+      expect(containerChildren).toContain(repo2Dir);
+      expect(containerChildren).toContain(repo3Dir);
+    });
+
+    it("should NOT detect container when only 1 child repo", async () => {
+      const singleParent = await mkdtemp(join(tmpdir(), "single-repo-"));
+      const singleRepo = join(singleParent, "repo");
+      await mkdir(singleRepo, { recursive: true });
+      await writeFile(
+        join(singleRepo, "package.json"),
+        JSON.stringify({ name: "@test/single", version: "1.0.0" }, null, 2)
+      );
+
+      const containerChildren = await detectWorkspaceContainerRoots(singleParent);
+      expect(containerChildren).toHaveLength(0);
+
+      await rm(singleParent, { recursive: true, force: true });
+    });
+
+    it("should NOT detect container when it is a monorepo itself", async () => {
+      // Add packages/* to tmpParent
+      const pkgDir = join(tmpParent, "packages", "lib");
+      await mkdir(pkgDir, { recursive: true });
+      await writeFile(
+        join(pkgDir, "package.json"),
+        JSON.stringify({ name: "@test/lib", version: "1.0.0" }, null, 2)
+      );
+
+      const containerChildren = await detectWorkspaceContainerRoots(tmpParent);
+      expect(containerChildren).toHaveLength(0); // Not a container, it's a monorepo
+    });
+
+    it("isMonorepoRoot should detect packages/* or apps/*", async () => {
+      // repo1 without packages/* - not a monorepo
+      expect(await isMonorepoRoot(repo1Dir)).toBe(false);
+
+      // Create packages/* in repo1
+      await mkdir(join(repo1Dir, "packages"), { recursive: true });
+      expect(await isMonorepoRoot(repo1Dir)).toBe(true);
+    });
+
+    it("findChildRepoRoots should find all valid repos in directory", async () => {
+      const children = await findChildRepoRoots(tmpParent);
+
+      expect(children.length).toBeGreaterThanOrEqual(3);
+      expect(children).toContain(repo1Dir);
+      expect(children).toContain(repo2Dir);
+      expect(children).toContain(repo3Dir);
+    });
+
+    it("should handle container scenario in discovery", async () => {
+      // When running from tmpParent with multiple child repos
+      const originalCwd = process.cwd();
+      process.chdir(tmpParent);
+
+      try {
+        const state = await discover({});
+
+        // Should detect container and scan all children
+        expect(state.packages.length).toBeGreaterThanOrEqual(3);
+
+        const packageNames = state.packages.map(p => p.name);
+        expect(packageNames).toContain("@org/repo1");
+        expect(packageNames).toContain("@org/repo2");
+        expect(packageNames).toContain("@org/repo3");
+      } finally {
+        process.chdir(originalCwd);
+      }
+    });
   });
 });
 

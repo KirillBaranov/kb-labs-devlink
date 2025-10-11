@@ -4,9 +4,14 @@ import { exists, repoNameFromPath, pkgJsonPath, walkPatterns } from '../utils/fs
 import { sha1 } from '../utils/hash';
 import type { PkgRef, DevlinkState, DepEdge, DepType } from '../types';
 import { logger } from '../utils/logger';
+import {
+  detectWorkspaceContainerRoots,
+  isMonorepoRoot,
+  findChildRepoRoots,
+} from './workspace';
 
 export interface DiscoverOptions {
-  roots?: string[]; // абсолютные пути корней; если не задано — текущий репо
+  roots?: string[]; // абсолютные пути корней; если не задано — авто
 }
 
 async function tryReadPkg(dirAbs: string): Promise<{ pkg?: any; hash?: string } | null> {
@@ -31,22 +36,6 @@ async function listDirImmediate(p: string) {
   }
 }
 
-async function subRepoRoots(rootAbs: string): Promise<string[]> {
-  try {
-    const ents = await fsp.readdir(rootAbs, { withFileTypes: true });
-    const dirs = ents.filter(e => e.isDirectory()).map(e => join(rootAbs, e.name));
-    const out: string[] = [];
-    for (const d of dirs) {
-      const pj = pkgJsonPath(d);
-      if (await exists(pj)) {
-        out.push(resolve(d));
-      }
-    }
-    return out;
-  } catch {
-    return [];
-  }
-}
 
 async function collectPackagesInRoot(rootAbs: string): Promise<{
   pkgs: PkgRef[];
@@ -115,39 +104,40 @@ function collectDeps(out: DepEdge[], pkg: any, fromName: string) {
 }
 
 export async function discover(options: DiscoverOptions = {}): Promise<DevlinkState> {
-  const rootAbs = resolve(process.cwd());
-  const roots = options.roots?.length ? options.roots.map(r => resolve(r)) : [rootAbs];
+  // БАЗОВЫЙ корень — текущая cwd
+  const cwdRoot = resolve(process.cwd());
 
-  // Auto-discover sibling repos if no explicit roots and no buckets under current root
-  if (!options.roots?.length) {
-    // buckets: packages/*, apps/*
-    const buckets = walkPatterns(rootAbs).slice(1);
-    let hasBucketChildren = false;
-    for (const b of buckets) {
-      const children = await listDirImmediate(b);
-      if (children.length) {
-        hasBucketChildren = true;
-        break;
-      }
-    }
-    if (!hasBucketChildren) {
-      // Look for sibling repos at parent level
-      const parentDir = dirname(rootAbs);
-      const siblings = await subRepoRoots(parentDir);
-      if (siblings.length) {
-        // add, de-dup, keep root first
-        const seen = new Set(roots.map(r => resolve(r)));
-        for (const s of siblings) {
-          if (!seen.has(s)) {
-            roots.push(s);
-            seen.add(s);
-          }
+  // 1) Явно указанные roots имеют высший приоритет
+  let roots: string[] = [];
+  if (options.roots && options.roots.length > 0) {
+    roots = options.roots.map((r) => resolve(r));
+  }
+
+  if (roots.length === 0) {
+    // 2) Попробовать распознать «контейнер воркспейса»
+    const containerChildren = await detectWorkspaceContainerRoots(cwdRoot);
+    if (containerChildren.length >= 2) {
+      logger.info('workspace-container detected', { container: cwdRoot, children: containerChildren.length });
+      roots = containerChildren;
+    } else {
+      // 3) Обычный сценарий: работаем с текущим репозиторием как с одиночным root
+      roots = [cwdRoot];
+
+      // 4) (СОХРАНЯЕМ ПОВЕДЕНИЕ) — если это одиночный репо, попробуем найти «соседние» репозитории на уровне родителя
+      //    но только если мы не в монорепо (чтобы не мешать локальному монорепо-воркфлоу)
+      if (!(await isMonorepoRoot(cwdRoot))) {
+        const parent = dirname(cwdRoot);
+        const siblings = (await findChildRepoRoots(parent))
+          .filter((p) => p !== cwdRoot);
+        if (siblings.length > 0) {
+          logger.info('sibling repos auto-discovered', { count: siblings.length });
+          roots = Array.from(new Set([cwdRoot, ...siblings]));
         }
-        logger.info('auto-discovered additional roots', { count: siblings.length });
       }
     }
   }
 
+  // Далее — как раньше: собираем пакеты по roots
   const pkgsAll: PkgRef[] = [];
   const hashes: Record<string, string> = {};
   const depsAll: DepEdge[] = [];
@@ -159,8 +149,7 @@ export async function discover(options: DiscoverOptions = {}): Promise<DevlinkSt
     depsAll.push(...res.deps);
   }
 
-  // de-dup by name: prefer the one whose path starts with current cwd
-  const cwd = resolve(process.cwd());
+  // de-dup by name: предпочитаем тот, что лежит ближе к cwd
   const byName = new Map<string, PkgRef>();
   for (const p of pkgsAll) {
     const existing = byName.get(p.name);
@@ -168,7 +157,7 @@ export async function discover(options: DiscoverOptions = {}): Promise<DevlinkSt
       byName.set(p.name, p);
       continue;
     }
-    const preferCurrent = p.pathAbs.startsWith(cwd) && !existing.pathAbs.startsWith(cwd);
+    const preferCurrent = p.pathAbs.startsWith(cwdRoot) && !existing.pathAbs.startsWith(cwdRoot);
     if (preferCurrent) { byName.set(p.name, p); }
   }
 
@@ -182,6 +171,6 @@ export async function discover(options: DiscoverOptions = {}): Promise<DevlinkSt
     hashes,
   };
 
-  logger.info('discovered packages', { count: packages.length, deps: depsAll.length });
+  logger.info('discovered packages', { count: packages.length, deps: depsAll.length, roots: roots.length });
   return state;
 }
