@@ -11,13 +11,13 @@ function printDryRunTable(plan: DevLinkPlan): void {
   console.log(`Mode: ${plan.mode}`);
   console.log(`Root: ${plan.rootDir}\n`);
 
-  if (plan.diagnostics.length > 0) {
+  if ((plan.diagnostics?.length ?? 0) > 0) {
     console.log("⚠️  Diagnostics:");
     plan.diagnostics.forEach(d => console.log(`   ${d}`));
     console.log();
   }
 
-  if (plan.actions.length === 0) {
+  if ((plan.actions?.length ?? 0) === 0) {
     console.log("No actions to perform.\n");
     return;
   }
@@ -47,27 +47,29 @@ function printDryRunTable(plan: DevLinkPlan): void {
   console.log(`\nTotal: ${plan.actions.length} actions\n`);
 }
 
-async function execAction(action: LinkAction, opts: ApplyOptions): Promise<void> {
+async function execAction(action: LinkAction, opts: ApplyOptions, plan: DevLinkPlan): Promise<void> {
   const { target, dep, kind } = action;
 
   if (opts.dryRun) {
     return;
   }
 
+  const cwd = plan.index?.packages?.[target]?.dir ?? target;
+
   switch (kind) {
     case "link-local":
-      await runCommand(`yalc add ${dep} --link`, { cwd: target });
+      await runCommand(`yalc add ${dep} --link`, { cwd });
       break;
     case "use-workspace":
-      await runCommand(`pnpm i ${dep}@workspace:*`, { cwd: target });
+      await runCommand(`pnpm i ${dep}@workspace:*`, { cwd });
       break;
     case "use-npm":
       // сначала убираем возможный yalc-линк, затем ставим с npm
-      await runCommand(`yalc remove ${dep} || true`, { cwd: target, allowFail: true });
-      await runCommand(`pnpm i ${dep}`, { cwd: target });
+      await runCommand(`yalc remove ${dep} || true`, { cwd, allowFail: true });
+      await runCommand(`pnpm i ${dep}`, { cwd });
       break;
     case "unlink":
-      await runCommand(`yalc remove ${dep}`, { cwd: target, allowFail: true });
+      await runCommand(`yalc remove ${dep}`, { cwd, allowFail: true });
       break;
   }
 }
@@ -75,8 +77,7 @@ async function execAction(action: LinkAction, opts: ApplyOptions): Promise<void>
 export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Promise<ApplyResult> {
   logger.info(`devlink: apply (mode=${plan.mode}, dryRun=${!!opts.dryRun})`);
 
-  // Print dry-run table
-  if (opts.dryRun) {
+  if (opts.dryRun && plan.actions && plan.diagnostics) {
     printDryRunTable(plan);
   }
 
@@ -84,9 +85,21 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
   const skipped: LinkAction[] = [];
   const errors: { action: LinkAction; error: unknown }[] = [];
 
+  if (!plan.actions || !plan.index) {
+    return {
+      ok: true,
+      executed,
+      skipped,
+      errors,
+    };
+  }
+
   for (const action of plan.actions) {
+    if (!action || !action.target || !action.dep) {
+      continue;
+    }
     try {
-      await execAction(action, opts);
+      await execAction(action, opts, plan);
       executed.push(action);
     } catch (error) {
       errors.push({ action, error });

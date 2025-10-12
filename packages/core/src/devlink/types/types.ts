@@ -1,5 +1,5 @@
 import type { PackageJson } from "../../types"; // если есть свой тип pkg — возьми его
-export type DevLinkMode = "local" | "npm" | "workspace";
+export type DevLinkMode = "local" | "npm" | "workspace" | "auto";
 
 export interface ScanOptions {
   rootDir: string;

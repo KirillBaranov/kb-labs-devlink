@@ -11,6 +11,9 @@ export interface FreezeResult {
   ok: boolean;
   lockPath: string;
   diagnostics?: string[];
+  meta?: {
+    itemsCount?: number;
+  };
 }
 
 /**
