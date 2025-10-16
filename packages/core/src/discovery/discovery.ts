@@ -1,5 +1,6 @@
 import { promises as fsp } from 'fs';
 import { join, resolve, dirname } from 'path';
+import { createRequire } from 'module';
 import { exists, repoNameFromPath, pkgJsonPath, walkPatterns } from '../utils/fs';
 import { sha1 } from '../utils/hash';
 import type { PkgRef, DevlinkState, DepEdge, DepType } from '../types';
@@ -33,6 +34,26 @@ async function listDirImmediate(p: string) {
     return ents.filter(e => e.isDirectory()).map(e => join(p, e.name));
   } catch {
     return [];
+  }
+}
+
+/**
+ * Resolve the actually installed version of a package as found from a given rootDir.
+ * This does not perform any network calls; it inspects the nearest node_modules by resolution.
+ * Returns "latest" when the package cannot be resolved from that root.
+ */
+export function resolveInstalledVersionNear(rootDir: string, pkgName: string): string {
+  try {
+    // Bind a require to the provided rootDir
+    // Using createRequire ensures resolution semantics from that folder.
+    const req = createRequire(join(rootDir, 'package.json'));
+    const pkgJsonPath = req.resolve(`${pkgName}/package.json`);
+    // Read synchronously to avoid changing outer async signatures
+    const raw = require('fs').readFileSync(pkgJsonPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    return typeof parsed?.version === 'string' ? parsed.version : 'latest';
+  } catch {
+    return 'latest';
   }
 }
 
