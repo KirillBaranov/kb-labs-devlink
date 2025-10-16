@@ -284,7 +284,7 @@ describe("Preflight Checks", () => {
       });
 
       expect(result.ok).toBe(false);
-      expect(result.diagnostics).toContain("Operation cancelled by preflight checks");
+      expect(result.diagnostics).toContain("✋ Operation cancelled by preflight checks");
       expect(result.warnings?.length).toBeGreaterThan(0);
     });
 

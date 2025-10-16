@@ -18,6 +18,10 @@ export interface ApplyPlanResult {
   errors: Array<{ action: LinkAction; error: unknown }>;
   diagnostics?: string[];
   warnings?: string[];
+  preflight?: {
+    cancelled: boolean;
+    warnings: string[];
+  };
 }
 
 /**
@@ -49,14 +53,18 @@ export async function apply(
   warnings.push(...preflight.warnings);
 
   if (!preflight.shouldProceed) {
-    logger.warn("Operation cancelled due to preflight checks. Use --yes to proceed anyway.");
+    logger.warn("✋ Operation cancelled by preflight checks");
     return {
       ok: false,
       executed: [],
       skipped: [],
       errors: [],
-      diagnostics: ["Operation cancelled by preflight checks"],
+      diagnostics: ["✋ Operation cancelled by preflight checks"],
       warnings,
+      preflight: {
+        cancelled: true,
+        warnings: preflight.warnings,
+      },
     };
   }
 
@@ -86,7 +94,10 @@ export async function apply(
   }
 
   try {
-    const result = await applyPlanImpl(plan, opts as DevLinkApplyOptions);
+    const result = await applyPlanImpl(plan, {
+      ...opts,
+      preflightCancelled: !preflight.shouldProceed,
+    } as DevLinkApplyOptions);
 
     const duration = Date.now() - startTime;
     logger.info("Apply completed", {
@@ -104,6 +115,10 @@ export async function apply(
       errors: result.errors,
       diagnostics: plan.diagnostics,
       warnings,
+      preflight: {
+        cancelled: false,
+        warnings: preflight.warnings,
+      },
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -116,6 +131,10 @@ export async function apply(
       errors: [],
       diagnostics: [errorMessage],
       warnings,
+      preflight: {
+        cancelled: false,
+        warnings: preflight.warnings,
+      },
     };
   }
 }

@@ -380,7 +380,8 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
     const sample = targets.slice(0, 5).map(t => `  • ${t}`).join("\n");
     console.log(sample + (targets.length > 5 ? `\n  …and ${targets.length - 5} more` : ""));
     console.log();
-  } else {
+  } else if (!opts.preflightCancelled) {
+    // Only show "Nothing to apply" if preflight didn't cancel the operation
     console.log("Nothing to apply.\n");
   }
 

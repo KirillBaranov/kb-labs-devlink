@@ -15,11 +15,17 @@ export interface ApplyLockFileResult {
   executed: string[];
   diagnostics: string[];
   warnings?: string[];
+  preflight?: {
+    cancelled: boolean;
+    warnings: string[];
+  };
 }
 
 /**
  * Apply lock file: restore dependencies to locked versions
- * Includes preflight checks and backups
+ * - Preflight (git-dirty, confirmation)
+ * - Backup root package.json before mutation
+ * - Delegate actual work to core applier
  */
 export async function applyLockFile(
   opts: ApplyLockFileOptions
@@ -36,7 +42,7 @@ export async function applyLockFile(
   const diagnostics: string[] = [];
   const warnings: string[] = [];
 
-  // Preflight checks
+  // Preflight checks (skipped for dry-run)
   const preflight = await runPreflightChecks({
     rootDir: opts.rootDir,
     skipConfirmation: opts.yes,
@@ -46,12 +52,16 @@ export async function applyLockFile(
   warnings.push(...preflight.warnings);
 
   if (!preflight.shouldProceed) {
-    logger.warn("Operation cancelled due to preflight checks. Use --yes to proceed anyway.");
+    logger.warn("✋ Operation cancelled by preflight checks");
     return {
       ok: false,
       executed,
-      diagnostics: ["Operation cancelled by preflight checks"],
+      diagnostics: ["✋ Operation cancelled by preflight checks"],
       warnings,
+      preflight: {
+        cancelled: true,
+        warnings: preflight.warnings,
+      },
     };
   }
 
@@ -63,35 +73,47 @@ export async function applyLockFile(
     });
 
     if (!backupResult.ok) {
-      warnings.push(`Failed to create backup: ${backupResult.error}`);
+      const msg = `Failed to create backup: ${backupResult.error}`;
+      warnings.push(msg);
+      logger.warn(msg);
     }
   }
 
   try {
+    // Delegate to core implementation; make sure we pass along the "yes" flag
     await applyLockImpl(opts.rootDir, {
       dryRun: opts.dryRun,
+      yes: opts.yes,
+      lockFile: lockPath,
     });
 
     logger.info("Lock file applied", { lockPath });
 
     return {
       ok: true,
-      executed,
+      executed, // core impl logs and performs the actions; we keep the list empty for now
       diagnostics,
       warnings,
+      preflight: {
+        cancelled: false,
+        warnings: preflight.warnings,
+      },
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error("Apply lock failed", { error: errorMessage });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    logger.error("Apply lock failed", { error: errMsg });
 
-    diagnostics.push(errorMessage);
+    diagnostics.push(errMsg);
 
     return {
       ok: false,
       executed,
       diagnostics,
       warnings,
+      preflight: {
+        cancelled: false,
+        warnings: preflight.warnings,
+      },
     };
   }
 }
-

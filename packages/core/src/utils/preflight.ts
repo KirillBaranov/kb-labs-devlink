@@ -1,5 +1,6 @@
 import { checkGitDirty } from "./git";
 import { logger } from "./logger";
+import { relative } from "path";
 
 export interface PreflightOptions {
   rootDir: string;
@@ -11,6 +12,7 @@ export interface PreflightResult {
   ok: boolean;
   warnings: string[];
   shouldProceed: boolean;
+  cancelled: boolean; // For JSON mode
 }
 
 /**
@@ -26,14 +28,16 @@ export async function runPreflightChecks(
 
   // Skip checks in dry-run mode
   if (opts.dryRun) {
-    return { ok: true, warnings, shouldProceed: true };
+    return { ok: true, warnings, shouldProceed: true, cancelled: false };
   }
 
   // Check git status
   const gitStatus = await checkGitDirty(opts.rootDir);
 
   if (gitStatus.isDirty) {
-    const fileList = gitStatus.files.slice(0, 5).join(", ");
+    // Use relative paths for better UX
+    const relativeFiles = gitStatus.files.slice(0, 5).map(file => relative(opts.rootDir, file));
+    const fileList = relativeFiles.join(", ");
     const more = gitStatus.files.length > 5 ? ` (and ${gitStatus.files.length - 5} more)` : "";
 
     warnings.push(
@@ -66,6 +70,7 @@ export async function runPreflightChecks(
     ok: true,
     warnings,
     shouldProceed,
+    cancelled: !shouldProceed,
   };
 }
 

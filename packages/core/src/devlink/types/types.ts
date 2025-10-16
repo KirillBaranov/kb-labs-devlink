@@ -79,6 +79,7 @@ export interface ApplyOptions {
   dryRun?: boolean;
   logLevel?: "silent" | "info" | "debug";
   concurrency?: number;
+  preflightCancelled?: boolean; // To hide "No operations to apply" message
 }
 
 export interface ApplyResult {
