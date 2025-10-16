@@ -8,9 +8,9 @@ import type { LockFile } from "./freeze";
  */
 export async function applyLock(
   rootDir: string,
-  opts: { dryRun?: boolean } = {}
+  opts: { dryRun?: boolean; yes?: boolean; lockFile?: string } = {}
 ): Promise<void> {
-  const lockPath = `${rootDir}/.kb/devlink/lock.json`;
+  const lockPath = opts.lockFile ?? `${rootDir}/.kb/devlink/lock.json`;
 
   if (!(await exists(lockPath))) {
     throw new Error(`Lock file not found: ${lockPath}`);
