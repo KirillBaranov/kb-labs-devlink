@@ -1,8 +1,7 @@
-import { undoLastApply } from "../devlink/journal";
+import { undoLastOperation, readLastApply } from "../devlink/journal";
 import { logger } from "../utils/logger";
 import { runPreflightChecks } from "../utils/preflight";
 import { backupPackageJsons } from "../utils/backup";
-import { readLastApply } from "../devlink/journal";
 
 export interface UndoOptions {
   rootDir: string;
@@ -15,17 +14,22 @@ export interface UndoResult {
   reverted: number;
   diagnostics: string[];
   warnings?: string[];
+  operationType?: "freeze" | "apply";
+  details?: any;
+  preflight?: {
+    cancelled: boolean;
+    warnings: string[];
+  };
 }
 
 /**
- * Undo last apply operation
+ * Undo last operation (freeze or apply)
  * Includes preflight checks and backups
  */
 export async function undo(opts: UndoOptions): Promise<UndoResult> {
-  logger.info("Undoing last apply", {
+  logger.info("Undoing last operation", {
     rootDir: opts.rootDir,
     dryRun: opts.dryRun ?? false,
-    yes: opts.yes ?? false,
   });
 
   const diagnostics: string[] = [];
@@ -41,16 +45,20 @@ export async function undo(opts: UndoOptions): Promise<UndoResult> {
   warnings.push(...preflight.warnings);
 
   if (!preflight.shouldProceed) {
-    logger.warn("Operation cancelled due to preflight checks. Use --yes to proceed anyway.");
+    logger.warn("Operation cancelled due to preflight checks");
     return {
       ok: false,
       reverted: 0,
       diagnostics: ["Operation cancelled by preflight checks"],
       warnings,
+      preflight: {
+        cancelled: true,
+        warnings: preflight.warnings,
+      },
     };
   }
 
-  // Create backups before mutation (skip in dry-run)
+  // Create backups before mutation (skip in dry-run) - only for apply operations
   if (!opts.dryRun) {
     const journal = await readLastApply(opts.rootDir);
 
@@ -93,17 +101,27 @@ export async function undo(opts: UndoOptions): Promise<UndoResult> {
   }
 
   try {
-    await undoLastApply(opts.rootDir, {
+    const { type, reverted, details } = await undoLastOperation(opts.rootDir, {
       dryRun: opts.dryRun,
     });
 
-    logger.info("Undo completed", { rootDir: opts.rootDir });
+    logger.info(`Undo completed (${type})`, { 
+      rootDir: opts.rootDir, 
+      reverted,
+      details,
+    });
 
     return {
       ok: true,
-      reverted: 0, // TODO: could track actual reverted count from journal
+      reverted,
       diagnostics,
       warnings,
+      operationType: type,
+      details,
+      preflight: {
+        cancelled: false,
+        warnings: preflight.warnings,
+      },
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -116,7 +134,10 @@ export async function undo(opts: UndoOptions): Promise<UndoResult> {
       reverted: 0,
       diagnostics,
       warnings,
+      preflight: {
+        cancelled: false,
+        warnings: preflight.warnings,
+      },
     };
   }
 }
-

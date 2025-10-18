@@ -82,16 +82,22 @@ export async function applyLockFile(
     const lockContent = await fsp.readFile(lockPath, "utf8");
     const lockFile: LockFile = JSON.parse(lockContent);
 
-    if (!lockFile.packages) {
-      throw new Error("Invalid lock file: missing packages section");
+    if (!lockFile.consumers || typeof lockFile.consumers !== 'object') {
+      throw new Error("Invalid lock file: missing or invalid consumers section. Delete .kb/devlink/lock.json and re-freeze.");
     }
 
-    // Collect all package.json files in workspace
-    const manifestPaths = await collectManifestPaths(opts.rootDir);
-
-    // Process each manifest
-    for (const manifestPath of manifestPaths) {
-      const changes = await processManifest(manifestPath, lockFile.packages, opts.rootDir, opts.dryRun ?? false);
+    // Process each consumer from lock file
+    for (const [consumerName, consumer] of Object.entries(lockFile.consumers)) {
+      const manifestPath = join(opts.rootDir, consumer.manifest);
+      
+      try {
+        await fsp.access(manifestPath);
+      } catch {
+        diagnostics.push(`Manifest not found for consumer ${consumerName}: ${manifestPath}`);
+        continue;
+      }
+      
+      const changes = await processManifest(manifestPath, consumer.deps, opts.rootDir, opts.dryRun ?? false);
       if (changes.length > 0) {
         executed.push({
           manifest: relative(opts.rootDir, manifestPath),
@@ -104,7 +110,7 @@ export async function applyLockFile(
 
     logger.info("Lock file applied", {
       lockPath,
-      manifestsProcessed: manifestPaths.length,
+      consumersProcessed: Object.keys(lockFile.consumers).length,
       manifestsChanged: executed.length,
       needsInstall,
     });
