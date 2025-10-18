@@ -1,8 +1,10 @@
+import { promises as fsp } from "node:fs";
+import path from "node:path";
 import { loadState } from "../../state";
 import { readJson, exists } from "../../utils/fs";
 import { logger } from "../../utils/logger";
-import type { PackageJson } from "../../types";
-import { join } from "path";
+import type { DevlinkState, PackageJson } from "../../types";
+import type { LockFile } from "../lock/freeze";
 
 export interface StatusEntry {
   consumer: string;
@@ -15,13 +17,68 @@ export interface StatusSummary {
   links: number;
   unknown: number;
   entries: StatusEntry[];
+  lockStats?: {
+    consumers: number;
+    totalDeps: number;
+    workspaceDeps: number;
+    linkDeps: number;
+    npmDeps: number;
+    lockVersion?: string;
+    hash?: string;
+  };
+}
+
+/**
+ * Read lock file statistics
+ */
+async function readLockStats(rootDir: string) {
+  const lockPath = path.join(rootDir, ".kb", "devlink", "lock.json");
+  
+  try {
+    const fileExists = await exists(lockPath);
+    if (!fileExists) return null;
+    
+    const content = await fsp.readFile(lockPath, "utf-8");
+    const lock = JSON.parse(content) as LockFile;
+    
+    if (!lock.consumers) return null;
+    
+    return {
+      consumers: Object.keys(lock.consumers).length,
+      totalDeps: Object.values(lock.consumers).reduce(
+        (sum, c) => sum + Object.keys(c.deps).length,
+        0
+      ),
+      workspaceDeps: countBySource(lock, "workspace"),
+      linkDeps: countBySource(lock, "link"),
+      npmDeps: countBySource(lock, "npm"),
+      lockVersion: lock.meta?.lockVersion,
+      hash: lock.meta?.hash,
+    };
+  } catch (err) {
+    logger.debug("Failed to read lock stats", { err });
+    return null;
+  }
+}
+
+/**
+ * Count dependencies by source type
+ */
+function countBySource(lock: LockFile, source: string): number {
+  let count = 0;
+  for (const consumer of Object.values(lock.consumers)) {
+    for (const entry of Object.values(consumer.deps)) {
+      if (entry.source === source) count++;
+    }
+  }
+  return count;
 }
 
 /**
  * Check if a package is linked via yalc by checking yalc.lock
  */
 async function checkYalcLink(consumerDir: string, depName: string): Promise<boolean> {
-  const yalcLockPath = join(consumerDir, "yalc.lock");
+  const yalcLockPath = path.join(consumerDir, "yalc.lock");
   if (!(await exists(yalcLockPath))) {
     return false;
   }
@@ -37,18 +94,27 @@ async function checkYalcLink(consumerDir: string, depName: string): Promise<bool
 /**
  * Get current devlink status
  */
-export async function getStatus(rootDir: string): Promise<StatusSummary> {
+export async function getStatus(
+  rootDir: string,
+  state?: DevlinkState
+): Promise<StatusSummary> {
   logger.info("Getting devlink status", { rootDir });
 
-  const state = await loadState(rootDir);
+  // Use provided state or load from disk
+  if (!state) {
+    const loadedState = await loadState(rootDir);
+    state = loadedState ?? undefined;
+  }
 
   if (!state) {
-    logger.warn("No state found. Run scan first.");
+    logger.warn("No state available");
+    const lockStats = await readLockStats(rootDir);
     return {
       packages: 0,
       links: 0,
       unknown: 0,
       entries: [],
+      lockStats: lockStats ?? undefined,
     };
   }
 
@@ -62,7 +128,7 @@ export async function getStatus(rootDir: string): Promise<StatusSummary> {
   // Check each package for dependencies
   for (const pkg of state.packages) {
     try {
-      const pkgJsonPath = join(pkg.pathAbs, "package.json");
+      const pkgJsonPath = path.join(pkg.pathAbs, "package.json");
       if (!(await exists(pkgJsonPath))) {
         continue;
       }
@@ -113,11 +179,15 @@ export async function getStatus(rootDir: string): Promise<StatusSummary> {
     }
   }
 
+  // Get lock stats
+  const lockStats = await readLockStats(rootDir);
+
   return {
     packages: state.packages.length,
     links: linksCount,
     unknown: unknownCount,
     entries,
+    lockStats: lockStats ?? undefined,
   };
 }
 
