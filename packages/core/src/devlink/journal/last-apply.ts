@@ -1,12 +1,13 @@
 import { readJson, writeJson, exists } from "../../utils/fs";
 import { logger } from "../../utils/logger";
-import type { DevLinkPlan, LinkAction } from "../types";
+import type { DevLinkPlan, LinkAction, ManifestPatch } from "../types";
 
 export interface LastApplyJournal {
   rootDir: string;
   ts: string; // ISO timestamp
   mode: string;
   actions: LinkAction[];
+  manifestPatches?: ManifestPatch[];
 }
 
 /**
@@ -14,13 +15,15 @@ export interface LastApplyJournal {
  */
 export async function writeLastApply(
   plan: DevLinkPlan,
-  executed: LinkAction[]
+  executed: LinkAction[],
+  manifestPatches?: ManifestPatch[]
 ): Promise<void> {
   const journal: LastApplyJournal = {
     rootDir: plan.rootDir,
     ts: new Date().toISOString(),
     mode: plan.mode,
     actions: executed,
+    manifestPatches,
   };
 
   const journalPath = `${plan.rootDir}/.kb/devlink/last-apply.json`;
@@ -28,7 +31,8 @@ export async function writeLastApply(
 
   logger.debug("Last-apply journal written", {
     path: journalPath,
-    actions: executed.length
+    actions: executed.length,
+    manifestPatches: manifestPatches?.length || 0
   });
 }
 
@@ -49,6 +53,56 @@ export async function readLastApply(
     return journal;
   } catch (error) {
     logger.warn("Failed to read last-apply journal", error);
+    return null;
+  }
+}
+
+export interface LastFreezeJournal {
+  operation: "freeze";
+  ts: string;
+  rootDir: string;
+  lockPath: string;
+  backupDir: string;
+  packagesCount: number;
+  replaced?: boolean;
+  pruned?: string[];  // List of pruned package names
+  pin: "exact" | "caret";
+  undone?: boolean;  // Marked true after undo instead of deletion
+}
+
+/**
+ * Write last-freeze journal for undo functionality
+ */
+export async function writeLastFreeze(
+  journal: LastFreezeJournal
+): Promise<void> {
+  const journalPath = `${journal.rootDir}/.kb/devlink/last-freeze.json`;
+  await writeJson(journalPath, journal);
+  
+  logger.debug("Last-freeze journal written", {
+    path: journalPath,
+    packagesCount: journal.packagesCount,
+    pruned: journal.pruned?.length || 0,
+  });
+}
+
+/**
+ * Read last-freeze journal
+ */
+export async function readLastFreeze(
+  rootDir: string
+): Promise<LastFreezeJournal | null> {
+  const journalPath = `${rootDir}/.kb/devlink/last-freeze.json`;
+  
+  if (!(await exists(journalPath))) {
+    return null;
+  }
+  
+  try {
+    const journal = await readJson<LastFreezeJournal>(journalPath);
+    return journal;
+  } catch (error) {
+    logger.warn("Failed to read last-freeze journal", error);
     return null;
   }
 }
