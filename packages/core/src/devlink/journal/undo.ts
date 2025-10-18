@@ -2,7 +2,7 @@ import { promises as fsp } from "node:fs";
 import { join } from "node:path";
 import { runCommand } from "../../utils/runCommand";
 import { logger } from "../../utils/logger";
-import { readLastApply, readLastFreeze, writeLastFreeze, type LastApplyJournal } from "./last-apply";
+import { readLastApply, readLastFreeze, writeLastFreeze, writeLastApplyJournal, type LastApplyJournal } from "./last-apply";
 import { readJson, exists, writeJson } from "../../utils/fs";
 import type { LockFile } from "../lock/freeze";
 
@@ -17,6 +17,10 @@ export async function undoLastApply(
 
   if (!journal) {
     throw new Error("No last-apply journal found. Nothing to undo.");
+  }
+  
+  if (journal.undone) {
+    throw new Error("Apply operation already undone");
   }
 
   logger.info("Undoing last apply", {
@@ -100,6 +104,14 @@ export async function undoLastApply(
     }
   }
 
+  // Mark journal as undone instead of deleting (for history tracking)
+  if (!opts.dryRun) {
+    await writeLastApplyJournal({
+      ...journal,
+      undone: true,
+    });
+  }
+
   logger.info("Undo completed");
 }
 
@@ -168,7 +180,7 @@ async function undoLastFreeze(
 }
 
 /**
- * Unified undo: choose latest operation (freeze or apply) by mtime
+ * Unified undo: choose latest operation (freeze or apply) by mtime, ignoring already undone operations
  */
 export async function undoLastOperation(
   rootDir: string,
@@ -181,15 +193,24 @@ export async function undoLastOperation(
   const freezeJournalPath = `${rootDir}/.kb/devlink/last-freeze.json`;
   const applyJournalPath = `${rootDir}/.kb/devlink/last-apply.json`;
   
-  // Check which journals exist and get their timestamps (mtime)
-  const freezeStat = await exists(freezeJournalPath)
-    ? await fsp.stat(freezeJournalPath)
-    : null;
-  const applyStat = await exists(applyJournalPath)
-    ? await fsp.stat(applyJournalPath)
-    : null;
+  // Check which journals exist and are NOT already undone
+  let freezeStat = null;
+  if (await exists(freezeJournalPath)) {
+    const journal = await readLastFreeze(rootDir);
+    if (journal && !journal.undone) {
+      freezeStat = await fsp.stat(freezeJournalPath);
+    }
+  }
   
-  // Determine most recent operation by mtime - latest wins
+  let applyStat = null;
+  if (await exists(applyJournalPath)) {
+    const journal = await readLastApply(rootDir);
+    if (journal && !journal.undone) {
+      applyStat = await fsp.stat(applyJournalPath);
+    }
+  }
+  
+  // Determine most recent operation by mtime among non-undone operations - latest wins
   let operation: "freeze" | "apply" | null = null;
   
   if (freezeStat && applyStat) {
@@ -202,7 +223,7 @@ export async function undoLastOperation(
   
   if (!operation) {
     throw new Error(
-      "No operations to undo. Run 'kb devlink apply' or 'kb devlink freeze' first."
+      "No operations to undo. All recent operations have already been undone."
     );
   }
   

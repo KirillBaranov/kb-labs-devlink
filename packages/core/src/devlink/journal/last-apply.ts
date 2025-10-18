@@ -8,6 +8,7 @@ export interface LastApplyJournal {
   mode: string;
   actions: LinkAction[];
   manifestPatches?: ManifestPatch[];
+  undone?: boolean;  // Marked true after undo instead of deletion
 }
 
 /**
@@ -33,6 +34,21 @@ export async function writeLastApply(
     path: journalPath,
     actions: executed.length,
     manifestPatches: manifestPatches?.length || 0
+  });
+}
+
+/**
+ * Write last-apply journal directly (for undo marking)
+ */
+export async function writeLastApplyJournal(
+  journal: LastApplyJournal
+): Promise<void> {
+  const journalPath = `${journal.rootDir}/.kb/devlink/last-apply.json`;
+  await writeJson(journalPath, journal);
+  
+  logger.debug("Last-apply journal updated", {
+    path: journalPath,
+    undone: journal.undone,
   });
 }
 
