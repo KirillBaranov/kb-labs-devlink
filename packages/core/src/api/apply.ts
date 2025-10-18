@@ -2,7 +2,7 @@ import { applyPlan as applyPlanImpl } from "../devlink/apply";
 import { logger } from "../utils/logger";
 import { runPreflightChecks } from "../utils/preflight";
 import { backupPackageJsons } from "../utils/backup";
-import type { DevLinkPlan, ApplyOptions as DevLinkApplyOptions, LinkAction } from "../devlink/types";
+import type { DevLinkPlan, ApplyOptions as DevLinkApplyOptions, LinkAction, ManifestPatch } from "../devlink/types";
 
 export interface ApplyPlanOptions {
   dryRun?: boolean;
@@ -18,6 +18,8 @@ export interface ApplyPlanResult {
   errors: Array<{ action: LinkAction; error: unknown }>;
   diagnostics?: string[];
   warnings?: string[];
+  needsInstall?: boolean;
+  manifestPatches?: ManifestPatch[];
   preflight?: {
     cancelled: boolean;
     warnings: string[];
@@ -115,6 +117,8 @@ export async function apply(
       errors: result.errors,
       diagnostics: plan.diagnostics,
       warnings,
+      needsInstall: result.needsInstall,
+      manifestPatches: result.manifestPatches,
       preflight: {
         cancelled: false,
         warnings: preflight.warnings,
@@ -131,6 +135,8 @@ export async function apply(
       errors: [],
       diagnostics: [errorMessage],
       warnings,
+      needsInstall: false,
+      manifestPatches: [],
       preflight: {
         cancelled: false,
         warnings: preflight.warnings,
