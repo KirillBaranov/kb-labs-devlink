@@ -531,7 +531,7 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
     generatedAt: new Date().toISOString(),
   };
   await saveState(nextState, plan.rootDir);
-  await writeLastApply(plan, executed, patchResult.appliedPatches);
+  await writeLastApply(plan, executed, patchResult.appliedPatches, opts.backupDir);
   logger.info("State and journal saved");
 
   const dt = Date.now() - t0;

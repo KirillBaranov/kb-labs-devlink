@@ -89,6 +89,7 @@ export interface ApplyOptions {
   logLevel?: "silent" | "info" | "debug";
   concurrency?: number;
   preflightCancelled?: boolean; // To hide "No operations to apply" message
+  backupDir?: string;  // Path to backup directory for undo
 }
 
 export interface ApplyResult {

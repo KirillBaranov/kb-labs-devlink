@@ -8,6 +8,7 @@ export interface LastApplyJournal {
   mode: string;
   actions: LinkAction[];
   manifestPatches?: ManifestPatch[];
+  backupDir?: string;  // Path to backup directory for restore
   undone?: boolean;  // Marked true after undo instead of deletion
 }
 
@@ -17,14 +18,20 @@ export interface LastApplyJournal {
 export async function writeLastApply(
   plan: DevLinkPlan,
   executed: LinkAction[],
-  manifestPatches?: ManifestPatch[]
+  manifestPatches?: ManifestPatch[],
+  backupDir?: string
 ): Promise<void> {
+  const ts = new Date().toISOString();
+  const timestamp = ts.replace(/:/g, "-");
+  const backupPath = backupDir || `${plan.rootDir}/.kb/devlink/backups/${timestamp}`;
+  
   const journal: LastApplyJournal = {
     rootDir: plan.rootDir,
-    ts: new Date().toISOString(),
+    ts,
     mode: plan.mode,
     actions: executed,
     manifestPatches,
+    backupDir: backupPath,
   };
 
   const journalPath = `${plan.rootDir}/.kb/devlink/last-apply.json`;
@@ -33,7 +40,8 @@ export async function writeLastApply(
   logger.debug("Last-apply journal written", {
     path: journalPath,
     actions: executed.length,
-    manifestPatches: manifestPatches?.length || 0
+    manifestPatches: manifestPatches?.length || 0,
+    backupDir: backupPath,
   });
 }
 

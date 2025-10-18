@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { applyPlan as applyPlanImpl } from "../devlink/apply";
 import { logger } from "../utils/logger";
 import { runPreflightChecks } from "../utils/preflight";
@@ -71,6 +72,7 @@ export async function apply(
   }
 
   // Create backups before mutation (skip in dry-run)
+  let backupDir: string | undefined;
   if (!opts.dryRun) {
     const affectedDirs = new Set<string>();
 
@@ -84,9 +86,13 @@ export async function apply(
       }
     }
 
+    const timestamp = new Date().toISOString().replace(/:/g, "-");
+    backupDir = join(plan.rootDir, ".kb", "devlink", "backups", timestamp);
+    
     const backupResults = await backupPackageJsons(
       plan.rootDir,
-      Array.from(affectedDirs)
+      Array.from(affectedDirs),
+      { timestamp }
     );
 
     const failedBackups = backupResults.filter((r) => !r.ok);
@@ -99,6 +105,7 @@ export async function apply(
     const result = await applyPlanImpl(plan, {
       ...opts,
       preflightCancelled: !preflight.shouldProceed,
+      backupDir,
     } as DevLinkApplyOptions);
 
     const duration = Date.now() - startTime;

@@ -1,5 +1,5 @@
 import { promises as fsp } from "node:fs";
-import { join } from "node:path";
+import path, { join } from "node:path";
 import { runCommand } from "../../utils/runCommand";
 import { logger } from "../../utils/logger";
 import { readLastApply, readLastFreeze, writeLastFreeze, writeLastApplyJournal, type LastApplyJournal } from "./last-apply";
@@ -7,7 +7,7 @@ import { readJson, exists, writeJson } from "../../utils/fs";
 import type { LockFile } from "../lock/freeze";
 
 /**
- * Undo last apply by reversing actions in reverse order
+ * Undo last apply by restoring package.json files from backup
  */
 export async function undoLastApply(
   rootDir: string,
@@ -25,82 +25,50 @@ export async function undoLastApply(
 
   logger.info("Undoing last apply", {
     actions: journal.actions.length,
+    manifestPatches: journal.manifestPatches?.length || 0,
+    backupDir: journal.backupDir,
     dryRun: opts.dryRun
   });
 
-  // Try to load lock file for version information
-  const lockPath = `${rootDir}/.kb/devlink/lock.json`;
-  let lockFile: LockFile | null = null;
-  if (await exists(lockPath)) {
-    try {
-      lockFile = await readJson<LockFile>(lockPath);
-    } catch {
-      // Lock file not available or corrupted, continue without it
-    }
+  // Check if backup directory exists
+  if (!journal.backupDir || !(await exists(journal.backupDir))) {
+    throw new Error(
+      `Cannot undo apply: backup directory not found at ${journal.backupDir}. ` +
+      `Backups may have been deleted or never created.`
+    );
   }
 
-  // Process actions in reverse order
-  const actionsReversed = [...journal.actions].reverse();
+  // Restore package.json files from backups
+  const manifestPatches = journal.manifestPatches || [];
+  const restoredCount = new Set<string>();
 
-  for (const action of actionsReversed) {
-    const { target, dep, kind } = action;
+  for (const patch of manifestPatches) {
+    const { manifestPath } = patch;
+    
+    // Calculate backup path
+    const relativePath = path.relative(rootDir, manifestPath);
+    const backupPath = join(journal.backupDir, relativePath);
 
     if (opts.dryRun) {
-      logger.info(`[dry-run] Would undo ${kind}: ${dep} in ${target}`);
+      logger.info(`[dry-run] Would restore ${relativePath} from backup`);
       continue;
     }
 
     try {
-      switch (kind) {
-        case "link-local":
-          // Remove yalc link
-          await runCommand(`yalc remove ${dep}`, {
-            cwd: target,
-            allowFail: true
-          });
-
-          // Restore from lock if available, otherwise install latest from npm
-          let lockedVersion: string | undefined;
-          if (lockFile?.consumers) {
-            // Find consumer that matches target directory
-            for (const consumer of Object.values(lockFile.consumers)) {
-              if (consumer.deps[dep]) {
-                lockedVersion = consumer.deps[dep].version;
-                break;
-              }
-            }
-          }
-          
-          if (lockedVersion) {
-            await runCommand(`pnpm i ${dep}@${lockedVersion}`, { cwd: target });
-            logger.debug(`Restored ${dep}@${lockedVersion} from lock`);
-          } else {
-            await runCommand(`pnpm i ${dep}`, { cwd: target });
-            logger.debug(`Restored ${dep} from npm`);
-          }
-          break;
-
-        case "use-workspace":
-          // Re-install with workspace protocol (no-op if already workspace)
-          await runCommand(`pnpm i ${dep}@workspace:*`, {
-            cwd: target,
-            allowFail: true
-          });
-          break;
-
-        case "use-npm":
-          // No-op: already on npm
-          logger.debug(`Skipping undo for use-npm: ${dep} in ${target}`);
-          break;
-
-        case "unlink":
-          // No-op: was already unlinked
-          logger.debug(`Skipping undo for unlink: ${dep} in ${target}`);
-          break;
+      if (!(await exists(backupPath))) {
+        logger.warn(`Backup not found for ${relativePath}, skipping`, { backupPath });
+        continue;
       }
+
+      // Restore file from backup
+      const backupContent = await fsp.readFile(backupPath, "utf-8");
+      await fsp.writeFile(manifestPath, backupContent, "utf-8");
+      
+      restoredCount.add(manifestPath);
+      logger.debug(`Restored ${relativePath} from backup`);
     } catch (error) {
-      logger.warn(`Failed to undo action for ${dep} in ${target}`, error);
-      // Continue with other actions
+      logger.warn(`Failed to restore ${relativePath}`, error);
+      // Continue with other files
     }
   }
 
@@ -112,7 +80,10 @@ export async function undoLastApply(
     });
   }
 
-  logger.info("Undo completed");
+  logger.info("Undo completed", {
+    restoredFiles: restoredCount.size,
+    totalPatches: manifestPatches.length,
+  });
 }
 
 /**
