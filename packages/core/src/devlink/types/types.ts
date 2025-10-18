@@ -46,8 +46,17 @@ export interface DevLinkPolicy {
   forceNpm?: string[];      // всегда брать из npm
 }
 
+export type ManifestPatch = {
+  manifestPath: string;  // abs path to consumer's package.json
+  consumerName: string;  // package name for resolveDepSection
+  section?: "dependencies" | "devDependencies" | "peerDependencies";
+  depName: string;       // "@kb-labs/cli-core"
+  from?: string;         // old value (for undo)
+  to: string;            // "link:../relative/path"
+};
+
 export type LinkActionKind =
-  | "link-local"        // через yalc (или аналог)
+  | "link-local"        // mode=local → link: (not for peers); mode=yalc → yalc; workspace → workspace: or link:
   | "unlink"
   | "use-npm"           // заменить на npm-версию
   | "use-workspace";    // поставить workspace-линк (внутри репо)
@@ -87,4 +96,6 @@ export interface ApplyResult {
   executed: LinkAction[];
   skipped: LinkAction[];
   errors: { action: LinkAction; error: unknown }[];
+  needsInstall: boolean;
+  manifestPatches?: ManifestPatch[];
 }

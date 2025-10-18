@@ -50,7 +50,7 @@
     "test:watch": "vitest -c ../../vitest.config.ts"
   },
   "devDependencies": {
-    "@kb-labs/devkit": "github:KirillBaranov/kb-labs-devkit#main",
+    "@kb-labs/devkit": "link:../../../kb-labs-devkit",
     "@types/node": "^24.7.0",
     "tsup": "^8",
     "tsx": "^4.20.5",

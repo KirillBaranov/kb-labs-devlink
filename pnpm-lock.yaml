@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@kb-labs/devkit':
-        specifier: github:KirillBaranov/kb-labs-devkit#main
-        version: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/94cd461526c8c1b732838dc92ae80d0b9f31b3c0(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.5)(typescript@5.9.2))(typescript-eslint@8.44.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)(vitest@3.2.4(@types/node@24.7.0))
+        specifier: link:../kb-labs-devkit
+        version: link:../kb-labs-devkit
       '@typescript-eslint/eslint-plugin':
         specifier: ^8
         version: 8.44.0(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2)
@@ -73,8 +73,8 @@ importers:
   packages/core:
     devDependencies:
       '@kb-labs/devkit':
-        specifier: github:KirillBaranov/kb-labs-devkit#main
-        version: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/5dd910147b8c09742ca13aeb2ea6aba5ffc5159b(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.5)(typescript@5.9.2))(typescript-eslint@8.44.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)(vitest@3.2.4(@types/node@24.7.0))
+        specifier: link:../../../kb-labs-devkit
+        version: link:../../../kb-labs-devkit
       '@types/node':
         specifier: ^24.7.0
         version: 24.7.0
@@ -500,18 +500,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
-
-  '@kb-labs/devkit@https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/5dd910147b8c09742ca13aeb2ea6aba5ffc5159b':
-    resolution: {tarball: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/5dd910147b8c09742ca13aeb2ea6aba5ffc5159b}
-    version: 0.1.0
-    engines: {node: '>=20.0.0', pnpm: '>=9.11.0'}
-    hasBin: true
-    peerDependencies:
-      eslint: ^9.35.0
-      tsup: ^8.5.0
-      typescript: ^5.9.2
-      typescript-eslint: ^8.44.0
-      vitest: ^3.2.4
 
   '@kb-labs/devkit@https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/94cd461526c8c1b732838dc92ae80d0b9f31b3c0':
     resolution: {tarball: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/94cd461526c8c1b732838dc92ae80d0b9f31b3c0}
@@ -2710,21 +2698,6 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
-
-  '@kb-labs/devkit@https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/5dd910147b8c09742ca13aeb2ea6aba5ffc5159b(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.5)(typescript@5.9.2))(typescript-eslint@8.44.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)(vitest@3.2.4(@types/node@24.7.0))':
-    dependencies:
-      eslint: 9.35.0
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.35.0)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1)(eslint@9.35.0)
-      tsup: 8.5.0(postcss@8.5.6)(tsx@4.20.5)(typescript@5.9.2)
-      typescript: 5.9.2
-      typescript-eslint: 8.44.0(eslint@9.35.0)(typescript@5.9.2)
-      vitest: 3.2.4(@types/node@24.7.0)
-    transitivePeerDependencies:
-      - '@typescript-eslint/parser'
-      - eslint-import-resolver-webpack
-      - eslint-plugin-import-x
-      - supports-color
 
   '@kb-labs/devkit@https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/94cd461526c8c1b732838dc92ae80d0b9f31b3c0(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.5)(typescript@5.9.2))(typescript-eslint@8.44.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)(vitest@3.2.4(@types/node@24.7.0))':
     dependencies:

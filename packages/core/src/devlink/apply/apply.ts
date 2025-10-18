@@ -1,5 +1,5 @@
 import { runCommand } from "../../utils";
-import type { ApplyOptions, ApplyResult, DevLinkPlan, LinkAction } from "../types";
+import type { ApplyOptions, ApplyResult, DevLinkPlan, LinkAction, ManifestPatch } from "../types";
 import { logger } from "../../utils/logger";
 import { saveState } from "../../state";
 import type { DevlinkState } from "../../types";
@@ -7,6 +7,7 @@ import { writeLastApply } from "../journal/last-apply";
 import { discover } from "../../discovery";
 import { promises as fsp } from "fs";
 import { join } from "path";
+import * as path from "node:path";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // DRY-RUN TABLE
@@ -66,6 +67,7 @@ type TargetBatch = {
   wsProd: Set<string>;
   wsDev: Set<string>;
   wsPeer: Set<string>;
+  manifestPatches: ManifestPatch[];
 };
 
 function resolveDepKind(plan: DevLinkPlan, consumer: string, provider: string): DepKind {
@@ -74,6 +76,33 @@ function resolveDepKind(plan: DevLinkPlan, consumer: string, provider: string): 
   if (edge.type === "dev") { return "dev"; }
   if (edge.type === "peer") { return "peer"; }
   return "prod"; // "dep" → prod
+}
+
+// Resolve dependency section with fallback to current package.json
+function resolveDepSection(
+  plan: DevLinkPlan, 
+  consumer: string, 
+  provider: string, 
+  pkg?: any
+): "dependencies" | "devDependencies" | "peerDependencies" {
+  // First, check if already exists in manifest (prefer fact over graph)
+  if (pkg) {
+    for (const sec of ["dependencies", "devDependencies", "peerDependencies"] as const) {
+      if (pkg[sec]?.[provider]) return sec;
+    }
+  }
+  
+  // Fallback to graph edge type
+  const edge = plan.graph?.edges?.find(e => e.from === consumer && e.to === provider);
+  if (edge?.type === "dev") return "devDependencies";
+  if (edge?.type === "peer") return "peerDependencies";
+  return "dependencies";
+}
+
+// Detect indent from file content
+function detectIndent(content: string): string {
+  const match = content.match(/^[ \t]+/m);
+  return match ? match[0] : "  ";
 }
 
 function ensureBatch(map: Map<string, TargetBatch>, key: string): TargetBatch {
@@ -88,6 +117,7 @@ function ensureBatch(map: Map<string, TargetBatch>, key: string): TargetBatch {
       wsProd: new Set(),
       wsDev: new Set(),
       wsPeer: new Set(),
+      manifestPatches: [],
     };
     map.set(key, b);
   }
@@ -204,6 +234,100 @@ function clearProgress() {
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
+// MANIFEST PATCHING
+// ───────────────────────────────────────────────────────────────────────────────
+
+async function applyManifestPatches(
+  patches: ManifestPatch[], 
+  plan: DevLinkPlan,
+  dryRun: boolean
+): Promise<{ changed: number; touchedManifests: Set<string>; appliedPatches: ManifestPatch[] }> {
+  const touchedManifests = new Set<string>();
+  const appliedPatches: ManifestPatch[] = [];
+  let changed = 0;
+  
+  if (dryRun) {
+    // Show diff preview
+    console.log("\n📋 Manifest changes (dry-run):\n");
+    for (const patch of patches) {
+      const relPath = path.relative(plan.rootDir, patch.manifestPath);
+      console.log(`  ${relPath}:`);
+      console.log(`    ${patch.depName}: ${patch.from || "(new)"} → ${patch.to}`);
+    }
+    console.log();
+    return { changed: 0, touchedManifests, appliedPatches: [] };
+  }
+  
+  // Group by manifest path
+  const byManifest = new Map<string, ManifestPatch[]>();
+  for (const patch of patches) {
+    if (!byManifest.has(patch.manifestPath)) {
+      byManifest.set(patch.manifestPath, []);
+    }
+    byManifest.get(patch.manifestPath)!.push(patch);
+  }
+  
+  // Apply patches per manifest
+  for (const [manifestPath, manifestPatches] of byManifest) {
+    try {
+      const content = await fsp.readFile(manifestPath, "utf8");
+      const pkg = JSON.parse(content);
+      const indent = detectIndent(content);
+      const ending = content.endsWith("\n") ? "\n" : "";
+      
+      // Deduplicate: keep last patch per depName
+      const lastForDep = new Map<string, ManifestPatch>();
+      for (const p of manifestPatches) {
+        lastForDep.set(p.depName, p);
+      }
+      const compactPatches = Array.from(lastForDep.values());
+      
+      let manifestChanged = false;
+      
+      for (const patch of compactPatches) {
+        // Resolve section if not provided
+        const section = patch.section || resolveDepSection(plan, patch.consumerName, patch.depName, pkg);
+        
+        // CRITICAL: Don't patch peerDependencies with link:
+        if (section === "peerDependencies") {
+          logger.warn(`Skipping link: patch for peerDependency ${patch.depName} in ${patch.consumerName} (peers require version ranges)`);
+          continue;
+        }
+        
+        const cur = pkg[section]?.[patch.depName];
+        patch.from = cur;
+        
+        // Only patch if value actually changes
+        if (cur !== patch.to) {
+          if (!pkg[section]) pkg[section] = {};
+          pkg[section][patch.depName] = patch.to;
+          manifestChanged = true;
+          changed++;
+          appliedPatches.push(patch);
+          
+          // Remove from other sections to avoid conflicts
+          const allSections = ["dependencies", "devDependencies", "peerDependencies"] as const;
+          for (const sec of allSections) {
+            if (sec !== section && pkg[sec]?.[patch.depName]) {
+              delete pkg[sec][patch.depName];
+            }
+          }
+        }
+      }
+      
+      if (manifestChanged) {
+        await fsp.writeFile(manifestPath, JSON.stringify(pkg, null, indent) + ending, "utf8");
+        touchedManifests.add(manifestPath);
+      }
+    } catch (error) {
+      logger.warn(`Failed to patch manifest ${manifestPath}`, error as any);
+    }
+  }
+  
+  return { changed, touchedManifests, appliedPatches };
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
 // APPLY
 // ───────────────────────────────────────────────────────────────────────────────
 
@@ -218,6 +342,8 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
       executed: [],
       skipped: [],
       errors: [],
+      needsInstall: false,
+      manifestPatches: [],
     };
   }
 
@@ -228,7 +354,7 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
   if (!plan.actions || !plan.index) {
     // Нечего делать — "тихо" выходим, без таблиц и без summary (мы не в dry-run)
     logger.info("Apply completed", { ok: true, executed: 0, skipped: 0, errors: 0, time: 0 });
-    return { ok: true, executed, skipped, errors };
+    return { ok: true, executed, skipped, errors, needsInstall: false, manifestPatches: [] };
   }
 
   // 1) Build batches by target
@@ -243,7 +369,40 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
         break;
       }
       case "link-local": {
-        b.yalcAdd.add(a.dep);
+        const providerDir = plan.index.packages[a.dep]?.dir;
+        const consumerDir = plan.index.packages[a.target]?.dir;
+        
+        // Guard: skip self-links
+        if (a.target === a.dep) {
+          logger.warn(`Skipping self-link: ${a.target} → ${a.dep}`);
+          break;
+        }
+        
+        // Guard: skip if missing directory info
+        if (!providerDir || !consumerDir) {
+          logger.warn(`Cannot link ${a.dep} to ${a.target}: missing directory info`);
+          break;
+        }
+        
+        if (plan.mode === "local") {
+          // Use direct link: protocol for local mode
+          let rel = path.relative(consumerDir, providerDir) || ".";
+          // Normalize slashes for Windows, no trailing slash
+          rel = rel.split(path.sep).join("/").replace(/\/$/, "");
+          const linkSpec = `link:${rel}`;
+          
+          b.manifestPatches.push({
+            manifestPath: path.join(consumerDir, "package.json"),
+            consumerName: a.target,
+            depName: a.dep,
+            to: linkSpec,
+            // section will be resolved during apply
+          });
+        } else {
+          // Use yalc for non-local modes (yalc, workspace fallback)
+          // TODO: Add workspace: protocol support for same-monorepo packages
+          b.yalcAdd.add(a.dep);
+        }
         break;
       }
       case "use-workspace": {
@@ -272,6 +431,7 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
 
   console.log("\n🔧 Applying batched operations…\n");
 
+  const allManifestPatches: ManifestPatch[] = [];
   let idx = 0;
   for (const target of targets) {
     const batch = byTarget.get(target)!;
@@ -343,6 +503,9 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
       }
 
       markExecuted();
+      if (batch.manifestPatches.length > 0) {
+        allManifestPatches.push(...batch.manifestPatches);
+      }
       renderProgress(`${step}  ✓ done`);
       clearProgress();
     } catch (error) {
@@ -356,6 +519,10 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
 
   clearProgress();
 
+  // Apply manifest patches
+  const patchResult = await applyManifestPatches(allManifestPatches, plan, opts.dryRun || false);
+  const needsInstall = patchResult.changed > 0;
+
   // 3) Save state & journal
   const state = await discover({ roots: [plan.rootDir] });
   const nextState: DevlinkState = {
@@ -364,7 +531,7 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
     generatedAt: new Date().toISOString(),
   };
   await saveState(nextState, plan.rootDir);
-  await writeLastApply(plan, executed);
+  await writeLastApply(plan, executed, patchResult.appliedPatches);
   logger.info("State and journal saved");
 
   const dt = Date.now() - t0;
@@ -402,5 +569,7 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
     executed,
     skipped,
     errors,
+    needsInstall,
+    manifestPatches: patchResult.appliedPatches,
   };
 }
