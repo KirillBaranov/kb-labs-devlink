@@ -1,6 +1,5 @@
 import { logger } from "../utils/logger";
 import { runPreflightChecks } from "../utils/preflight";
-import { backupFile } from "../utils/backup";
 import { walkPatterns } from "../utils/fs";
 import { promises as fsp } from "fs";
 import { join, relative } from "path";
@@ -251,12 +250,7 @@ async function processManifest(
 
     // Write updated manifest if not dry run and there were changes
     if (!dryRun && changes.length > 0) {
-      // Create backup before writing
-      const backupResult = await backupFile(manifestPath, { rootDir });
-      if (!backupResult.ok) {
-        throw new Error(`Failed to create backup: ${backupResult.error}`);
-      }
-
+      // Note: Backup already created by preflight checks
       // Write updated manifest with preserved formatting
       await fsp.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
     }

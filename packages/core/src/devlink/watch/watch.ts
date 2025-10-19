@@ -228,12 +228,17 @@ export class DevLinkWatcher extends EventEmitter {
     providerName: string,
     provider: ProviderConfig
   ): Promise<void> {
-    const watchPaths = provider.watchPaths.map((p) => join(provider.dir, p));
+    // Watch the provider directory itself, not individual globs
+    const watchPath = provider.dir;
 
-    const watcher = chokidar.watch(watchPaths, {
+    const watcher = chokidar.watch(watchPath, {
       ignored: (path: string) => {
         const rel = relative(provider.dir, path);
-        return shouldIgnorePath(rel);
+        const shouldIgnore = shouldIgnorePath(rel);
+        if (shouldIgnore) {
+          logger.debug("Ignoring path", { provider: providerName, path: rel, reason: "matched ignore pattern" });
+        }
+        return shouldIgnore;
       },
       persistent: true,
       ignoreInitial: true,
@@ -244,20 +249,27 @@ export class DevLinkWatcher extends EventEmitter {
     });
 
     watcher.on("change", (filePath: string) => {
+      logger.debug("Chokidar change event", { provider: providerName, file: filePath });
       this.handleFileChange(providerName, provider, filePath);
     });
 
     watcher.on("add", (filePath: string) => {
+      logger.debug("Chokidar add event", { provider: providerName, file: filePath });
       this.handleFileChange(providerName, provider, filePath);
     });
 
-    watcher.on("error", (error: Error) => {
-      logger.error("Watcher error", { provider: providerName, error: error.message });
+    watcher.on("ready", () => {
+      logger.debug("Watcher ready", { provider: providerName });
+    });
+
+    watcher.on("error", (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error("Watcher error", { provider: providerName, error: errorMessage });
       this.emitEvent({
         type: "error",
         ts: new Date().toISOString(),
         pkg: providerName,
-        error: error.message,
+        error: errorMessage,
       });
     });
 
@@ -265,7 +277,7 @@ export class DevLinkWatcher extends EventEmitter {
 
     logger.debug("Provider watcher started", {
       provider: providerName,
-      paths: watchPaths,
+      watchPath: watchPath,
     });
   }
 
@@ -279,6 +291,7 @@ export class DevLinkWatcher extends EventEmitter {
   ): void {
     if (this.isShuttingDown) return;
 
+    // Convert to relative path
     const relPath = relative(provider.dir, filePath);
 
     // Loop protection: ignore dist/ changes shortly after build

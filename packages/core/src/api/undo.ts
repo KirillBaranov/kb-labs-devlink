@@ -1,7 +1,6 @@
 import { undoLastOperation, readLastApply } from "../devlink/journal";
 import { logger } from "../utils/logger";
 import { runPreflightChecks } from "../utils/preflight";
-import { backupPackageJsons } from "../utils/backup";
 
 export interface UndoOptions {
   rootDir: string;
@@ -86,17 +85,8 @@ export async function undo(opts: UndoOptions): Promise<UndoResult> {
         }
       }
 
-      if (affectedDirs.size > 0) {
-        const backupResults = await backupPackageJsons(
-          opts.rootDir,
-          Array.from(affectedDirs)
-        );
-
-        const failedBackups = backupResults.filter((r) => !r.ok);
-        if (failedBackups.length > 0) {
-          warnings.push(`Failed to create ${failedBackups.length} backup(s)`);
-        }
-      }
+      // Note: Backups already created by preflight checks
+      // No need for additional backups before undo
     }
   }
 

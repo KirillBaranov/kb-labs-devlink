@@ -9,6 +9,8 @@ export interface LastApplyJournal {
   actions: LinkAction[];
   manifestPatches?: ManifestPatch[];
   backupDir?: string;  // Path to backup directory for restore
+  backupTimestamp?: string;  // ISO timestamp of backup
+  status?: "pending" | "completed";  // Operation status
   undone?: boolean;  // Marked true after undo instead of deletion
 }
 
