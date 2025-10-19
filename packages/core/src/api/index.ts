@@ -37,6 +37,14 @@ export {
   type StatusReport,
 } from "./status";
 
+export {
+  watch,
+  DevLinkWatcher,
+  type WatchOptions,
+  type WatchEvent,
+  type DryRunResult,
+} from "./watch";
+
 // Re-export core types from devlink
 export type {
   DevLinkMode,

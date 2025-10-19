@@ -39,6 +39,10 @@
     "LICENSE"
   ],
   "sideEffects": false,
+  "dependencies": {
+    "chokidar": "^4.0.0",
+    "p-queue": "^8.0.0"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "build": "tsup",

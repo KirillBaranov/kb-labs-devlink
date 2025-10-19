@@ -12,6 +12,7 @@ Developer linker and ecosystem orchestrator for KB Labs. A fast and flexible too
 
 - **Auto-Discovery** ![Discovery](https://img.shields.io/badge/Discovery-Automatic-green.svg?style=flat-square): Automatically scans repositories and detects local packages with dependencies.
 - **Smart Linking** ![Linking](https://img.shields.io/badge/Linking-Smart-blue.svg?style=flat-square): Intelligent linking strategies (`auto`, `local`, `npm`) with dependency graph analysis.
+- **Watch Mode** 🆕 ![Watch](https://img.shields.io/badge/Watch-Live-brightgreen.svg?style=flat-square): Live file watching with automatic rebuild and consumer refresh — zero manual steps.
 - **Version Management** ![Versions](https://img.shields.io/badge/Versions-Managed-orange.svg?style=flat-square): Policy-driven version pinning, upgrades, and prerelease handling.
 - **State Tracking** ![State](https://img.shields.io/badge/State-Tracked-purple.svg?style=flat-square): Persistent state snapshots and rollback capabilities.
 - **Yalc Integration** ![Yalc](https://img.shields.io/badge/Yalc-Integrated-red.svg?style=flat-square): Leverages Yalc for reliable local package publishing.
@@ -91,7 +92,16 @@ devlink status
 devlink status --check
 ```
 
-### 5. Freeze state
+### 5. Watch for changes (optional)
+
+```bash
+# Start watch mode for automatic rebuild & refresh
+kb devlink watch
+
+# Watch detects changes → rebuilds providers → refreshes consumers
+```
+
+### 6. Freeze state
 
 ```bash
 # Create a lockfile for reproducible linking
@@ -223,6 +233,7 @@ Example warning:
 | `devlink scan [roots...]` | Discover packages and build dependency graph  |
 | `devlink plan`            | Generate linking plan based on current state  |
 | `devlink link`            | Apply linking plan (uses Yalc under the hood) |
+| `devlink watch`           | 🆕 Watch providers and auto-rebuild/refresh consumers |
 | `devlink freeze`          | Create lockfile for reproducible linking      |
 | `devlink unfreeze`        | Remove lockfile and return to auto mode       |
 | `devlink status`          | Show current linking state                    |
@@ -399,7 +410,29 @@ devlink link
 devlink freeze
 ```
 
-### Example 3: CI/CD Integration
+### Example 3: Active development with watch mode
+
+```bash
+# Link packages in local mode
+kb devlink apply --mode local
+
+# Start watching for changes
+kb devlink watch
+
+# Now edit any provider package
+# → Watch detects change → rebuilds → refreshes consumers
+# → All automatic! ✨
+
+# Watch specific packages only
+kb devlink watch --providers "@kb-labs/cli-*"
+
+# See what would be watched (dry run)
+kb devlink watch --dry-run
+```
+
+See [docs/WATCH.md](./docs/WATCH.md) for complete watch mode documentation.
+
+### Example 4: CI/CD Integration
 
 ```bash
 # In CI, skip confirmation prompts
@@ -436,9 +469,10 @@ devlink rollback
 
 ### Workflow
 
-- **How do I update links after code changes?** — DevLink uses Yalc, which watches for changes. Just rebuild your package and Yalc will update consumers.
+- **How do I update links after code changes?** — Use `kb devlink watch` for automatic rebuild and refresh. Or manually: rebuild your package and consumers will pick up changes (if using link: mode) or run `yalc update`.
 - **Can I mix local and npm packages?** — Yes! Use `auto` mode to link local packages when available and fall back to npm for others.
 - **How do I share linking state with my team?** — Use `devlink freeze` to create a lockfile, commit it, and teammates can `devlink link` to replicate your setup.
+- **What is watch mode?** — `kb devlink watch` monitors provider packages, rebuilds them on changes, and automatically refreshes consumers. See [docs/WATCH.md](./docs/WATCH.md) for details.
 
 ### Troubleshooting
 
@@ -447,6 +481,15 @@ devlink rollback
 - **Need to start fresh?** — Run `devlink clean` to remove all DevLink state, then re-scan.
 - **Blocked by git warnings?** — Commit your changes or use `--yes` to proceed anyway.
 - **Need to restore a backup?** — Check `.kb/devlink/backups/` for timestamped copies of your files.
+
+## Documentation
+
+- **[Watch Mode Guide](./docs/WATCH.md)** — Complete guide to live watching and automatic rebuild
+- **[Architecture Decision Records](./docs/adr/)** — Design decisions and rationale
+  - [ADR-0022: Watch Mode Implementation](./docs/adr/0022-watch-mode-implementation.md)
+  - [ADR-0010: Local Linking and Watch Pipeline](./docs/adr/0010-local-linkind-and-watch-pipelin.md)
+  - [ADR-0009: Core Architecture](./docs/adr/0009-core-architecture.md)
+- **[Contributing Guide](./CONTRIBUTING.md)** — Guidelines for contributors
 
 ## Contributing
 
