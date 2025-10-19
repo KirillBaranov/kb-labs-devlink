@@ -110,6 +110,9 @@ export async function freeze(
     const backupDir = join(cwd, ".kb", "devlink", "backups", timestamp);
     const typeFreezeDir = join(backupDir, "type.freeze");
     
+    // Always create backup directory
+    await fsp.mkdir(backupDir, { recursive: true });
+    
     let oldLockContent: string | null = null;
     let oldLockChecksum: string | null = null;
 
