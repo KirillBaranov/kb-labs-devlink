@@ -46,3 +46,18 @@ export type {
   LinkActionKind,
 } from "../devlink/types";
 
+// Re-export status types
+export type {
+  Severity,
+  WarningCode,
+  ModeSource,
+  Impact,
+  StatusContext,
+  LockStats,
+  DiffEntry,
+  ConsumerDiff,
+  ManifestDiff,
+  HealthWarning,
+  ActionSuggestion,
+  StatusReportV2,
+} from "../devlink/status";

@@ -1,2 +1,24 @@
-export { getStatus, type StatusEntry, type StatusSummary } from "./status";
-
+// Main exports
+export {
+  determineMode,
+  readLastOperation,
+  checkUndoAvailability,
+  computeManifestDiff,
+  computeHealthWarnings,
+  computeSuggestions,
+  formatAge,
+  normalizeDisplayPath,
+  pLimit,
+  type Severity,
+  type WarningCode,
+  type ModeSource,
+  type Impact,
+  type StatusContext,
+  type LockStats,
+  type DiffEntry,
+  type ConsumerDiff,
+  type ManifestDiff,
+  type HealthWarning,
+  type ActionSuggestion,
+  type StatusReportV2,
+} from "./status";
