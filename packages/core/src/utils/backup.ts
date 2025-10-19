@@ -44,13 +44,8 @@ export async function backupFile(
     // Ensure backup directory exists
     await fsp.mkdir(dirname(backupPath), { recursive: true });
 
-    // Copy file (preserve JSON formatting if it's JSON)
-    if (filePath.endsWith(".json")) {
-      const data = await readJson(filePath);
-      await writeJson(backupPath, data);
-    } else {
-      await fsp.copyFile(filePath, backupPath);
-    }
+    // Copy file as exact byte copy (preserve all formatting, whitespace, etc.)
+    await fsp.copyFile(filePath, backupPath);
 
     logger.debug("Backup created", { original: filePath, backup: backupPath });
 

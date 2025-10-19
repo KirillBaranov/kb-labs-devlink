@@ -56,13 +56,14 @@ export async function apply(
   warnings.push(...preflight.warnings);
 
   if (!preflight.shouldProceed) {
-    logger.warn("✋ Operation cancelled by preflight checks");
+    const cancelledMessage = "✋ Operation cancelled by preflight checks";
+    logger.warn(cancelledMessage);
     return {
       ok: false,
       executed: [],
       skipped: [],
       errors: [],
-      diagnostics: ["✋ Operation cancelled by preflight checks"],
+      diagnostics: [cancelledMessage],
       warnings,
       preflight: {
         cancelled: true,
