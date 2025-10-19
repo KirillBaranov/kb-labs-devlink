@@ -103,10 +103,17 @@ async function undoLastFreeze(
     throw new Error("Freeze operation already undone");
   }
 
-  const backupLockPath = join(journal.backupDir, "lock.json");
+  // Check for lock.json in new structure (type.freeze/) or old structure (root)
+  const backupLockPathNew = join(journal.backupDir, "type.freeze", "lock.json");
+  const backupLockPathOld = join(journal.backupDir, "lock.json");
   
-  if (!(await exists(backupLockPath))) {
-    throw new Error(`Cannot undo freeze: backup file not found at ${backupLockPath}`);
+  let backupLockPath: string;
+  if (await exists(backupLockPathNew)) {
+    backupLockPath = backupLockPathNew;
+  } else if (await exists(backupLockPathOld)) {
+    backupLockPath = backupLockPathOld;
+  } else {
+    throw new Error(`Cannot undo freeze: backup file not found at ${backupLockPathNew} or ${backupLockPathOld}`);
   }
 
   if (opts.dryRun) {

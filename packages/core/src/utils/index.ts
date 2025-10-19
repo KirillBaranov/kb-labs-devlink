@@ -4,3 +4,6 @@ export * from './fs';
 export * from './git';
 export * from './backup';
 export * from './preflight';
+export * from './timestamp';
+export * from './atomic';
+export * from './backup-manager';

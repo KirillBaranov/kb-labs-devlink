@@ -1,10 +1,24 @@
 import { promises as fsp } from "node:fs";
 import { join } from "node:path";
+import path from "node:path";
 import { freezeToLockMerged, type FreezeDryRunResult } from "../devlink/lock";
 import { writeLastFreeze } from "../devlink/journal";
 import { exists, readJson } from "../utils/fs";
 import { logger } from "../utils/logger";
 import type { DevLinkPlan } from "../devlink/types";
+import {
+  createBackupTimestamp,
+  AdvisoryLock,
+  writeJsonAtomic,
+  computeChecksum,
+  computeFileChecksum,
+  getGitInfo,
+  getNodeInfo,
+  cleanupOldBackups,
+  cleanupTempFiles,
+  toPosixPath,
+  type BackupMetadata,
+} from "../utils";
 
 export interface FreezeOptions {
   cwd?: string;
@@ -59,6 +73,13 @@ export async function freeze(
     dryRun,
   });
 
+  // Cleanup temp files before starting
+  const devlinkDir = join(cwd, ".kb", "devlink");
+  await cleanupTempFiles(devlinkDir);
+
+  // Advisory lock to prevent concurrent operations
+  const lock = new AdvisoryLock(join(devlinkDir, ".lock"));
+
   try {
     // Dry-run: calculate and return diff
     if (dryRun) {
@@ -81,19 +102,27 @@ export async function freeze(
       };
     }
 
-    // Create readable timestamped backup: 2025-10-18__22-44-53-678Z
-    const timestamp = new Date().toISOString().replace("T", "__").replace(/[:.]/g, "-");
+    // Acquire lock for write operation
+    await lock.acquire();
+
+    // Create ISO timestamp for backup
+    const timestamp = createBackupTimestamp();
     const backupDir = join(cwd, ".kb", "devlink", "backups", timestamp);
+    const typeFreezeDir = join(backupDir, "type.freeze");
     
-    let prunedList: string[] = [];
-    
+    let oldLockContent: string | null = null;
+    let oldLockChecksum: string | null = null;
+
+    // Backup old lock.json if exists
     if (await exists(lockPath)) {
-      // Create backup directory
-      await fsp.mkdir(backupDir, { recursive: true });
+      await fsp.mkdir(typeFreezeDir, { recursive: true });
       
-      // Byte-level copy
-      await fsp.copyFile(lockPath, join(backupDir, "lock.json"));
-      logger.debug("Lock file backed up", { backupDir });
+      oldLockContent = await fsp.readFile(lockPath, "utf-8");
+      oldLockChecksum = computeChecksum(oldLockContent);
+      
+      // Write to backup
+      await fsp.writeFile(join(typeFreezeDir, "lock.json"), oldLockContent, "utf-8");
+      logger.debug("Old lock.json backed up", { backupDir });
     }
 
     // Execute freeze with merge
@@ -114,6 +143,65 @@ export async function freeze(
     const totalDeps = lockFile.consumers 
       ? Object.values(lockFile.consumers).reduce((sum: number, c: any) => sum + Object.keys(c.deps || {}).length, 0)
       : 0;
+    
+    const consumersCount = lockFile.consumers ? Object.keys(lockFile.consumers).length : 0;
+
+    // Collect metadata
+    const [gitInfo, nodeInfo] = await Promise.all([
+      getGitInfo(),
+      getNodeInfo(),
+    ]);
+
+    // Get plan hash if exists
+    const lastPlanPath = join(cwd, ".kb", "devlink", "last-plan.json");
+    let planHash: string | undefined;
+    if (await exists(lastPlanPath)) {
+      const planContent = await fsp.readFile(lastPlanPath, "utf-8");
+      planHash = computeChecksum(planContent);
+    }
+
+    // Get lock size
+    const lockStats = await fsp.stat(lockPath);
+    const lockBytes = lockStats.size;
+
+    // Create backup.json metadata
+    const metadata: BackupMetadata = {
+      schemaVersion: 1,
+      timestamp,
+      type: "freeze",
+      rootDir: cwd,
+      devlinkVersion: "0.1.0",
+      mode: plan.mode,
+      policy: { pin },
+      counts: {
+        manifests: 0,
+        deps: totalDeps,
+        consumers: consumersCount,
+      },
+      includes: {
+        lock: oldLockContent !== null,
+        manifests: false,
+      },
+      checksums: oldLockChecksum ? { "lock.json": oldLockChecksum } : {},
+      fileList: oldLockContent ? ["type.freeze/lock.json"] : [],
+      git: gitInfo || undefined,
+      plan: planHash ? { lastPlanPath: ".kb/devlink/last-plan.json", planHash } : undefined,
+      platform: {
+        os: process.platform,
+        arch: process.arch,
+      },
+      node: nodeInfo,
+      sizes: {
+        lockBytes,
+        manifestsBytes: 0,
+        totalBytes: lockBytes,
+      },
+      isProtected: false,
+      tags: [],
+    };
+
+    // Write backup.json atomically
+    await writeJsonAtomic(join(backupDir, "backup.json"), metadata);
 
     // Write freeze journal for undo
     await writeLastFreeze({
@@ -124,11 +212,24 @@ export async function freeze(
       backupDir,
       packagesCount: totalDeps,
       replaced: replace,
-      pruned: prunedList.length > 0 ? prunedList : undefined,
       pin,
     });
 
-    logger.info("Lock file created with backup and journal", { lockPath });
+    // Release lock
+    await lock.release();
+
+    // Auto-cleanup old backups (async, don't wait)
+    cleanupOldBackups(cwd).then((result) => {
+      logger.info("Auto-cleanup completed", {
+        removed: result.removed.length,
+        kept: result.kept.length,
+        protected: result.skippedProtected.length,
+      });
+    }).catch((err) => {
+      logger.warn("Auto-cleanup failed", { err });
+    });
+
+    logger.info("Freeze completed with backup and journal", { lockPath, timestamp });
 
     return {
       ok: true,
@@ -137,11 +238,12 @@ export async function freeze(
         packagesCount: totalDeps,
         backupDir,
         replaced: replace,
-        pruned: prunedList.length > 0 ? prunedList : undefined,
       },
       preflight: { cancelled: false, warnings: [] },
     };
   } catch (error) {
+    await lock.release();
+    
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error("Freeze failed", { error: errorMessage });
 

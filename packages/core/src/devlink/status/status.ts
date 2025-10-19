@@ -241,8 +241,8 @@ export async function determineMode(rootDir: string): Promise<{
       let npmCount = 0;
       let githubCount = 0;
 
-      for (const consumer of Object.values(lock.consumers)) {
-        for (const entry of Object.values(consumer.deps)) {
+  for (const consumer of Object.values(lock.consumers)) {
+    for (const entry of Object.values(consumer.deps)) {
           if (entry.source === "workspace") workspaceCount++;
           else if (entry.source === "link") linkCount++;
           else if (entry.source === "npm") npmCount++;
@@ -377,9 +377,14 @@ export async function checkUndoAvailability(
       // Extract timestamp from journal
       const backupTs = journal.ts?.replace(/:/g, "-").replace(/\.\d+Z$/, "Z");
       const backupDir = journal.backupDir || path.join(rootDir, ".kb", "devlink", "backups", backupTs);
-      const lockBackup = path.join(backupDir, "lock.json");
+      
+      // Check for lock.json in new structure (type.freeze/) or old structure (root)
+      const lockBackupNew = path.join(backupDir, "type.freeze", "lock.json");
+      const lockBackupOld = path.join(backupDir, "lock.json");
+      
+      const hasLockBackup = (await exists(lockBackupNew)) || (await exists(lockBackupOld));
 
-      if (!(await exists(lockBackup))) {
+      if (!hasLockBackup) {
         return {
           available: false,
           reason: "BACKUP_FOLDER_MISSING",
