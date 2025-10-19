@@ -45,21 +45,30 @@ export async function undoLastApply(
   for (const patch of manifestPatches) {
     const { manifestPath } = patch;
     
-    // Calculate backup path
+    // Calculate backup path - try new structure (type.apply/manifests/) first, then old structure
     const relativePath = path.relative(rootDir, manifestPath);
-    const backupPath = join(journal.backupDir, relativePath);
+    const backupPathNew = join(journal.backupDir, "type.apply", "manifests", relativePath);
+    const backupPathOld = join(journal.backupDir, relativePath);
+    
+    let backupPath: string;
+    if (await exists(backupPathNew)) {
+      backupPath = backupPathNew;
+    } else if (await exists(backupPathOld)) {
+      backupPath = backupPathOld;
+    } else {
+      logger.warn(`Backup not found for ${relativePath}, skipping`, { 
+        triedNew: backupPathNew,
+        triedOld: backupPathOld 
+      });
+      continue;
+    }
 
     if (opts.dryRun) {
-      logger.info(`[dry-run] Would restore ${relativePath} from backup`);
+      logger.info(`[dry-run] Would restore ${relativePath} from backup`, { backupPath });
       continue;
     }
 
     try {
-      if (!(await exists(backupPath))) {
-        logger.warn(`Backup not found for ${relativePath}, skipping`, { backupPath });
-        continue;
-      }
-
       // Restore file from backup
       const backupContent = await fsp.readFile(backupPath, "utf-8");
       await fsp.writeFile(manifestPath, backupContent, "utf-8");

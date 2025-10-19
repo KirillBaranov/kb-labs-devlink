@@ -4,7 +4,6 @@ import { mkdtemp, rm, mkdir, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import * as runCommandModule from "../utils/runCommand";
 import { checkGitDirty } from "../utils/git";
-import { backupFile, backupPackageJsons } from "../utils/backup";
 import { runPreflightChecks } from "../utils/preflight";
 import { scanAndPlan, apply, applyLockFile, undo } from "../api";
 
@@ -117,66 +116,7 @@ describe("Preflight Checks", () => {
     });
   });
 
-  describe("backupFile", () => {
-    it("should create backup of package.json", async () => {
-      const pkgJsonPath = join(tmpRoot, "packages", "a", "package.json");
-      const timestamp = "2025-01-01T00-00-00.000Z";
-
-      const result = await backupFile(pkgJsonPath, {
-        rootDir: tmpRoot,
-        timestamp,
-      });
-
-      expect(result.ok).toBe(true);
-      expect(result.backupPath).toContain("backups");
-      expect(result.backupPath).toContain(timestamp);
-      expect(result.backupPath).toContain("packages/a/package.json");
-
-      // Verify backup exists
-      const { exists } = await import("../utils/fs");
-      expect(await exists(result.backupPath)).toBe(true);
-    });
-
-    it("should fail gracefully for non-existent file", async () => {
-      const fakePath = join(tmpRoot, "non-existent.json");
-
-      const result = await backupFile(fakePath, {
-        rootDir: tmpRoot,
-      });
-
-      expect(result.ok).toBe(false);
-      expect(result.error).toBeDefined();
-    });
-  });
-
-  describe("backupPackageJsons", () => {
-    it("should backup multiple package.json files", async () => {
-      const pkgDirs = [
-        join(tmpRoot, "packages", "a"),
-        join(tmpRoot, "packages", "b"),
-      ];
-
-      const results = await backupPackageJsons(tmpRoot, pkgDirs);
-
-      expect(results).toHaveLength(2);
-      expect(results.filter((r) => r.ok)).toHaveLength(2);
-    });
-
-    it("should use same timestamp for all backups", async () => {
-      const pkgDirs = [
-        join(tmpRoot, "packages", "a"),
-        join(tmpRoot, "packages", "b"),
-      ];
-      const timestamp = "2025-01-01T00-00-00.000Z";
-
-      const results = await backupPackageJsons(tmpRoot, pkgDirs, { timestamp });
-
-      expect(results).toHaveLength(2);
-      results.forEach((result) => {
-        expect(result.backupPath).toContain(timestamp);
-      });
-    });
-  });
+  // Note: Backup functions removed - now handled by structured backup system in backup-manager.ts
 
   describe("runPreflightChecks", () => {
     it("should pass when git is clean", async () => {
