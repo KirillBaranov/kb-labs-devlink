@@ -47,7 +47,8 @@
   "sideEffects": false,
   "dependencies": {
     "chokidar": "^4.0.0",
-    "p-queue": "^8.0.0"
+    "p-queue": "^8.0.0",
+    "@kb-labs/shared-cli-ui": "workspace:*"
   },
   "scripts": {
     "clean": "rimraf dist",
@@ -60,7 +61,7 @@
     "test:watch": "vitest -c ../../vitest.config.ts"
   },
   "devDependencies": {
-    "@kb-labs/devkit": "workspace:*",
+    "@kb-labs/devkit": "link:../../../kb-labs-devkit",
     "@types/node": "^24.7.0",
     "tsup": "^8",
     "tsx": "^4.20.5",
