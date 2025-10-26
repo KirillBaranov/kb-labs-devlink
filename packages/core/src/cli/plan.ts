@@ -3,12 +3,17 @@ import { scanAndPlan } from '../api';
 
 export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
   try {
-    const cwd = flags.cwd ?? process.cwd();
+    // Parse flags with defaults (following template pattern)
+    const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
+    const mode = flags.mode ?? 'auto';
+    const roots = flags.roots ? flags.roots.split(',') : undefined;
+    const strict = !!flags.strict;
+    
     const result = await scanAndPlan({
       rootDir: cwd,
-      mode: flags.mode ?? 'auto',
-      roots: flags.roots ? flags.roots.split(',') : undefined,
-      strict: flags.strict,
+      mode,
+      roots,
+      strict,
     });
 
     if (flags.json) {

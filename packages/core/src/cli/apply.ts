@@ -5,15 +5,18 @@ import { join } from 'node:path';
 
 export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
   try {
-    const cwd = flags.cwd ?? process.cwd();
+    // Parse flags with defaults (following template pattern)
+    const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
+    const dryRun = !!flags.dryRun;
+    const yes = !!flags.yes;
     
     // Read plan from last-plan.json
     const lastPlanPath = join(cwd, '.kb', 'devlink', 'last-plan.json');
     const planData = await readJson(lastPlanPath);
 
     const result = await apply(planData, {
-      dryRun: flags.dryRun,
-      yes: flags.yes,
+      dryRun,
+      yes,
     });
 
     if (flags.json) {

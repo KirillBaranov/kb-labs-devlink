@@ -39,7 +39,7 @@ export const commands: CommandManifest[] = [
         name: 'cwd',
         type: 'string',
         description: 'Working directory',
-        default: process.cwd(),
+        default: undefined,
       },
       {
         name: 'verbose',
@@ -66,7 +66,7 @@ export const commands: CommandManifest[] = [
         name: 'cwd',
         type: 'string',
         description: 'Working directory',
-        default: process.cwd(),
+        default: undefined,
       },
       {
         name: 'force',
@@ -93,7 +93,7 @@ export const commands: CommandManifest[] = [
         name: 'cwd',
         type: 'string',
         description: 'Working directory',
-        default: process.cwd(),
+        default: undefined,
       },
       {
         name: 'json',

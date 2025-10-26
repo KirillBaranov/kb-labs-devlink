@@ -15,6 +15,8 @@ export async function buildPlan(
 ): Promise<DevLinkPlan> {
   const policy: DevLinkPolicy = await mergePolicy(index.rootDir, options.policy);
 
+  console.log("policy", policy);
+
   const diagnostics: string[] = [];
   if (graph.cycles.length > 0) {
     diagnostics.push(`Dependency cycles detected: ${graph.cycles.length} cycle(s)`);

@@ -3,12 +3,17 @@ import { status } from '../api';
 
 export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
   try {
-    const cwd = flags.cwd ?? process.cwd();
+    // Parse flags with defaults (following template pattern)
+    const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
+    const roots = flags.roots ? flags.roots.split(',') : undefined;
+    const consumer = flags.consumer;
+    const warningLevel = flags.warningLevel as any;
+    
     const result = await status({
       rootDir: cwd,
-      roots: flags.roots ? flags.roots.split(',') : undefined,
-      consumer: flags.consumer,
-      warningLevel: flags.warningLevel as any,
+      roots,
+      consumer,
+      warningLevel,
     });
 
     if (flags.json) {

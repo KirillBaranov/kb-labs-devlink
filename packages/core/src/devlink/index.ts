@@ -8,3 +8,5 @@ export { updateDeps } from "./update";
 export * from "./lock";
 export * from "./journal";
 export * from "./status";
+export * from "./watch";
+export type { AllDevLinkEvents } from "./watch/events";

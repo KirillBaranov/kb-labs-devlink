@@ -128,6 +128,8 @@ export async function freeze(
       logger.debug("Old lock.json backed up", { backupDir });
     }
 
+    console.log("Executing freeze with merge");
+
     // Execute freeze with merge
     await freezeToLockMerged(plan, cwd, {
       replace,

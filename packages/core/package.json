@@ -9,7 +9,13 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./api": "./dist/api/index.js",
+    "./utils/*": "./dist/utils/*.js",
+    "./dist/*": "./dist/*"
+  },
+  "kb": {
+    "commandsManifest": "./dist/cli.manifest.js"
   },
   "author": {
     "name": "Kirill Baranov",
@@ -54,7 +60,7 @@
     "test:watch": "vitest -c ../../vitest.config.ts"
   },
   "devDependencies": {
-    "@kb-labs/devkit": "link:../../../kb-labs-devkit",
+    "@kb-labs/devkit": "workspace:*",
     "@types/node": "^24.7.0",
     "tsup": "^8",
     "tsx": "^4.20.5",

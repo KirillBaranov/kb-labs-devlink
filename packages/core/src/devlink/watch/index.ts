@@ -1,16 +1,9 @@
-export { watchDevLink, DevLinkWatcher } from "./watch";
+// Экспорт новой версии как единственной
+export { DevLinkWatcher, watchDevLink } from "./watch";
 export { detectMode } from "./mode-detector";
-export { detectBuildCommand, detectWatchPaths, shouldIgnorePath } from "./build-detector";
+export { detectBuildCommands, detectWatchPaths, shouldIgnorePath, getWatchPatterns } from "./build-detector";
 export { buildReverseDependencyMap, getDirectConsumers, filterProviders, filterConsumers } from "./dependency-resolver";
-export { refreshConsumers, type RefreshResult } from "./consumer-refresher";
-export type {
-  WatchOptions,
-  WatchState,
-  WatchMode,
-  WatchEvent,
-  WatchEventType,
-  ProviderConfig,
-  ConsumerConfig,
-  DryRunResult,
-} from "./types";
+export * from "./types";
+export * from "./events";
+export type { AllDevLinkEvents } from "./events";
 

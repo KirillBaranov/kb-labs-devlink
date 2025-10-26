@@ -46,7 +46,7 @@ describe("build-detector", () => {
       expect(command).toBe("custom-build-command");
     });
 
-    it("should use tsc -b when tsconfig.json has references", async () => {
+    it("should use pnpm run build when scripts.build exists (ignoring tsconfig references)", async () => {
       const pkgDir = join(tempDir, "pkg");
       await fsp.mkdir(pkgDir, { recursive: true });
       
@@ -54,7 +54,7 @@ describe("build-detector", () => {
         join(pkgDir, "package.json"),
         JSON.stringify({
           name: "test-pkg",
-          scripts: { build: "tsc" },
+          scripts: { build: "tsup" },
         })
       );
 
@@ -74,7 +74,7 @@ describe("build-detector", () => {
       };
 
       const command = await detectBuildCommand(pkgRef);
-      expect(command).toBe("tsc -b");
+      expect(command).toBe("pnpm run build");
     });
 
     it("should use pnpm run build when scripts.build exists", async () => {
@@ -101,7 +101,7 @@ describe("build-detector", () => {
       expect(command).toBe("pnpm run build");
     });
 
-    it("should fallback to pnpm -C <dir> build", async () => {
+    it("should return null when no build script found", async () => {
       const pkgDir = join(tempDir, "pkg");
       await fsp.mkdir(pkgDir, { recursive: true });
 
@@ -114,8 +114,7 @@ describe("build-detector", () => {
       };
 
       const command = await detectBuildCommand(pkgRef);
-      expect(command).toContain("pnpm -C");
-      expect(command).toContain("build");
+      expect(command).toBe(null);
     });
 
     it("should handle array override in devlink.watch.build", async () => {

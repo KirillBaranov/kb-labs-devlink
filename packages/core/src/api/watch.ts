@@ -1,8 +1,8 @@
 import { logger } from "../utils/logger";
 import { watchDevLink as watchDevLinkImpl, DevLinkWatcher } from "../devlink/watch";
-import type { WatchOptions, WatchEvent, DryRunResult } from "../devlink/watch";
+import type { WatchOptions, DryRunResult, AllDevLinkEvents } from "../devlink/watch";
 
-export type { WatchOptions, WatchEvent, DryRunResult };
+export type { WatchOptions, DryRunResult, AllDevLinkEvents as WatchEvent };
 
 /**
  * Start watching providers and refresh consumers on changes
