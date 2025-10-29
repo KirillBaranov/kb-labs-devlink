@@ -48,7 +48,7 @@
   "dependencies": {
     "chokidar": "^4.0.0",
     "p-queue": "^8.0.0",
-    "@kb-labs/shared-cli-ui": "workspace:*"
+    "glob": "^11.0.0"
   },
   "scripts": {
     "clean": "rimraf dist",

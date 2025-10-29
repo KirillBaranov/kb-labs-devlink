@@ -5,6 +5,7 @@ import { logger } from "../utils/logger";
 import { runPreflightChecks } from "../utils/preflight";
 import { exists, readJson } from "../utils/fs";
 import { writeLastApplyJournal } from "../devlink/journal";
+import { detectStaleArtifacts } from "../devlink/artifacts";
 import {
   createBackupTimestamp,
   AdvisoryLock,
@@ -73,6 +74,38 @@ export async function apply(
   });
 
   warnings.push(...preflight.warnings);
+
+  // Validate clean state
+  const artifacts = await detectStaleArtifacts(plan.rootDir);
+  if (artifacts.yalc.length > 0 || artifacts.conflicts.length > 0) {
+    warnings.push(
+      `Found stale artifacts from previous operations:\n` +
+      `  - Yalc: ${artifacts.yalc.length} files\n` +
+      `  - Conflicts: ${artifacts.conflicts.length} packages\n` +
+      `\n` +
+      `Recommend running: kb devlink clean`
+    );
+    
+    if (!opts.yes && !opts.dryRun) {
+      // In interactive mode, ask if user wants to clean
+      const { createInterface } = await import('readline');
+      const rl = createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+      
+      const answer = await new Promise<string>((resolve) => {
+        rl.question('Clean stale artifacts before apply? (y/N): ', resolve);
+      });
+      rl.close();
+      
+      if (answer.toLowerCase().startsWith('y')) {
+        const { clean } = await import('../clean/clean');
+        await clean(plan.rootDir, { hard: false });
+        logger.info('Cleaned stale artifacts');
+      }
+    }
+  }
 
   if (!preflight.shouldProceed) {
     const cancelledMessage = "✋ Operation cancelled by preflight checks";

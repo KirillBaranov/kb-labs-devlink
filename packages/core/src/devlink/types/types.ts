@@ -13,6 +13,7 @@ export interface PackageRef {
   name: string;
   version: string;
   dir: string;            // абсолютный путь
+  rootDir?: string;       // корневая директория репозитория (для определения same-repo)
   private?: boolean;
   pkg: PackageJson;
 }

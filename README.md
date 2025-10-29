@@ -134,8 +134,9 @@ DevLink scans repositories to build a dependency graph:
 
 ### Linking Modes
 
-- **`auto`** (default): Links local packages when available, falls back to npm
-- **`local`**: Forces all dependencies to use local versions (fails if not found)
+- **`auto`** (default): Smart mode - uses `workspace:` for same-monorepo packages, `link:` for cross-repo packages
+- **`local`**: Forces all dependencies to use local versions with `link:` protocol (fails if not found)
+- **`workspace`**: Uses `workspace:` protocol for local packages, falls back to npm for others
 - **`npm`**: Uses only npm registry versions (no local linking)
 
 ### Version Policies
@@ -238,6 +239,8 @@ Example warning:
 | `devlink unfreeze`        | Remove lockfile and return to auto mode       |
 | `devlink status`          | Show current linking state                    |
 | `devlink clean`           | Remove temporary files and caches             |
+| `devlink clean --hard`    | Also remove lock file                          |
+| `devlink clean --deep`    | Deep clean including global yalc store         |
 | `devlink rollback`        | Restore previous state from backup            |
 
 ### CLI Options
@@ -479,6 +482,7 @@ devlink rollback
 - **Links not working?** — Run `devlink status --check` to see if state has drifted.
 - **Version conflicts?** — Use `--pin=exact` to force exact versions, or adjust upgrade policy.
 - **Need to start fresh?** — Run `devlink clean` to remove all DevLink state, then re-scan.
+- **Stale artifacts?** — Run `devlink clean --deep` to remove yalc artifacts and protocol conflicts.
 - **Blocked by git warnings?** — Commit your changes or use `--yes` to proceed anyway.
 - **Need to restore a backup?** — Check `.kb/devlink/backups/` for timestamped copies of your files.
 

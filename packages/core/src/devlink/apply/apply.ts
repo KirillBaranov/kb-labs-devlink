@@ -5,6 +5,7 @@ import { saveState } from "../../state";
 import type { DevlinkState } from "../../types";
 import { writeLastApply } from "../journal/last-apply";
 import { discover } from "../../discovery";
+import { clean } from "../../clean/clean";
 import { promises as fsp } from "fs";
 import { join } from "path";
 import * as path from "node:path";
@@ -327,6 +328,16 @@ async function applyManifestPatches(
   return { changed, touchedManifests, appliedPatches };
 }
 
+// Helper to clean yalc artifacts after apply
+async function cleanYalcArtifacts(rootDir: string): Promise<void> {
+  try {
+    await clean(rootDir, { hard: false, deep: false });
+    logger.debug("Cleaned yalc artifacts after apply");
+  } catch (err) {
+    logger.warn("Failed to clean yalc artifacts", err);
+  }
+}
+
 // ───────────────────────────────────────────────────────────────────────────────
 // APPLY
 // ───────────────────────────────────────────────────────────────────────────────
@@ -399,9 +410,9 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
             // section will be resolved during apply
           });
         } else {
-          // Use yalc for non-local modes (yalc, workspace fallback)
-          // TODO: Add workspace: protocol support for same-monorepo packages
-          b.yalcAdd.add(a.dep);
+          // For workspace/auto/npm modes, use workspace: or npm
+          // This will be handled by the use-workspace and use-npm cases
+          // No yalc needed
         }
         break;
       }
@@ -522,6 +533,11 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
   // Apply manifest patches
   const patchResult = await applyManifestPatches(allManifestPatches, plan, opts.dryRun || false);
   const needsInstall = patchResult.changed > 0;
+
+  // Post-apply cleanup: remove yalc artifacts if not in yalc mode
+  if (!opts.dryRun && errors.length === 0) {
+    await cleanYalcArtifacts(plan.rootDir);
+  }
 
   // 3) Save state & journal
   const state = await discover({ roots: [plan.rootDir] });

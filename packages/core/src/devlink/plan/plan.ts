@@ -122,7 +122,35 @@ export async function buildPlan(
         };
       }
     }
-    // mode === "npm"
+    // mode === "auto"
+    else if (options.mode === "auto") {
+      if (providerLocal) {
+        // Determine: same rootDir (monorepo) or different repos
+        const consumerPkg = index.packages[consumer];
+        const providerPkg = index.packages[provider];
+        const consumerRootDir = consumerPkg?.rootDir;
+        const providerRootDir = providerPkg?.rootDir;
+        
+        const sameRepo = consumerRootDir && providerRootDir && consumerRootDir === providerRootDir;
+        
+        action = {
+          target: consumer,
+          dep: provider,
+          kind: sameRepo ? "use-workspace" : "link-local",
+          reason: sameRepo 
+            ? "auto: same monorepo → workspace"
+            : "auto: cross-repo → link",
+        };
+      } else {
+        action = {
+          target: consumer,
+          dep: provider,
+          kind: "use-npm",
+          reason: "auto: external → npm",
+        };
+      }
+    }
+    // mode === "npm" (default fallback)
     else {
       action = {
         target: consumer,

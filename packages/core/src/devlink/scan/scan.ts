@@ -55,16 +55,35 @@ function buildGraph(state: DevlinkState): PackageGraph {
 /**
  * Build a package index for quick access
  */
-function buildIndex(state: DevlinkState, rootDir: string): PackageIndex {
+function buildIndex(state: DevlinkState, rootDir: string, allRoots?: string[]): PackageIndex {
   const packages: Record<string, any> = {};
   const byDir: Record<string, any> = {};
 
+  // Build a map of repo -> rootDir from state packages
+  // We'll determine rootDir by finding which root contains each package's path
+  const roots = allRoots || [rootDir];
+  
+  // Helper to find rootDir for a package path
+  function findRootDir(pkgPath: string): string {
+    // Find the root that contains this path
+    for (const r of roots) {
+      if (pkgPath.startsWith(r)) {
+        return r;
+      }
+    }
+    // Fallback: try to determine from repo name or use rootDir
+    // For same-repo detection, we can also group by repo field
+    return rootDir;
+  }
+
   for (const pkg of state.packages) {
+    const pkgRootDir = findRootDir(pkg.pathAbs);
     const ref = {
       manifest: {},
       name: pkg.name,
       version: pkg.version,
       dir: pkg.pathAbs,
+      rootDir: pkgRootDir,
       private: pkg.private,
       pkg: { name: pkg.name, version: pkg.version },
     };
@@ -108,7 +127,8 @@ export async function scanPackages(opts: ScanOptions): Promise<{
 
   const graph = buildGraph(state);
   // choose first root as index root (for deterministic behavior)
-  const index = buildIndex(state, roots?.length ? roots[0]! : rootDir);
+  const indexRootDir = roots?.length ? roots[0]! : rootDir;
+  const index = buildIndex(state, indexRootDir, roots?.length ? roots : undefined);
 
   logger.info(`Scan complete`, {
     packages: Object.keys(index.packages).length,

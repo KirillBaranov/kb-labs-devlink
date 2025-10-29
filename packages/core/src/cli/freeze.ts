@@ -1,8 +1,8 @@
 import type { CommandModule } from './types';
 import { scanAndPlan } from '../api';
 import { freeze } from '../api';
-import { box, keyValue, formatTiming, safeSymbols, safeColors } from '@kb-labs/shared-cli-ui';
-import { Loader } from '@kb-labs/shared-cli-ui';
+import { box, keyValue, formatTiming, safeSymbols, safeColors, displayArtifactsCompact, Loader } from '@kb-labs/shared-cli-ui';
+import { discoverArtifacts } from '../devlink/status';
 
 export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
   const startTime = Date.now();
@@ -83,8 +83,12 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
           'Lock file': '.kb/devlink/lock.json',
           'Time': formatTiming(totalTime),
         });
+
+        // Show artifacts after freeze
+        const artifacts = await discoverArtifacts(cwd);
+        const artifactsInfo = displayArtifactsCompact(artifacts, { maxItems: 5 });
         
-        const output = box('Freeze Workspace', summary);
+        const output = box('Freeze Workspace', [...summary, ...artifactsInfo]);
         ctx.presenter.write(output);
         
         if (freezeResult.diagnostics && freezeResult.diagnostics.length > 0) {

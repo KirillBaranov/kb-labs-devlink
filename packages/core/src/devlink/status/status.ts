@@ -1,10 +1,20 @@
-import { promises as fsp } from "node:fs";
 import path from "node:path";
+import { promises as fsp } from "node:fs";
 import { readJson, exists } from "../../utils/fs";
 import { logger } from "../../utils/logger";
 import type { PackageJson } from "../../types";
 import type { LockFile } from "../lock/freeze";
 import type { LastApplyJournal } from "../journal/last-apply";
+import { findYalcArtifacts, detectProtocolConflicts } from "../artifacts";
+import { 
+  createCommandRegistry, 
+  generateDevlinkSuggestions, 
+  generateQuickActions,
+  MultiCLISuggestions,
+  createKBLabsCommandDiscovery,
+  type CommandSuggestion 
+} from "@kb-labs/shared-cli-ui";
+import { getDevlinkCommandIds } from '../commands.js';
 
 // ============================================================================
 // Type System
@@ -24,7 +34,9 @@ export type WarningCode =
   | "WORKSPACE_DRIFT"
   | "PEER_CONFLICTS"
   | "STALE_PLAN"
-  | "UNINSTALL_NEEDED";
+  | "UNINSTALL_NEEDED"
+  | "STALE_YALC_ARTIFACTS"
+  | "PROTOCOL_CONFLICTS";
 
 export type ModeSource = "plan" | "lock" | "inferred" | "unknown";
 
@@ -92,13 +104,16 @@ export interface HealthWarning {
   suggestionId?: string;
 }
 
-export interface ActionSuggestion {
-  id: string;
-  command: string;
-  args: string[];
+export interface ActionSuggestion extends CommandSuggestion {
+  // Inherits from CommandSuggestion in shared-cli-ui
+}
+
+export interface ArtifactInfo {
+  name: string;
+  path: string;
+  size?: number;
+  modified?: Date;
   description: string;
-  impact: Impact;
-  when: string; // WarningCode or condition
 }
 
 export interface StatusReportV2 {
@@ -108,6 +123,7 @@ export interface StatusReportV2 {
   diff: ManifestDiff;
   warnings: HealthWarning[];
   suggestions: ActionSuggestion[];
+  artifacts: ArtifactInfo[];
   timings: {
     readFs: number;
     readLock: number;
@@ -120,6 +136,85 @@ export interface StatusReportV2 {
 // ============================================================================
 // Utility Functions
 // ============================================================================
+
+/**
+ * Discover generated artifacts in the workspace
+ */
+export async function discoverArtifacts(rootDir: string): Promise<ArtifactInfo[]> {
+  const artifacts: ArtifactInfo[] = [];
+  const devlinkDir = path.join(rootDir, '.kb', 'devlink');
+  
+  // Check if devlink directory exists
+  if (!(await exists(devlinkDir))) {
+    return artifacts;
+  }
+
+  // Common artifact patterns
+  const artifactPatterns = [
+    {
+      name: 'Plan',
+      pattern: 'last-plan.json',
+      description: 'Last generated plan'
+    },
+    {
+      name: 'Lock',
+      pattern: 'lock.json', 
+      description: 'Dependency lock file'
+    },
+    {
+      name: 'State',
+      pattern: 'state.json',
+      description: 'Current state'
+    },
+    {
+      name: 'Last Apply',
+      pattern: 'last-apply.json',
+      description: 'Last apply journal'
+    },
+    {
+      name: 'Last Freeze',
+      pattern: 'last-freeze.json',
+      description: 'Last freeze journal'
+    }
+  ];
+
+  for (const artifact of artifactPatterns) {
+    const artifactPath = path.join(devlinkDir, artifact.pattern);
+    if (await exists(artifactPath)) {
+      try {
+        const stats = await fsp.stat(artifactPath);
+        artifacts.push({
+          name: artifact.name,
+          path: artifactPath,
+          size: stats.size,
+          modified: stats.mtime,
+          description: artifact.description
+        });
+      } catch (error) {
+        // Skip if can't read stats
+      }
+    }
+  }
+
+  // Check for backup directory
+  const backupDir = path.join(devlinkDir, 'backup');
+  if (await exists(backupDir)) {
+    try {
+      const backupFiles = await fsp.readdir(backupDir);
+      if (backupFiles.length > 0) {
+        artifacts.push({
+          name: 'Backups',
+          path: backupDir,
+          description: `${backupFiles.length} backup files`
+        });
+      }
+    } catch (error) {
+      // Skip if can't read backup directory
+    }
+  }
+
+  return artifacts;
+}
 
 /**
  * Format milliseconds as human-readable age (e.g., "15m ago", "2h ago", "3d ago")
@@ -315,20 +410,20 @@ export async function readLastOperation(rootDir: string): Promise<LastOperationI
     // Both exist, choose most recent
     if (applyDate >= freezeDate) {
       lastOp = "apply";
-      lastTs = applyJournal?.ts || applyDate.toISOString();
+      lastTs = applyJournal?.ts || (applyDate ? applyDate.toISOString() : null);
       lastPath = applyPath;
     } else {
       lastOp = "freeze";
-      lastTs = freezeJournal?.ts || freezeDate.toISOString();
+      lastTs = freezeJournal?.ts || (freezeDate ? freezeDate.toISOString() : null);
       lastPath = freezePath;
     }
   } else if (applyDate) {
     lastOp = "apply";
-    lastTs = applyJournal?.ts || applyDate.toISOString();
+    lastTs = applyJournal?.ts || (applyDate ? applyDate.toISOString() : null);
     lastPath = applyPath;
   } else if (freezeDate) {
     lastOp = "freeze";
-    lastTs = freezeJournal?.ts || freezeDate.toISOString();
+    lastTs = freezeJournal?.ts || (freezeDate ? freezeDate.toISOString() : null);
     lastPath = freezePath;
   }
 
@@ -763,69 +858,76 @@ export async function computeHealthWarnings(
     }
   }
 
-  // 6-11: Placeholder for other health checks
-  // These would require more context or are optional for MVP
+  // 6. Check for yalc artifacts in non-yalc mode
+  if (context.mode !== "yalc") {
+    const yalcArtifacts = await findYalcArtifacts(rootDir);
+    if (yalcArtifacts.length > 0) {
+      warnings.push({
+        code: "STALE_YALC_ARTIFACTS",
+        severity: "warn",
+        message: `Found ${yalcArtifacts.length} yalc artifacts in non-yalc mode`,
+        examples: yalcArtifacts.slice(0, 3),
+        suggestionId: "CLEAN_YALC",
+      });
+    }
+  }
+
+  // 7. Check protocol conflicts
+  const protocolConflicts = await detectProtocolConflicts(rootDir, lock);
+  if (protocolConflicts.length > 0) {
+    warnings.push({
+      code: "PROTOCOL_CONFLICTS",
+      severity: "error",
+      message: `Found ${protocolConflicts.length} packages with conflicting protocols`,
+      examples: protocolConflicts.slice(0, 3).map(c => 
+        `${c.package}: ${c.protocols.join(' vs ')}`
+      ),
+      suggestionId: "FIX_PROTOCOLS",
+    });
+  }
 
   return warnings;
 }
 
 /**
- * 6. Compute action suggestions
+ * Get available devlink commands from manifest
  */
-export function computeSuggestions(
+function getDevlinkCommands(): string[] {
+  return getDevlinkCommandIds();
+}
+
+/**
+ * 6. Compute action suggestions using shared utilities
+ */
+export async function computeSuggestions(
   warnings: HealthWarning[],
-  context: StatusContext
-): ActionSuggestion[] {
-  const suggestions: ActionSuggestion[] = [];
+  context: StatusContext,
+  rootDir: string = process.cwd()
+): Promise<ActionSuggestion[]> {
+  try {
+    // Try to use dynamic command discovery
+    const dynamicDiscovery = createKBLabsCommandDiscovery();
+    const availableCommands = await dynamicDiscovery.getAvailableCommands();
+    
+    if (availableCommands.length > 0) {
+      // Use dynamically discovered commands
+      const registry = createCommandRegistry(availableCommands);
+      const warningCodes = new Set(warnings.map((w) => w.code));
+      const suggestions = generateDevlinkSuggestions(warningCodes, context, registry);
+      
+      return suggestions;
+    }
+  } catch (error) {
+    console.warn('Dynamic command discovery failed, falling back to static:', error);
+  }
 
-  // Map warnings to suggestions
+  // Fallback to static devlink commands
+  const devlinkCommands = getDevlinkCommands();
+  const registry = createCommandRegistry(devlinkCommands);
   const warningCodes = new Set(warnings.map((w) => w.code));
-
-  if (warningCodes.has("LOCK_MISMATCH")) {
-    suggestions.push({
-      id: "SYNC_LOCK",
-      command: "kb devlink apply-lock",
-      args: ["--yes"],
-      description: "Sync manifests to lock",
-      impact: "safe",
-      when: "LOCK_MISMATCH",
-    });
-  }
-
-  if (warningCodes.has("BACKUP_MISSING")) {
-    suggestions.push({
-      id: "CREATE_BACKUP",
-      command: "kb devlink freeze",
-      args: ["--replace"],
-      description: "Create a fresh backup",
-      impact: "safe",
-      when: "BACKUP_MISSING",
-    });
-  }
-
-  if (warningCodes.has("STALE_LOCK")) {
-    suggestions.push({
-      id: "REFRESH_LOCK",
-      command: "kb devlink freeze",
-      args: ["--pin=caret"],
-      description: "Refresh lock file",
-      impact: "safe",
-      when: "STALE_LOCK",
-    });
-  }
-
-  // Undo suggestion
-  if (context.undo.available) {
-    suggestions.push({
-      id: "UNDO_LAST",
-      command: "kb devlink undo",
-      args: [],
-      description: "Revert last operation",
-      impact: "safe",
-      when: "BACKUP_AVAILABLE",
-    });
-  }
-
+  const suggestions = generateDevlinkSuggestions(warningCodes, context, registry);
+  
   return suggestions;
 }
+
 

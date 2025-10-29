@@ -9,6 +9,7 @@ import {
   computeManifestDiff,
   computeHealthWarnings,
   computeSuggestions,
+  discoverArtifacts,
   type StatusReportV2,
   type LockStats,
 } from "../devlink/status";
@@ -28,6 +29,7 @@ export interface StatusOptions {
  */
 export async function status(opts: StatusOptions): Promise<StatusReport> {
   const startTime = Date.now();
+  const rootDir = opts.rootDir;
   let readFsTime = 0;
   let readLockTime = 0;
   let diffTime = 0;
@@ -129,8 +131,13 @@ export async function status(opts: StatusOptions): Promise<StatusReport> {
       filteredWarnings = [];
     }
 
-    const suggestions = computeSuggestions(filteredWarnings, context);
+    const suggestions = await computeSuggestions(filteredWarnings, context, rootDir);
     warningsTime += Date.now() - warningsStart;
+
+    // Discover artifacts
+    const artifactsStart = Date.now();
+    const artifacts = await discoverArtifacts(rootDir);
+    const artifactsTime = Date.now() - artifactsStart;
 
     const totalTime = Date.now() - startTime;
 
@@ -141,6 +148,7 @@ export async function status(opts: StatusOptions): Promise<StatusReport> {
       diff: diffResult,
       warnings: filteredWarnings,
       suggestions,
+      artifacts,
       timings: {
         readFs: readFsTime,
         readLock: readLockTime,
@@ -200,6 +208,7 @@ export async function status(opts: StatusOptions): Promise<StatusReport> {
         },
       ],
       suggestions: [],
+      artifacts: [],
       timings: {
         readFs: readFsTime,
         readLock: readLockTime,

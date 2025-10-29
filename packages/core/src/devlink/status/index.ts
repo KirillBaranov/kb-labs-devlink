@@ -6,6 +6,7 @@ export {
   computeManifestDiff,
   computeHealthWarnings,
   computeSuggestions,
+  discoverArtifacts,
   formatAge,
   normalizeDisplayPath,
   pLimit,
@@ -20,5 +21,6 @@ export {
   type ManifestDiff,
   type HealthWarning,
   type ActionSuggestion,
+  type ArtifactInfo,
   type StatusReportV2,
 } from "./status";

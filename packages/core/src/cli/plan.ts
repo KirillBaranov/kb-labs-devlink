@@ -1,6 +1,7 @@
 import type { CommandModule } from './types';
 import { scanAndPlan } from '../api';
-import { box, keyValue, formatTiming, TimingTracker } from '@kb-labs/shared-cli-ui';
+import { box, keyValue, formatTiming, TimingTracker, displayArtifactsCompact } from '@kb-labs/shared-cli-ui';
+import { discoverArtifacts } from '../devlink/status';
 
 export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
   const tracker = new TimingTracker();
@@ -47,7 +48,11 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
           `Total: ${formatTiming(totalTime)}`,
         ];
 
-        const output = box('DevLink Plan', [...summary, '', ...timingInfo]);
+        // Show artifacts if plan was created
+        const artifacts = await discoverArtifacts(cwd);
+        const artifactsInfo = displayArtifactsCompact(artifacts, { maxItems: 5 });
+
+        const output = box('DevLink Plan', [...summary, '', ...timingInfo, ...artifactsInfo]);
         ctx.presenter.write(output);
         
         if (result.diagnostics.length > 0) {

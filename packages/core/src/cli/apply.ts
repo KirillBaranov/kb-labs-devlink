@@ -2,7 +2,8 @@ import type { CommandModule } from './types';
 import { apply } from '../api';
 import { readJson } from '../utils/fs';
 import { join } from 'node:path';
-import { box, keyValue, formatTiming, TimingTracker } from '@kb-labs/shared-cli-ui';
+import { box, keyValue, formatTiming, TimingTracker, safeSymbols, safeColors, displayArtifactsCompact } from '@kb-labs/shared-cli-ui';
+import { discoverArtifacts } from '../devlink/status';
 
 export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
   const tracker = new TimingTracker();
@@ -48,19 +49,31 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
         'Mode': dryRun ? 'Dry Run' : 'Apply',
       });
 
-      const output = box('DevLink Apply', [...summary, '', `Time: ${formatTiming(totalTime)}`]);
+      // Show artifacts after apply
+      const artifacts = await discoverArtifacts(cwd);
+      const artifactsInfo = displayArtifactsCompact(artifacts, { maxItems: 5 });
+
+      const output = box('DevLink Apply', [...summary, '', `Time: ${formatTiming(totalTime)}`, ...artifactsInfo]);
       ctx.presenter.write(output);
       
       if (result.needsInstall) {
         ctx.presenter.write('');
-        ctx.presenter.write('⚠️  Run: pnpm install');
+        ctx.presenter.write(`${safeColors.warning('⚠️')} Run: pnpm install`);
       }
       
       if (result.diagnostics && result.diagnostics.length > 0) {
         ctx.presenter.write('');
-        ctx.presenter.write('Diagnostics:');
+        ctx.presenter.write(safeColors.info('Diagnostics:'));
         result.diagnostics.forEach(msg => 
-          ctx.presenter.write(`  • ${msg}`)
+          ctx.presenter.write(`  ${safeSymbols.info} ${msg}`)
+        );
+      }
+      
+      if (result.warnings && result.warnings.length > 0) {
+        ctx.presenter.write('');
+        ctx.presenter.write(safeColors.warning('Warnings:'));
+        result.warnings.forEach(msg => 
+          ctx.presenter.write(`  ${safeSymbols.warning} ${msg}`)
         );
       }
     }

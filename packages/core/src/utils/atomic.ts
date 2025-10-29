@@ -98,6 +98,8 @@ export class AdvisoryLock {
       timestamp: new Date().toISOString(),
     };
 
+    // Ensure directory exists
+    await fsp.mkdir(path.dirname(this.lockPath), { recursive: true });
     await fsp.writeFile(this.lockPath, JSON.stringify(lockData), "utf-8");
   }
 

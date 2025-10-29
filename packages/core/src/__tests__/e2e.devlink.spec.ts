@@ -7,7 +7,7 @@ import { buildPlan } from "../devlink/plan";
 import { applyPlan } from "../devlink/apply";
 import { freezeToLock } from "../devlink/lock";
 import { undoLastApply, readLastApply } from "../devlink/journal";
-import { getStatus } from "../devlink/status";
+import { status } from "../api";
 import * as runCommandModule from "../utils/runCommand";
 
 describe("DevLink E2E", () => {
@@ -194,7 +194,7 @@ describe("DevLink E2E", () => {
   it("should handle policy.deny correctly", async () => {
     const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, {
-      mode: "local",
+      mode: "auto",
       policy: {
         deny: ["@test/a"],
       },
@@ -273,11 +273,11 @@ describe("DevLink E2E", () => {
     const plan = await buildPlan(index, graph, { mode: "local" });
     await applyPlan(plan, { dryRun: false });
 
-    const status = await getStatus(tmpRoot);
+    const statusResult = await status({ rootDir: tmpRoot });
 
-    expect(status.packages).toBeGreaterThan(0);
-    expect(status.entries).toBeDefined();
-    expect(status.entries.length).toBeGreaterThan(0);
+    expect(statusResult.lock.consumers).toBeGreaterThan(0);
+    expect(statusResult.lock.entries).toBeDefined();
+    expect(statusResult.lock.entries.length).toBeGreaterThan(0);
   });
 });
 

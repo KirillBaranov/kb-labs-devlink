@@ -74,6 +74,22 @@ export const commands: CommandManifest[] = [
         alias: 'f',
         description: 'Force apply even if conflicts exist',
       },
+      {
+        name: 'yes',
+        type: 'boolean',
+        alias: 'y',
+        description: 'Skip confirmation prompts',
+      },
+      {
+        name: 'dry-run',
+        type: 'boolean',
+        description: 'Show what would be applied without making changes',
+      },
+      {
+        name: 'json',
+        type: 'boolean',
+        description: 'Output in JSON format',
+      },
     ],
     examples: [
       'kb devlink apply',
@@ -100,10 +116,27 @@ export const commands: CommandManifest[] = [
         type: 'boolean',
         description: 'Output in JSON format',
       },
+      {
+        name: 'verbose',
+        type: 'boolean',
+        description: 'Show detailed dependency information',
+      },
+      {
+        name: 'sources',
+        type: 'boolean',
+        description: 'Show dependency sources breakdown',
+      },
+      {
+        name: 'diff',
+        type: 'boolean',
+        description: 'Show detailed diff information',
+      },
     ],
     examples: [
       'kb devlink status',
       'kb devlink status --json',
+      'kb devlink status --verbose',
+      'kb devlink status --sources --diff',
     ],
     loader: async () => import('./cli/status'),
   },
@@ -265,5 +298,43 @@ export const commands: CommandManifest[] = [
       'kb devlink watch --mode local --verbose',
     ],
     loader: async () => import('./cli/watch'),
+  },
+  {
+    manifestVersion: '1.0',
+    id: 'devlink:clean',
+    group: 'devlink',
+    describe: 'Clean workspace artifacts',
+    longDescription: 'Remove temporary files, caches, and stale artifacts from workspace',
+    requires: ['@kb-labs/devlink-core'],
+    flags: [
+      {
+        name: 'cwd',
+        type: 'string',
+        description: 'Working directory',
+        default: undefined,
+      },
+      {
+        name: 'hard',
+        type: 'boolean',
+        description: 'Also remove lock file',
+      },
+      {
+        name: 'deep',
+        type: 'boolean',
+        description: 'Deep clean including global yalc store',
+      },
+      {
+        name: 'json',
+        type: 'boolean',
+        description: 'Output in JSON format',
+      },
+    ],
+    examples: [
+      'kb devlink clean',
+      'kb devlink clean --hard',
+      'kb devlink clean --deep',
+      'kb devlink clean --hard --deep',
+    ],
+    loader: async () => import('./cli/clean'),
   },
 ];
