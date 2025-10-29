@@ -196,6 +196,12 @@ export async function discoverArtifacts(rootDir: string): Promise<ArtifactInfo[]
     }
   }
 
+  // Sort artifacts by modification time (newest first)
+  artifacts.sort((a, b) => {
+    if (!a.modified || !b.modified) return 0;
+    return b.modified.getTime() - a.modified.getTime();
+  });
+
   // Check for backup directory
   const backupDir = path.join(devlinkDir, 'backup');
   if (await exists(backupDir)) {

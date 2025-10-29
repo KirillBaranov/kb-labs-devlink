@@ -2,6 +2,8 @@ import type { CommandModule } from './types';
 import { scanAndPlan } from '../api';
 import { box, keyValue, formatTiming, TimingTracker, displayArtifactsCompact } from '@kb-labs/shared-cli-ui';
 import { discoverArtifacts } from '../devlink/status';
+import { writeJson } from '../utils/fs';
+import { join } from 'node:path';
 
 export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
   const tracker = new TimingTracker();
@@ -35,6 +37,10 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
       });
     } else {
       if (result.plan) {
+        // Save plan to last-plan.json
+        const lastPlanPath = join(cwd, '.kb', 'devlink', 'last-plan.json');
+        await writeJson(lastPlanPath, result.plan);
+
         const summary = keyValue({
           'Mode': mode,
           'Actions': result.plan.actions.length,
@@ -48,7 +54,7 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
           `Total: ${formatTiming(totalTime)}`,
         ];
 
-        // Show artifacts if plan was created
+        // Show artifacts after saving plan
         const artifacts = await discoverArtifacts(cwd);
         const artifactsInfo = displayArtifactsCompact(artifacts, { maxItems: 5 });
 
