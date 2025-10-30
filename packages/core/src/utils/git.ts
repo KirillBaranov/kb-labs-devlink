@@ -44,7 +44,9 @@ export async function checkGitDirty(
     const files = lines.map((line) => {
       // Format: "XY filename" where X and Y are status codes
       return line.slice(3).trim();
-    });
+    })
+    // Filter out any files in node_modules - they shouldn't be tracked anyway
+    .filter((file) => !file.includes("/node_modules/"));
 
     return {
       isDirty: files.length > 0,
