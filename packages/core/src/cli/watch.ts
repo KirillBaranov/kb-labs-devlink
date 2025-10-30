@@ -11,6 +11,7 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
     const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
     const mode = (flags.mode as 'npm' | 'local' | 'auto') ?? 'auto';
     const verbose = !!flags.verbose;
+    const dryRun = !!(flags['dry-run'] || flags.dryRun);
     
     if (jsonMode) {
       ctx.presenter.json({
@@ -44,6 +45,7 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
       rootDir: cwd,
       mode,
       verbose,
+      dryRun,
     });
     
     let changeCount = 0;
@@ -94,6 +96,13 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
     
     // Start watching
     await watcher.start();
+    
+    // For dry-run, exit immediately after showing results
+    if (dryRun) {
+      ctx.presenter.write('');
+      ctx.presenter.write(safeColors.success('✓') + ' Dry-run complete');
+      return 0;
+    }
     
     // Handle graceful shutdown
     const shutdown = async () => {
