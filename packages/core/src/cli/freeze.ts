@@ -2,7 +2,7 @@ import type { CommandModule } from './types';
 import { scanAndPlan } from '../api';
 import { freeze } from '../api';
 import { box, keyValue, formatTiming, safeSymbols, safeColors, displayArtifactsCompact, Loader } from '@kb-labs/shared-cli-ui';
-import { discoverArtifacts } from '../devlink/status';
+import { discoverArtifacts, determineMode } from '../devlink/status';
 
 export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
   const startTime = Date.now();
@@ -24,10 +24,14 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
       loader.start();
     }
     
-    // Step 1: Scan and plan
+    // Determine current mode from state/lock
+    const { mode } = await determineMode(cwd);
+    const currentMode = mode === 'unknown' ? 'auto' : mode;
+    
+    // Step 1: Scan and plan with current mode
     const scanResult = await scanAndPlan({
       rootDir: cwd,
-      mode: 'auto',
+      mode: currentMode,
     });
     
     if (!scanResult.ok) {

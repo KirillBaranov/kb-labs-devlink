@@ -421,14 +421,21 @@ export async function freezeToLockMerged(
       // Get version
       let version: string;
       
-      if (source === "workspace" && providerMeta?.version) {
+      // First, try to get declared version from manifest
+      const declared = await getDeclaredCached(consumerDir, dep);
+      
+      if (declared) {
+        // Use declared version from manifest as-is
+        version = declared;
+      } else if (source === "workspace" && providerMeta?.version) {
+        // Fallback for workspace packages if not in manifest
         version = `workspace:*`;
       } else if (source === "link" && providerDir) {
+        // Fallback for link packages if not in manifest
         const linkPath = path.relative(consumerDir, providerDir);
         version = `link:${linkPath}`;
       } else {
         // External packages: resolve and pin
-        const declared = await getDeclaredCached(consumerDir, dep);
         let installed: string | undefined;
         
         try {
@@ -440,7 +447,7 @@ export async function freezeToLockMerged(
           logger.debug("Failed to resolve installed version", { dep, err });
         }
         
-        const base = declared ?? installed ?? "latest";
+        const base = installed ?? "latest";
         version = base === "latest" ? "latest" : pinVersion(base, pin);
       }
       

@@ -46,7 +46,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@kb-labs/shared-cli-ui": "0.1.0",
+    "@kb-labs/shared-cli-ui": "link:../../../kb-labs-shared/packages/cli-ui",
     "chokidar": "^4.0.0",
     "glob": "^11.0.0",
     "p-queue": "^8.0.0"

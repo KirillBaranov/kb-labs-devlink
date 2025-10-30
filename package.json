@@ -57,7 +57,7 @@
     ]
   },
   "devDependencies": {
-    "@kb-labs/devkit": "0.1.0",
+    "@kb-labs/devkit": "link:../kb-labs-devkit",
     "@typescript-eslint/eslint-plugin": "^8",
     "@typescript-eslint/parser": "^8",
     "@vitest/coverage-v8": "^3",
