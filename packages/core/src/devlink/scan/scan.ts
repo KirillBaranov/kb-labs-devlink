@@ -76,8 +76,32 @@ function buildIndex(state: DevlinkState, rootDir: string, allRoots?: string[]): 
     return rootDir;
   }
 
+  // Helper to find rootDir for a package based on its repo field
+  function findRootDirByRepo(pkg: any): string {
+    // If we have multiple roots, try to determine the actual repo root by looking at the package's repo field
+    if (roots && roots.length > 1) {
+      const repoName = pkg.repo;
+      if (repoName) {
+        for (const r of roots) {
+          const rootName = r.split('/').pop();
+          if (rootName === repoName) {
+            return r;
+          }
+        }
+      }
+    }
+    
+    // Fallback: try to find by path
+    return findRootDir(pkg.pathAbs);
+  }
+
+  // Debug: log roots and package info
+  if (roots && roots.length > 1) {
+    logger.info('Multiple roots detected', { roots, rootDir });
+  }
+
   for (const pkg of state.packages) {
-    const pkgRootDir = findRootDir(pkg.pathAbs);
+    const pkgRootDir = findRootDirByRepo(pkg);
     const ref = {
       manifest: {},
       name: pkg.name,
@@ -128,7 +152,7 @@ export async function scanPackages(opts: ScanOptions): Promise<{
   const graph = buildGraph(state);
   // choose first root as index root (for deterministic behavior)
   const indexRootDir = roots?.length ? roots[0]! : rootDir;
-  const index = buildIndex(state, indexRootDir, roots?.length ? roots : undefined);
+  const index = buildIndex(state, indexRootDir, roots);
 
   logger.info(`Scan complete`, {
     packages: Object.keys(index.packages).length,

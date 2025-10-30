@@ -89,14 +89,14 @@ function resolveDepSection(
   // First, check if already exists in manifest (prefer fact over graph)
   if (pkg) {
     for (const sec of ["dependencies", "devDependencies", "peerDependencies"] as const) {
-      if (pkg[sec]?.[provider]) return sec;
+      if (pkg[sec]?.[provider]) {return sec;}
     }
   }
   
   // Fallback to graph edge type
   const edge = plan.graph?.edges?.find(e => e.from === consumer && e.to === provider);
-  if (edge?.type === "dev") return "devDependencies";
-  if (edge?.type === "peer") return "peerDependencies";
+  if (edge?.type === "dev") {return "devDependencies";}
+  if (edge?.type === "peer") {return "peerDependencies";}
   return "dependencies";
 }
 
@@ -300,7 +300,7 @@ async function applyManifestPatches(
         
         // Only patch if value actually changes
         if (cur !== patch.to) {
-          if (!pkg[section]) pkg[section] = {};
+          if (!pkg[section]) {pkg[section] = {};}
           pkg[section][patch.depName] = patch.to;
           manifestChanged = true;
           changed++;

@@ -91,10 +91,10 @@ export async function detectProtocolConflicts(
       
       for (const section of sections) {
         const deps = pkg[section];
-        if (!deps || typeof deps !== 'object') continue;
+        if (!deps || typeof deps !== 'object') {continue;}
         
         for (const [depName, spec] of Object.entries(deps)) {
-          if (typeof spec !== 'string') continue;
+          if (typeof spec !== 'string') {continue;}
           
           let protocol = 'npm';
           if (spec.startsWith('link:')) {

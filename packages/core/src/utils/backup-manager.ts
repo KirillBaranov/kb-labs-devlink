@@ -208,8 +208,8 @@ export async function listBackups(
     const backups: BackupInfo[] = [];
 
     for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      if (entry.name.startsWith("_")) continue; // Skip special dirs like _quarantine
+      if (!entry.isDirectory()) {continue;}
+      if (entry.name.startsWith("_")) {continue;} // Skip special dirs like _quarantine
 
       const timestamp = entry.name;
       const backupPath = path.join(backupsDir, timestamp);
@@ -280,7 +280,7 @@ export async function listBackups(
     backups.sort((a, b) => {
       const aDate = parseBackupTimestamp(a.timestamp).date;
       const bDate = parseBackupTimestamp(b.timestamp).date;
-      if (!aDate || !bDate) return 0;
+      if (!aDate || !bDate) {return 0;}
       return bDate.getTime() - aDate.getTime();
     });
 
@@ -416,7 +416,7 @@ export async function cleanupOldBackups(
 
   for (let i = 0; i < sortedBackups.length; i++) {
     const backup = sortedBackups[i];
-    if (!backup) continue;
+    if (!backup) {continue;}
 
     // Check if should keep
     const backupIsProtected = backup.isProtected;
@@ -460,7 +460,7 @@ export async function setBackupProtection(
   isProtected: boolean
 ): Promise<boolean> {
   const backup = await getBackup(rootDir, timestamp);
-  if (!backup || !backup.valid) return false;
+  if (!backup || !backup.valid) {return false;}
 
   const metadataPath = path.join(backup.path, "backup.json");
   
@@ -517,7 +517,7 @@ async function executeConcurrent<T>(
     const p = task().then((result) => {
       results.push(result);
       const idx = executing.indexOf(p);
-      if (idx > -1) executing.splice(idx, 1);
+      if (idx > -1) {executing.splice(idx, 1);}
     });
 
     executing.push(p);

@@ -229,10 +229,10 @@ export async function apply(
         
         await Promise.all(batch.map(async (pkgName) => {
           const pkgRef = plan.index.packages[pkgName];
-          if (!pkgRef || !pkgRef.dir) return;
+          if (!pkgRef || !pkgRef.dir) {return;}
           
           const pkgJsonPath = join(pkgRef.dir, "package.json");
-          if (!(await exists(pkgJsonPath))) return;
+          if (!(await exists(pkgJsonPath))) {return;}
           
           const buffer = await fsp.readFile(pkgJsonPath);
           const checksum = computeChecksum(buffer.toString("utf-8"));

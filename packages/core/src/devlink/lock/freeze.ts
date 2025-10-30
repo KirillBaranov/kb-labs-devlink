@@ -101,7 +101,7 @@ function extractRootsFromPlan(plan: DevLinkPlan): string[] {
   const roots = new Set<string>();
   
   for (const pkgMeta of Object.values(plan.index.packages)) {
-    if (!pkgMeta.dir) continue;
+    if (!pkgMeta.dir) {continue;}
     const segments = pkgMeta.dir.split(path.sep);
     if (segments.length > 0 && segments[0]) {
       roots.add(segments[0]);
@@ -158,7 +158,7 @@ function migrateLockV1toV2(oldLock: any): LockFile | null {
 async function readLock(lockPath: string): Promise<LockFile | null> {
   try {
     const fileExists = await exists(lockPath);
-    if (!fileExists) return null;
+    if (!fileExists) {return null;}
     
     const content = await fsp.readFile(lockPath, "utf-8");
     const parsed = JSON.parse(content);
@@ -351,7 +351,7 @@ export async function freezeToLockMerged(
   // Process each consumer
   for (const [consumerName, actions] of actionsByConsumer) {
     const consumerMeta = plan.index.packages[consumerName];
-    if (!consumerMeta) continue;
+    if (!consumerMeta) {continue;}
     
     const consumerDir = consumerMeta.dir;
     const manifestPath = path.relative(resolvedRootDir, path.join(consumerDir, "package.json"));
@@ -432,9 +432,9 @@ export async function freezeToLockMerged(
         let installed: string | undefined;
         
         try {
-          installed = resolveInstalledVersionNear(consumerDir, dep);
+          installed = await resolveInstalledVersionNear(consumerDir, dep);
           if (!installed && plan.rootDir !== consumerDir) {
-            installed = resolveInstalledVersionNear(plan.rootDir, dep);
+            installed = await resolveInstalledVersionNear(plan.rootDir, dep);
           }
         } catch (err) {
           logger.debug("Failed to resolve installed version", { dep, err });
@@ -447,7 +447,7 @@ export async function freezeToLockMerged(
       // Track changes for dry-run
       if (dryRun) {
         const change = changes[consumerName];
-        if (!change) continue; // Should not happen
+        if (!change) {continue;} // Should not happen
         
         const oldDep = oldDeps[dep];
         if (!oldDep) {

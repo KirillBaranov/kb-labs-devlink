@@ -104,8 +104,12 @@ export interface HealthWarning {
   suggestionId?: string;
 }
 
-export interface ActionSuggestion extends CommandSuggestion {
-  // Inherits from CommandSuggestion in shared-cli-ui
+export interface ActionSuggestion {
+  id: string;
+  command: string;
+  args: string[];
+  description: string;
+  impact: 'safe' | 'disruptive';
 }
 
 export interface ArtifactInfo {
@@ -196,12 +200,6 @@ export async function discoverArtifacts(rootDir: string): Promise<ArtifactInfo[]
     }
   }
 
-  // Sort artifacts by modification time (newest first)
-  artifacts.sort((a, b) => {
-    if (!a.modified || !b.modified) return 0;
-    return b.modified.getTime() - a.modified.getTime();
-  });
-
   // Check for backup directory
   const backupDir = path.join(devlinkDir, 'backup');
   if (await exists(backupDir)) {
@@ -231,9 +229,9 @@ export function formatAge(ageMs: number): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (days > 0) return `${days}d ago`;
-  if (hours > 0) return `${hours}h ago`;
-  if (minutes > 0) return `${minutes}m ago`;
+  if (days > 0) {return `${days}d ago`;}
+  if (hours > 0) {return `${hours}h ago`;}
+  if (minutes > 0) {return `${minutes}m ago`;}
   return `${seconds}s ago`;
 }
 
@@ -276,7 +274,7 @@ export async function pLimit<T>(
  * Parse ISO timestamp to Date or null
  */
 function parseTimestamp(ts: string | undefined): Date | null {
-  if (!ts) return null;
+  if (!ts) {return null;}
   try {
     return new Date(ts);
   } catch {
@@ -344,10 +342,10 @@ export async function determineMode(rootDir: string): Promise<{
 
   for (const consumer of Object.values(lock.consumers)) {
     for (const entry of Object.values(consumer.deps)) {
-          if (entry.source === "workspace") workspaceCount++;
-          else if (entry.source === "link") linkCount++;
-          else if (entry.source === "npm") npmCount++;
-          else if (entry.source === "github") githubCount++;
+          if (entry.source === "workspace") {workspaceCount++;}
+          else if (entry.source === "link") {linkCount++;}
+          else if (entry.source === "npm") {npmCount++;}
+          else if (entry.source === "github") {githubCount++;}
         }
       }
 
@@ -589,10 +587,10 @@ export async function computeManifestDiff(
     samples: { added: [], updated: [], removed: [], mismatched: [] },
   };
 
-  if (!lock) return emptyDiff;
+  if (!lock) {return emptyDiff;}
 
   const consumers = Object.keys(lock.consumers);
-  if (consumers.length === 0) return emptyDiff;
+  if (consumers.length === 0) {return emptyDiff;}
 
   // Filter consumers if needed
   const filteredConsumers = options?.consumer
@@ -629,7 +627,7 @@ export async function computeManifestDiff(
   // Compute diff per consumer
   const byConsumer: Record<string, ConsumerDiff> = {};
   let totalAdded = 0;
-  let totalUpdated = 0;
+  const totalUpdated = 0;
   let totalRemoved = 0;
   let totalMismatched = 0;
 
@@ -639,10 +637,10 @@ export async function computeManifestDiff(
   const allMismatched: DiffEntry[] = [];
 
   for (const { consumerName, manifest } of manifestResults) {
-    if (!manifest) continue;
+    if (!manifest) {continue;}
 
     const consumer = lock.consumers[consumerName];
-    if (!consumer) continue;
+    if (!consumer) {continue;}
     
     const lockDeps = consumer.deps;
 
@@ -689,7 +687,7 @@ export async function computeManifestDiff(
     for (const depName of lockDepNames) {
       if (!manifestDepNames.has(depName)) {
         const lockEntry = lockDeps[depName];
-        if (!lockEntry) continue;
+        if (!lockEntry) {continue;}
         
         const entry: DiffEntry = {
           consumer: consumerName,
@@ -708,7 +706,7 @@ export async function computeManifestDiff(
     for (const depName of manifestDepNames) {
       if (lockDepNames.has(depName)) {
         const lockEntry = lockDeps[depName];
-        if (!lockEntry) continue;
+        if (!lockEntry) {continue;}
         
         const lockVersion = lockEntry.version;
         const manifestVersion = manifestDeps[depName] as string;

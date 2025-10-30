@@ -72,6 +72,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@kb-labs/shared-cli-ui':
+        specifier: file:../../../kb-labs-shared/packages/cli-ui
+        version: file:../kb-labs-shared/packages/cli-ui
       chokidar:
         specifier: ^4.0.0
         version: 4.0.3
@@ -82,9 +85,6 @@ importers:
         specifier: ^8.0.0
         version: 8.1.1
     devDependencies:
-      '@kb-labs/devkit':
-        specifier: link:../../../kb-labs-devkit
-        version: link:../../../kb-labs-devkit
       '@types/node':
         specifier: ^24.7.0
         version: 24.9.1
@@ -522,6 +522,10 @@ packages:
       typescript: ^5.9.2
       typescript-eslint: ^8.44.0
       vitest: ^3.2.4
+
+  '@kb-labs/shared-cli-ui@file:../kb-labs-shared/packages/cli-ui':
+    resolution: {directory: ../kb-labs-shared/packages/cli-ui, type: directory}
+    engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -2630,6 +2634,8 @@ snapshots:
       - eslint-import-resolver-webpack
       - eslint-plugin-import-x
       - supports-color
+
+  '@kb-labs/shared-cli-ui@file:../kb-labs-shared/packages/cli-ui': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:

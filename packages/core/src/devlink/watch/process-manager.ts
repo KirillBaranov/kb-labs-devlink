@@ -76,7 +76,7 @@ export class ProcessManager extends EventEmitter {
    */
   private parseOutput(pkg: string, line: string): void {
     const process = this.processes.get(pkg);
-    if (!process) return;
+    if (!process) {return;}
     
     // Debounce повторных "finished"
     if (this.endPatterns.some(p => p.test(line))) {
@@ -109,7 +109,7 @@ export class ProcessManager extends EventEmitter {
    */
   private setupQuietWindow(pkg: string): void {
     const process = this.processes.get(pkg);
-    if (!process) return;
+    if (!process) {return;}
     
     // Сбрасываем таймер при каждом событии
     if (process.quietWindowTimer) {
@@ -128,7 +128,7 @@ export class ProcessManager extends EventEmitter {
    */
   onDistChange(pkg: string, path: string): void {
     const process = this.processes.get(pkg);
-    if (!process) return;
+    if (!process) {return;}
     
     // Если это dist/** файл, сбрасываем quiet window
     if (path.startsWith('dist/') || path.startsWith('dist\\')) {
@@ -141,7 +141,7 @@ export class ProcessManager extends EventEmitter {
    */
   private onBuildStart(pkg: string): void {
     const process = this.processes.get(pkg);
-    if (!process) return;
+    if (!process) {return;}
     
     process.state = 'building';
     process.lastBuildStart = Date.now();
@@ -155,7 +155,7 @@ export class ProcessManager extends EventEmitter {
    */
   private onBuildEnd(pkg: string): void {
     const process = this.processes.get(pkg);
-    if (!process) return;
+    if (!process) {return;}
     
     process.state = 'idle';
     process.lastBuildEnd = Date.now();
@@ -183,7 +183,7 @@ export class ProcessManager extends EventEmitter {
    */
   async stopProcess(pkg: string): Promise<void> {
     const process = this.processes.get(pkg);
-    if (!process) return;
+    if (!process) {return;}
     
     logger.info("Stopping dev process", { package: pkg });
     

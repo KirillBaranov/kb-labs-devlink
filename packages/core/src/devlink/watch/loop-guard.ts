@@ -149,7 +149,7 @@ export class LoopGuard extends EventEmitter {
    */
   recordSuccess(pkg: string): void {
     const state = this.states.get(pkg);
-    if (!state) return;
+    if (!state) {return;}
     
     const now = Date.now();
     state.lastSuccessfulBuild = now;
@@ -170,7 +170,7 @@ export class LoopGuard extends EventEmitter {
    */
   canBuild(pkg: string): boolean {
     const state = this.states.get(pkg);
-    if (!state) return true;
+    if (!state) {return true;}
     
     const now = Date.now();
     
@@ -187,7 +187,7 @@ export class LoopGuard extends EventEmitter {
    */
   shouldUseDegradedHashing(pkg: string): boolean {
     const state = this.states.get(pkg);
-    if (!state) return false;
+    if (!state) {return false;}
     
     const now = Date.now();
     return !!(state.degradedHashingUntil && state.degradedHashingUntil > now);
@@ -208,7 +208,7 @@ export class LoopGuard extends EventEmitter {
    */
   forceAllow(pkg: string): void {
     const state = this.states.get(pkg);
-    if (!state) return;
+    if (!state) {return;}
     
     state.cooldownUntil = undefined;
     state.cooldownMs = 5000; // сброс к начальному значению

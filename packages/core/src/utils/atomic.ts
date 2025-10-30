@@ -28,7 +28,7 @@ export async function writeJsonAtomic<T>(
     try {
       await fsp.unlink(filePath);
     } catch (err: any) {
-      if (err.code !== "ENOENT") throw err;
+      if (err.code !== "ENOENT") {throw err;}
     }
   }
 

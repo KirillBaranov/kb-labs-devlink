@@ -69,7 +69,7 @@ export async function clean(cwd = process.cwd(), opts: CleanOptions = {}) {
     const globalYalc = join(home, '.yalc');
     if (await removeIfExists(globalYalc)) {
       removed.push('~/.yalc (global)');
-    }
+  }
   }
   
   

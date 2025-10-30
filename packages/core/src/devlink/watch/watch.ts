@@ -129,7 +129,7 @@ export class DevLinkWatcher extends EventEmitter {
    * Остановка watch системы
    */
   async stop(): Promise<void> {
-    if (this.isShuttingDown) return;
+    if (this.isShuttingDown) {return;}
     this.isShuttingDown = true;
     
     logger.info("Stopping DevLink watch v2");
@@ -194,7 +194,7 @@ export class DevLinkWatcher extends EventEmitter {
     const providers = new Map<string, ProviderConfig>();
     for (const providerName of filteredProviderNames) {
       const pkgRef = index.packages[providerName];
-      if (!pkgRef) continue;
+      if (!pkgRef) {continue;}
       
       const commands = await detectBuildCommands(pkgRef);
       const watchPaths = detectWatchPaths(pkgRef);
@@ -229,7 +229,7 @@ export class DevLinkWatcher extends EventEmitter {
     const consumers = new Map<string, ConsumerConfig>();
     for (const consumerName of filteredConsumerNames) {
       const pkgRef = index.packages[consumerName];
-      if (!pkgRef) continue;
+      if (!pkgRef) {continue;}
       
       const hasRefreshScript = await this.hasRefreshScript(pkgRef);
       
@@ -269,7 +269,7 @@ export class DevLinkWatcher extends EventEmitter {
    * Preflight validation
    */
   private async performPreflightValidation(): Promise<void> {
-    if (!this.state) return;
+    if (!this.state) {return;}
     
     const packages = Array.from(this.state.providers.values()).map(provider => ({
       package: provider.name,
@@ -302,7 +302,7 @@ export class DevLinkWatcher extends EventEmitter {
    * Запуск dev-процессов
    */
   private async startDevProcesses(): Promise<void> {
-    if (!this.state) return;
+    if (!this.state) {return;}
     
     for (const [providerName, provider] of this.state.providers) {
       if (provider.devCommand) {
@@ -315,7 +315,7 @@ export class DevLinkWatcher extends EventEmitter {
    * Запуск file watchers
    */
   private async startFileWatchers(): Promise<void> {
-    if (!this.state) return;
+    if (!this.state) {return;}
     
     for (const [providerName, provider] of this.state.providers) {
       await this.startProviderWatcher(providerName, provider);
@@ -416,7 +416,7 @@ export class DevLinkWatcher extends EventEmitter {
     
     // 1. Check self-write suppression
     const provider = this.state?.providers.get(pkg);
-    if (!provider) return;
+    if (!provider) {return;}
     
     const relPath = relative(provider.dir, path);
     if (this.selfWriteSuppressor.isSuppressed(relPath)) {
@@ -446,7 +446,7 @@ export class DevLinkWatcher extends EventEmitter {
     const changes = this.pendingChanges.get(pkg) || [];
     this.pendingChanges.delete(pkg);
     
-    if (changes.length === 0) return;
+    if (changes.length === 0) {return;}
     
     // 1. Apply delta to signature computer
     const computer = this.getSignatureComputer(pkg);
@@ -488,7 +488,7 @@ export class DevLinkWatcher extends EventEmitter {
     
     // 5. Enqueue build (with cancel in-flight)
     const provider = this.state?.providers.get(pkg);
-    if (!provider) return;
+    if (!provider) {return;}
     
     const task = {
       package: pkg,
@@ -512,7 +512,7 @@ export class DevLinkWatcher extends EventEmitter {
   private getSignatureComputer(pkg: string): SignatureComputer {
     if (!this.signatureComputers.has(pkg)) {
       const provider = this.state?.providers.get(pkg);
-      if (!provider) throw new Error(`Provider not found: ${pkg}`);
+      if (!provider) {throw new Error(`Provider not found: ${pkg}`);}
       
       this.signatureComputers.set(pkg, new SignatureComputer(provider.dir));
     }
@@ -534,7 +534,7 @@ export class DevLinkWatcher extends EventEmitter {
    * Настройка relink стратегии
    */
   private setupRelinkStrategy(): void {
-    if (!this.state) return;
+    if (!this.state) {return;}
     
     let strategy;
     switch (this.state.mode) {

@@ -98,7 +98,7 @@ export function matchPartialTimestamp(
  */
 export function formatTimestampAge(ts: string): string {
   const parsed = parseBackupTimestamp(ts);
-  if (!parsed.date) return "unknown";
+  if (!parsed.date) {return "unknown";}
 
   const ageMs = Date.now() - parsed.date.getTime();
   const seconds = Math.floor(ageMs / 1000);
@@ -106,9 +106,9 @@ export function formatTimestampAge(ts: string): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (days > 0) return `${days}d ago`;
-  if (hours > 0) return `${hours}h ago`;
-  if (minutes > 0) return `${minutes}m ago`;
+  if (days > 0) {return `${days}d ago`;}
+  if (hours > 0) {return `${hours}h ago`;}
+  if (minutes > 0) {return `${minutes}m ago`;}
   return `${seconds}s ago`;
 }
 

@@ -88,7 +88,7 @@ export class BuildOrchestrator extends EventEmitter {
    */
   async cancelBuild(pkg: string): Promise<void> {
     const task = this.inFlight.get(pkg);
-    if (!task || !task.process) return;
+    if (!task || !task.process) {return;}
     
     logger.debug("Cancelling in-flight build", { package: pkg });
     
@@ -257,7 +257,7 @@ export class BuildOrchestrator extends EventEmitter {
    * Retry логика (1 попытка в 30 сек если сигнатура изменилась)
    */
   private shouldRetry(task: BuildTask, result: BuildResult): boolean {
-    if (result.success) return false;
+    if (result.success) {return false;}
     
     const retryInfo = this.retryAttempts.get(task.package);
     const now = Date.now();

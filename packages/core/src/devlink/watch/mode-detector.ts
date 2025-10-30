@@ -114,15 +114,15 @@ async function scanForLinkPrefixes(rootDir: string): Promise<boolean> {
     
     for (const dir of searchDirs) {
       const fullPath = join(rootDir, dir);
-      if (!(await exists(fullPath))) continue;
+      if (!(await exists(fullPath))) {continue;}
 
       const entries = await fsp.readdir(fullPath, { withFileTypes: true });
       
       for (const entry of entries) {
-        if (!entry.isDirectory()) continue;
+        if (!entry.isDirectory()) {continue;}
         
         const pkgJsonPath = join(fullPath, entry.name, "package.json");
-        if (!(await exists(pkgJsonPath))) continue;
+        if (!(await exists(pkgJsonPath))) {continue;}
 
         try {
           const content = await fsp.readFile(pkgJsonPath, "utf-8");

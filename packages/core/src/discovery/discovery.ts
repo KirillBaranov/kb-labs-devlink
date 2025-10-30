@@ -42,14 +42,15 @@ async function listDirImmediate(p: string) {
  * This does not perform any network calls; it inspects the nearest node_modules by resolution.
  * Returns "latest" when the package cannot be resolved from that root.
  */
-export function resolveInstalledVersionNear(rootDir: string, pkgName: string): string {
+export async function resolveInstalledVersionNear(rootDir: string, pkgName: string): Promise<string> {
   try {
     // Bind a require to the provided rootDir
     // Using createRequire ensures resolution semantics from that folder.
     const req = createRequire(join(rootDir, 'package.json'));
     const pkgJsonPath = req.resolve(`${pkgName}/package.json`);
     // Read synchronously to avoid changing outer async signatures
-    const raw = require('fs').readFileSync(pkgJsonPath, 'utf8');
+    const { readFileSync } = await import('fs');
+    const raw = readFileSync(pkgJsonPath, 'utf8');
     const parsed = JSON.parse(raw);
     return typeof parsed?.version === 'string' ? parsed.version : 'latest';
   } catch {
@@ -138,7 +139,11 @@ export async function discover(options: DiscoverOptions = {}): Promise<DevlinkSt
     // 2) Попробовать распознать «контейнер воркспейса»
     const containerChildren = await detectWorkspaceContainerRoots(cwdRoot);
     if (containerChildren.length >= 2) {
-      logger.info('workspace-container detected', { container: cwdRoot, children: containerChildren.length });
+      logger.info('workspace-container detected', { 
+        container: cwdRoot, 
+        children: containerChildren.length,
+        repos: containerChildren.map(r => r.split('/').pop())
+      });
       roots = containerChildren;
     } else {
       // 3) Обычный сценарий: работаем с текущим репозиторием как с одиночным root
@@ -192,6 +197,11 @@ export async function discover(options: DiscoverOptions = {}): Promise<DevlinkSt
     hashes,
   };
 
-  logger.info('discovered packages', { count: packages.length, deps: depsAll.length, roots: roots.length });
+  logger.info('discovered packages', { 
+    count: packages.length, 
+    deps: depsAll.length, 
+    roots: roots.length,
+    rootNames: roots.map(r => r.split('/').pop())
+  });
   return state;
 }

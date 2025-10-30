@@ -46,7 +46,7 @@ function mergeStrArrays(a?: string[], b?: string[]): string[] {
  * Нормализуем и сливаем поля политики
  */
 function mergeObjects(base: DevLinkPolicy, over?: Partial<DevLinkPolicy>): DevLinkPolicy {
-  if (!over) return base;
+  if (!over) {return base;}
 
   return {
     allow: mergeStrArrays(base.allow, over.allow),

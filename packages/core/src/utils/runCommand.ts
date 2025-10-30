@@ -61,13 +61,13 @@ export function runCommand(
     }
 
     child.on("error", (err) => {
-      if (timer) clearTimeout(timer);
+      if (timer) {clearTimeout(timer);}
       logger.error("runCommand error", { cmd, cwd, err });
       reject(err);
     });
 
     child.on("close", (code) => {
-      if (timer) clearTimeout(timer);
+      if (timer) {clearTimeout(timer);}
       logger.debug("runCommand done", { cmd, cwd, code, stdoutLen: stdout.length, stderrLen: stderr.length });
 
       if (code === 0 || allowFail) {

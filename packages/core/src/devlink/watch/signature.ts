@@ -93,7 +93,7 @@ export class SignatureComputer {
     // Хешируем только указанные пути
     for (const path of pathsToHash) {
       const cached = this.metaCache.get(path);
-      if (!cached) continue;
+      if (!cached) {continue;}
       
       try {
         const fullPath = join(this.pkgDir, path);

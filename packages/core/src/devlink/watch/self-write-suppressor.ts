@@ -53,7 +53,7 @@ export class SelfWriteSuppressor {
    */
   isSuppressed(path: string): boolean {
     const entry = this.cache.get(path);
-    if (!entry) return false;
+    if (!entry) {return false;}
     
     const now = Date.now();
     if (entry.expiresAt <= now) {

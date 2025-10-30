@@ -57,7 +57,7 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
         'Generated': result.lock.generatedAt ? 
           formatRelativeTime(result.lock.generatedAt) : 'never',
       });
-
+      
       // Add dependency sources breakdown (only if --sources flag or verbose)
       const sourcesInfo = (showSources || verbose) && result.lock.sources && Object.keys(result.lock.sources).length > 0
         ? keyValue({

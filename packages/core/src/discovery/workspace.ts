@@ -30,9 +30,24 @@ async function hasAnyDir(dir: string, names: string[]) {
   return false;
 }
 
-/** Simple monorepo detector (packages/* or apps/*) */
+/** Simple monorepo detector (packages/* or apps/*) 
+ * A directory is considered a monorepo if it has packages/apps AND workspace config files */
 export async function isMonorepoRoot(rootAbs: string): Promise<boolean> {
-  return hasAnyDir(rootAbs, ["packages", "apps"]);
+  const hasMonorepoDirs = await hasAnyDir(rootAbs, ["packages", "apps"]);
+  if (!hasMonorepoDirs) { return false; }
+  
+  // Check for workspace configuration files
+  // If it has workspace config, it's an active monorepo
+  const hasWorkspaceConfig = await hasFile(rootAbs, "pnpm-workspace.yaml") ||
+                               await hasFile(rootAbs, "lerna.json") ||
+                               await hasFile(rootAbs, "nx.json") ||
+                               await hasFile(rootAbs, "rush.json") ||
+                               await hasFile(rootAbs, "workspaces") ||
+                               await hasFile(rootAbs, "package-lock.json") ||
+                               await hasFile(rootAbs, "yarn.lock") ||
+                               await hasFile(rootAbs, "pnpm-lock.yaml");
+  
+  return hasWorkspaceConfig;
 }
 
 /** Return child directories of base, which have package.json */
@@ -57,7 +72,11 @@ export async function findChildRepoRoots(baseAbs: string): Promise<string[]> {
 }
 
 
-/** Detect workspace container roots */
+/** Detect workspace container roots 
+ * A workspace container is a directory that contains multiple child repositories.
+ * It should NOT be a monorepo itself (doesn't have packages/apps structure with workspace config).
+ * Examples: kb-labs folder containing kb-labs-cli, kb-labs-devlink, etc.
+ */
 export async function detectWorkspaceContainerRoots(rootAbs: string): Promise<string[]> {
   // 1) is monorepo? → no container
   if (await isMonorepoRoot(rootAbs)) { return []; }
@@ -65,7 +84,22 @@ export async function detectWorkspaceContainerRoots(rootAbs: string): Promise<st
   // 2) has multiple child repos?
   const children = await findChildRepoRoots(rootAbs);
   if (children.length >= 2) {
-    return children;
+    // Filter out child repos that are themselves workspace containers (e.g., kb-labs inside kb-labs)
+    // We want only the actual product repositories, not another workspace container
+    const filteredChildren: string[] = [];
+    for (const child of children) {
+      // If a child is also a workspace container (has multiple child repos), skip it
+      const childChildren = await findChildRepoRoots(child);
+      // But if the child itself is a monorepo with packages/apps, include it
+      const isChildMonorepo = await isMonorepoRoot(child);
+      if (childChildren.length < 2 || isChildMonorepo) {
+        filteredChildren.push(child);
+      }
+    }
+    
+    if (filteredChildren.length >= 2) {
+      return filteredChildren;
+    }
   }
 
   // 3) not a container

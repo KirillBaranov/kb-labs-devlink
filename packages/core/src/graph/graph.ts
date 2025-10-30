@@ -20,7 +20,7 @@ function detectCycles(nodes: string[], edges: GraphEdge[]): string[][] {
   const adj = new Map<string, string[]>();
   nodes.forEach(n => adj.set(n, []));
   edges.forEach(e => {
-    if (adj.has(e.from)) adj.get(e.from)!.push(e.to);
+    if (adj.has(e.from)) {adj.get(e.from)!.push(e.to);}
   });
 
   const visited = new Set<string>();
@@ -39,7 +39,7 @@ function detectCycles(nodes: string[], edges: GraphEdge[]): string[][] {
       } else if (stack.has(v)) {
         // цикл: берём хвост от v до u
         const start = path.indexOf(v);
-        if (start >= 0) cycles.push(path.slice(start));
+        if (start >= 0) {cycles.push(path.slice(start));}
       }
     }
 
@@ -48,7 +48,7 @@ function detectCycles(nodes: string[], edges: GraphEdge[]): string[][] {
   }
 
   for (const n of nodes) {
-    if (!visited.has(n)) dfs(n);
+    if (!visited.has(n)) {dfs(n);}
   }
   return cycles;
 }
@@ -61,7 +61,7 @@ function topoOrder(nodes: string[], edges: GraphEdge[]): string[] {
   edges.forEach(e => inDeg.set(e.to, (inDeg.get(e.to) ?? 0) + 1));
 
   const q: string[] = [];
-  inDeg.forEach((deg, n) => { if (deg === 0) q.push(n); });
+  inDeg.forEach((deg, n) => { if (deg === 0) {q.push(n);} });
 
   const res: string[] = [];
   while (q.length) {
@@ -71,7 +71,7 @@ function topoOrder(nodes: string[], edges: GraphEdge[]): string[] {
       if (e.from === u) {
         const d = (inDeg.get(e.to) ?? 0) - 1;
         inDeg.set(e.to, d);
-        if (d === 0) q.push(e.to);
+        if (d === 0) {q.push(e.to);}
       }
     }
   }

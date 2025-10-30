@@ -83,7 +83,7 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
           'Lock file': '.kb/devlink/lock.json',
           'Time': formatTiming(totalTime),
         });
-
+        
         // Show artifacts after freeze
         const artifacts = await discoverArtifacts(cwd);
         const artifactsInfo = displayArtifactsCompact(artifacts, { maxItems: 5 });
