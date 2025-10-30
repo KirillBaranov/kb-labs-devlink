@@ -225,6 +225,17 @@ export const commands: CommandManifest[] = [
         alias: 'f',
         description: 'Force switch even if conflicts exist',
       },
+      {
+        name: 'yes',
+        type: 'boolean',
+        alias: 'y',
+        description: 'Skip confirmation prompts',
+      },
+      {
+        name: 'dry-run',
+        type: 'boolean',
+        description: 'Show what would be switched without making changes',
+      },
     ],
     examples: [
       'kb devlink switch --mode local',
