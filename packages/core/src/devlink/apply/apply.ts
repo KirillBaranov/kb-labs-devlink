@@ -453,8 +453,9 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
         const kind = resolveDepKind(plan, a.target, a.dep);
         b.yalcRemove.add(a.dep); // safety: снять yalc перед npm
         
-        // Get version from lockfile or package.json
-        const npmVersion = plan.index?.packages?.[a.dep]?.version || "*";
+        // Get version from action's 'to' field, or fallback to current version
+        // The plan should have set 'to' to the desired version
+        const npmVersion = a.to || a.from || "*";
         
         if (kind === "dev") { b.npmDev.add(a.dep); }
         else if (kind === "peer") { b.npmPeer.add(a.dep); }
