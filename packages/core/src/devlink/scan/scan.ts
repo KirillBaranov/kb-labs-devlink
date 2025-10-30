@@ -41,7 +41,13 @@ function buildGraph(state: DevlinkState): PackageGraph {
   const cycles = nodes.filter((n) => !sorted.includes(n));
   const hasCycles = cycles.length > 0;
   if (hasCycles) {
+    // Find and display cycle details
+    const cycleEdges = findCycleEdges(cycles, edges);
     logger.warn(`Dependency cycles detected`, cycles);
+    if (cycleEdges.length > 0) {
+      const cyclePath = cycleEdges.map(e => `${e.from} -> ${e.to}`).join(' -> ');
+      logger.warn(`Cycle path: ${cyclePath}`);
+    }
   }
 
   return {
@@ -50,6 +56,63 @@ function buildGraph(state: DevlinkState): PackageGraph {
     cycles: hasCycles ? [cycles] : [],
     topological: sorted,
   };
+}
+
+/**
+ * Find edges that form a cycle from nodes in the cycle
+ */
+function findCycleEdges(cycleNodes: string[], edges: Array<{ from: string; to: string }>): Array<{ from: string; to: string }> {
+  if (cycleNodes.length === 0) return [];
+  
+  // Build adjacency map
+  const adjMap = new Map<string, string[]>();
+  for (const edge of edges) {
+    if (cycleNodes.includes(edge.from) && cycleNodes.includes(edge.to)) {
+      if (!adjMap.has(edge.from)) adjMap.set(edge.from, []);
+      adjMap.get(edge.from)!.push(edge.to);
+    }
+  }
+  
+  // Try to find a cycle starting from each node
+  for (const startNode of cycleNodes) {
+    const visited = new Set<string>();
+    const path: string[] = [];
+    
+    function dfs(node: string): string[] | null {
+      if (node === startNode && path.length > 0) {
+        return [...path];
+      }
+      if (visited.has(node)) return null;
+      
+      visited.add(node);
+      path.push(node);
+      
+      const neighbors = adjMap.get(node) || [];
+      for (const neighbor of neighbors) {
+        const result = dfs(neighbor);
+        if (result) return result;
+      }
+      
+      path.pop();
+      return null;
+    }
+    
+    const cycle = dfs(startNode);
+    if (cycle && cycle.length > 0) {
+      // Convert path to edges
+      const cycleEdges: Array<{ from: string; to: string }> = [];
+      for (let i = 0; i < cycle.length; i++) {
+        const from = cycle[i];
+        const to = cycle[(i + 1) % cycle.length];
+        if (from && to) {
+          cycleEdges.push({ from, to });
+        }
+      }
+      return cycleEdges;
+    }
+  }
+  
+  return [];
 }
 
 /**
