@@ -38,16 +38,51 @@ export async function undoLastApply(
     );
   }
 
-  // Restore package.json files from backups
+  // Read backup metadata to get fileList
+  const backupJsonPath = join(journal.backupDir, "backup.json");
+  let fileList: string[] = [];
+  
+  if (await exists(backupJsonPath)) {
+    try {
+      const backupMetadata = await readJson<any>(backupJsonPath);
+      fileList = backupMetadata.fileList || [];
+      logger.debug(`Read ${fileList.length} files from backup metadata`);
+    } catch (error) {
+      logger.warn(`Failed to read backup.json, will try manifestPatches only`, error);
+    }
+  }
+  
+  // If no fileList from metadata, fallback to manifestPatches
   const manifestPatches = journal.manifestPatches || [];
+  if (fileList.length === 0 && manifestPatches.length > 0) {
+    logger.info(`No fileList in backup, using manifestPatches (${manifestPatches.length} files)`);
+    for (const patch of manifestPatches) {
+      const relativePath = path.relative(rootDir, patch.manifestPath);
+      fileList.push(relativePath);
+    }
+  }
+  
   const restoredCount = new Set<string>();
+  const restoredPaths = new Set<string>();
 
-  for (const patch of manifestPatches) {
-    const { manifestPath } = patch;
+  // Restore files from backup
+  for (const posixPath of fileList) {
+    // Skip lock.json as it's not a manifest
+    if (posixPath === "type.apply/lock.json") {
+      continue;
+    }
     
-    // Calculate backup path - try new structure (type.apply/manifests/) first, then old structure
-    const relativePath = path.relative(rootDir, manifestPath);
-    const backupPathNew = join(journal.backupDir, "type.apply", "manifests", relativePath);
+    // Extract relative path from type.apply/manifests/...
+    const relativePath = posixPath.replace(/^type\.apply\/manifests\//, "");
+    
+    if (!relativePath) {
+      continue;
+    }
+    
+    const manifestPath = join(rootDir, relativePath);
+    
+    // Calculate backup path - try new structure first, then old
+    const backupPathNew = join(journal.backupDir, posixPath);
     const backupPathOld = join(journal.backupDir, relativePath);
     
     let backupPath: string;
@@ -74,6 +109,7 @@ export async function undoLastApply(
       await fsp.writeFile(manifestPath, backupContent, "utf-8");
       
       restoredCount.add(manifestPath);
+      restoredPaths.add(relativePath);
       logger.debug(`Restored ${relativePath} from backup`);
     } catch (error) {
       logger.warn(`Failed to restore ${relativePath}`, error);
