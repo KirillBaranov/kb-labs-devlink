@@ -45,29 +45,27 @@ npm i -D @kb-labs/devlink
 
 ## Quick start
 
-### 1. Discover local packages
+### 1. Check status
 
 ```bash
-# Scan current repository and find all packages
-devlink scan
+# Show current linking state
+kb devlink status
 
-# Scan multiple repositories
-devlink scan ~/projects/repo-a ~/projects/repo-b
+# Check for drift from saved state
+kb devlink status --check
 ```
-
-This creates a state file in `.kb/devlink/state.json` with your package graph.
 
 ### 2. Generate linking plan
 
 ```bash
 # Auto mode: smart linking based on local availability
-devlink plan
+kb devlink plan
 
 # Local mode: force all packages to use local versions
-devlink plan --mode=local
+kb devlink plan --mode=local
 
 # NPM mode: use registry versions only
-devlink plan --mode=npm
+kb devlink plan --mode=npm
 ```
 
 The plan shows what will be linked, where, and at what version.
@@ -76,20 +74,17 @@ The plan shows what will be linked, where, and at what version.
 
 ```bash
 # Link packages according to the plan
-devlink link
+kb devlink apply
 
-# Or combine scan, plan, and link
-devlink link --auto
+# Or skip confirmation prompts (for CI/CD)
+kb devlink apply --yes
 ```
 
-### 4. Check status
+### 4. Freeze state (optional)
 
 ```bash
-# Show current linking state
-devlink status
-
-# Check for drift from saved state
-devlink status --check
+# Create a lockfile for reproducible linking
+kb devlink freeze
 ```
 
 ### 5. Watch for changes (optional)
@@ -101,14 +96,15 @@ kb devlink watch
 # Watch detects changes → rebuilds providers → refreshes consumers
 ```
 
-### 6. Freeze state
+### 6. Rollback if needed
 
 ```bash
-# Create a lockfile for reproducible linking
-devlink freeze
+# Undo last operation
+kb devlink undo
 
-# Unfreeze to allow automatic linking again
-devlink unfreeze
+# Or list all backups and restore a specific one
+kb devlink backups --list
+kb devlink undo --backup=2025-10-30T20-25-33
 ```
 
 ## Core Concepts
@@ -177,10 +173,12 @@ All DevLink operations produce explicit state files under `.kb/devlink/`:
 
 DevLink includes built-in safety mechanisms to prevent accidental data loss:
 
-- **Git Dirty Detection**: Warns when uncommitted changes exist in `package.json` or lockfiles
-- **Automatic Backups**: Creates timestamped backups before mutating files
+- **Git Dirty Detection**: Warns when uncommitted changes exist in `package.json` or lockfiles (respects `.gitignore`)
+- **Automatic Backups**: Creates timestamped backups before mutating files with full metadata
 - **Confirmation Prompts**: Blocks operations unless `--yes` flag is provided (in CI/CD)
 - **Dry Run Mode**: Preview changes without executing (`--dry-run`)
+- **Undo Support**: Restore previous state with `kb devlink undo`
+- **Backup Management**: List, show, protect, and restore from any backup with `kb devlink backups`
 
 Example warning:
 ```bash
@@ -231,17 +229,19 @@ Example warning:
 
 | Command                   | Description                                   |
 | ------------------------- | --------------------------------------------- |
-| `devlink scan [roots...]` | Discover packages and build dependency graph  |
-| `devlink plan`            | Generate linking plan based on current state  |
-| `devlink link`            | Apply linking plan (uses Yalc under the hood) |
-| `devlink watch`           | 🆕 Watch providers and auto-rebuild/refresh consumers |
-| `devlink freeze`          | Create lockfile for reproducible linking      |
-| `devlink unfreeze`        | Remove lockfile and return to auto mode       |
-| `devlink status`          | Show current linking state                    |
-| `devlink clean`           | Remove temporary files and caches             |
-| `devlink clean --hard`    | Also remove lock file                          |
-| `devlink clean --deep`    | Deep clean including global yalc store         |
-| `devlink rollback`        | Restore previous state from backup            |
+| `kb devlink scan [roots...]` | Discover packages and build dependency graph  |
+| `kb devlink plan`            | Generate linking plan based on current state  |
+| `kb devlink apply`           | Apply linking plan (uses Yalc under the hood) |
+| `kb devlink switch`          | Switch between linking modes                  |
+| `kb devlink update`          | Update dependencies and relink packages       |
+| `kb devlink watch`           | 🆕 Watch providers and auto-rebuild/refresh consumers |
+| `kb devlink freeze`          | Create lockfile for reproducible linking      |
+| `kb devlink status`          | Show current linking state                    |
+| `kb devlink undo`            | Restore previous state from backup            |
+| `kb devlink backups`         | Manage backup snapshots                       |
+| `kb devlink clean`           | Remove temporary files and caches             |
+| `kb devlink clean --hard`    | Also remove lock file                          |
+| `kb devlink clean --deep`    | Deep clean including global yalc store         |
 
 ### CLI Options
 
@@ -387,30 +387,28 @@ See [`docs/adr/`](./docs/adr/) for the full list of ADRs.
 ### Example 1: Basic workflow
 
 ```bash
-# Discover packages in current directory
-devlink scan
+# Check current status
+kb devlink status
 
 # Generate and apply linking plan
-devlink link --auto
+kb devlink plan
+kb devlink apply --yes
 
 # Check what's linked
-devlink status
+kb devlink status
 ```
 
 ### Example 2: Multi-repo development
 
 ```bash
-# Scan multiple repositories
-devlink scan ~/projects/app ~/projects/lib-a ~/projects/lib-b
-
 # Generate plan with exact versions
-devlink plan --pin=exact
+kb devlink plan --pin=exact
 
 # Apply the plan (with safety confirmation)
-devlink link
+kb devlink apply
 
 # Freeze for reproducibility
-devlink freeze
+kb devlink freeze
 ```
 
 ### Example 3: Active development with watch mode
@@ -439,26 +437,45 @@ See [docs/WATCH.md](./docs/WATCH.md) for complete watch mode documentation.
 
 ```bash
 # In CI, skip confirmation prompts
-devlink link --yes
+kb devlink apply --yes
 
 # Or use dry-run to validate without executing
-devlink link --dry-run
+kb devlink plan --dry-run
 
 # Restore from lock file in CI
-devlink link --from-lock --yes
+kb devlink apply --from-lock --yes
 ```
 
-### Example 4: Testing prerelease versions
+### Example 6: Testing prerelease versions
 
 ```bash
 # Allow prerelease versions
-devlink plan --prerelease=allow --upgrade=minor
+kb devlink plan --prerelease=allow --upgrade=minor
 
 # Apply and test
-devlink link
+kb devlink apply
 
 # Rollback if needed
-devlink rollback
+kb devlink rollback
+```
+
+### Example 7: Managing backups
+
+```bash
+# List all backups
+kb devlink backups --list
+
+# Show details of a specific backup
+kb devlink backups --show 2025-10-30T20-25-33
+
+# Protect an important backup from cleanup
+kb devlink backups --protect 2025-10-30T20-25-33
+
+# Restore from a specific backup (if you need to go back further than undo)
+kb devlink undo --backup=2025-10-30T20-25-33
+
+# Run cleanup to remove old backups (keeps protected ones)
+kb devlink backups --cleanup
 ```
 
 ## FAQ
@@ -467,24 +484,24 @@ devlink rollback
 
 - **Why DevLink instead of just using Yalc?** — DevLink adds auto-discovery, policy enforcement, state management, and team workflows on top of Yalc.
 - **Does this work with npm/yarn?** — DevLink is optimized for PNPM, but core concepts could be adapted.
-- **Can I use this in CI?** — Yes! Use `devlink freeze` to create a lockfile, then `devlink link` in CI for reproducible linking.
+- **Can I use this in CI?** — Yes! Use `kb devlink freeze` to create a lockfile, then `kb devlink apply --yes` in CI for reproducible linking.
 - **What about security?** — DevLink only operates on local filesystems and doesn't make network calls (except via Yalc).
 
 ### Workflow
 
 - **How do I update links after code changes?** — Use `kb devlink watch` for automatic rebuild and refresh. Or manually: rebuild your package and consumers will pick up changes (if using link: mode) or run `yalc update`.
 - **Can I mix local and npm packages?** — Yes! Use `auto` mode to link local packages when available and fall back to npm for others.
-- **How do I share linking state with my team?** — Use `devlink freeze` to create a lockfile, commit it, and teammates can `devlink link` to replicate your setup.
+- **How do I share linking state with my team?** — Use `kb devlink freeze` to create a lockfile, commit it, and teammates can `kb devlink apply` to replicate your setup.
 - **What is watch mode?** — `kb devlink watch` monitors provider packages, rebuilds them on changes, and automatically refreshes consumers. See [docs/WATCH.md](./docs/WATCH.md) for details.
 
 ### Troubleshooting
 
-- **Links not working?** — Run `devlink status --check` to see if state has drifted.
+- **Links not working?** — Run `kb devlink status --check` to see if state has drifted.
 - **Version conflicts?** — Use `--pin=exact` to force exact versions, or adjust upgrade policy.
-- **Need to start fresh?** — Run `devlink clean` to remove all DevLink state, then re-scan.
-- **Stale artifacts?** — Run `devlink clean --deep` to remove yalc artifacts and protocol conflicts.
+- **Need to start fresh?** — Run `kb devlink clean` to remove all DevLink state, then re-scan.
+- **Stale artifacts?** — Run `kb devlink clean --deep` to remove yalc artifacts and protocol conflicts.
 - **Blocked by git warnings?** — Commit your changes or use `--yes` to proceed anyway.
-- **Need to restore a backup?** — Check `.kb/devlink/backups/` for timestamped copies of your files.
+- **Need to restore a backup?** — Use `kb devlink backups --list` to see all backups, then `kb devlink undo` to restore the latest, or `kb devlink undo --backup=timestamp` for a specific backup.
 
 ## Documentation
 
