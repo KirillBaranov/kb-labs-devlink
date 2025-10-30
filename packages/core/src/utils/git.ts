@@ -41,16 +41,29 @@ export async function checkGitDirty(
       .split("\n")
       .filter((line) => line.trim().length > 0);
 
-    const files = lines.map((line) => {
+    // Get all files from git status
+    let allFiles = lines.map((line) => {
       // Format: "XY filename" where X and Y are status codes
       return line.slice(3).trim();
-    })
-    // Filter out any files in node_modules - they shouldn't be tracked anyway
-    .filter((file) => !file.includes("/node_modules/"));
+    });
+
+    // Filter out files that are ignored by git (using git check-ignore)
+    const filteredFiles: string[] = [];
+    for (const file of allFiles) {
+      const { code } = await runCommand(`git check-ignore "${file}"`, {
+        cwd: rootDir,
+        stdio: "pipe",
+        allowFail: true,
+      });
+      // If check-ignore returns 0, file is ignored, so skip it
+      if (code !== 0) {
+        filteredFiles.push(file);
+      }
+    }
 
     return {
-      isDirty: files.length > 0,
-      files,
+      isDirty: filteredFiles.length > 0,
+      files: filteredFiles,
     };
   } catch (error) {
     logger.warn("Failed to check git status", error);
