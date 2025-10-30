@@ -12,7 +12,7 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
   try {
     // Parse flags with defaults (following template pattern)
     const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
-    const dryRun = !!flags.dryRun;
+    const dryRun = !!(flags['dry-run'] || flags.dryRun);
     const yes = !!flags.yes;
     
     tracker.checkpoint('read-plan');
