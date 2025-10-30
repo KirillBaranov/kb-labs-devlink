@@ -1,7 +1,7 @@
 import type { PackageIndex, PackageGraph, ScanOptions } from "../types";
 import { discover } from "../../discovery";
 import { logger } from "../../utils/logger";
-import type { DepEdge, DevlinkState } from "../../types";
+import type { DepEdge, DevlinkState, PackageJson } from "../../types";
 import { join } from "path";
 import { promises as fsp } from "fs";
 
@@ -170,11 +170,11 @@ async function buildIndex(state: DevlinkState, rootDir: string, allRoots?: strin
     const pkgRootDir = findRootDirByRepo(pkg);
     
     // Read package.json to get current dependencies
-    let manifest: any = {};
+    let manifest: Partial<PackageJson> = {};
     try {
       const packageJsonPath = join(pkg.pathAbs, 'package.json');
       const content = await fsp.readFile(packageJsonPath, 'utf8');
-      manifest = JSON.parse(content);
+      manifest = JSON.parse(content) as PackageJson;
     } catch (err) {
       // If read fails, manifest remains empty
     }
