@@ -348,4 +348,58 @@ export const commands: CommandManifest[] = [
     ],
     loader: async () => import('./cli/clean'),
   },
+  {
+    manifestVersion: '1.0',
+    id: 'devlink:backups',
+    group: 'devlink',
+    describe: 'Manage devlink backups',
+    longDescription: 'List, show, protect, and restore devlink backups',
+    requires: ['@kb-labs/devlink-core@^0.1.0'],
+    flags: [
+      {
+        name: 'cwd',
+        type: 'string',
+        description: 'Working directory',
+        default: undefined,
+      },
+      {
+        name: 'list',
+        type: 'boolean',
+        alias: 'l',
+        description: 'List all backups',
+      },
+      {
+        name: 'show',
+        type: 'string',
+        description: 'Show details of specific backup',
+      },
+      {
+        name: 'protect',
+        type: 'string',
+        description: 'Mark backup as protected',
+      },
+      {
+        name: 'unprotect',
+        type: 'string',
+        description: 'Unmark backup as protected',
+      },
+      {
+        name: 'cleanup',
+        type: 'boolean',
+        description: 'Run cleanup with retention policy',
+      },
+      {
+        name: 'dry-run',
+        type: 'boolean',
+        description: 'Dry-run mode for cleanup',
+      },
+    ],
+    examples: [
+      'kb devlink backups --list',
+      'kb devlink backups --show 2025-10-30T20-25-33',
+      'kb devlink backups --protect 2025-10-30T20-25-33',
+      'kb devlink backups --cleanup',
+    ],
+    loader: async () => import('./cli/backups'),
+  },
 ];

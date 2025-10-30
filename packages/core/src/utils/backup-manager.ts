@@ -257,7 +257,7 @@ export async function listBackups(
           isProtected: metadata.isProtected || false,
           age,
           valid: true,
-          metadata: opts?.validate ? metadata : undefined,
+          metadata: metadata, // Always include metadata for detailed operations
         };
 
         backups.push(info);
