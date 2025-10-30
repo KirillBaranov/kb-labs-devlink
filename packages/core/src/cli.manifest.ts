@@ -303,10 +303,16 @@ export const commands: CommandManifest[] = [
         alias: 'v',
         description: 'Verbose output',
       },
+      {
+        name: 'dry-run',
+        type: 'boolean',
+        description: 'Show what would be watched without starting file watchers',
+      },
     ],
     examples: [
       'kb devlink watch',
       'kb devlink watch --mode local --verbose',
+      'kb devlink watch --dry-run',
     ],
     loader: async () => import('./cli/watch'),
   },

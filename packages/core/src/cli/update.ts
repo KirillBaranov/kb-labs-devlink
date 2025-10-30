@@ -13,6 +13,7 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
     const mode = (flags.mode as 'npm' | 'local' | 'auto') ?? 'auto';
     const force = !!flags.force;
     const yes = !!flags.yes;
+    const dryRun = !!(flags['dry-run'] || flags.dryRun);
     
     const loader = new Loader({ 
       text: 'Scanning workspace...', 
@@ -47,6 +48,7 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
     // Step 2: Apply the plan with timeout and progress
     const applyPromise = apply(scanResult.plan!, {
       yes,
+      dryRun,
     });
     
     const timeoutPromise = new Promise((_, reject) => {
