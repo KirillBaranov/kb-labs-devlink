@@ -33,7 +33,7 @@ export const commands: CommandManifest[] = [
     group: 'devlink',
     describe: 'Plan workspace linking operations',
     longDescription: 'Analyze workspace structure and plan linking operations for packages',
-    requires: ['@kb-labs/devlink-core'],
+    requires: ['@kb-labs/devlink-core@^0.1.0'],
     flags: [
       {
         name: 'cwd',
@@ -60,7 +60,7 @@ export const commands: CommandManifest[] = [
     group: 'devlink',
     describe: 'Apply workspace linking operations',
     longDescription: 'Execute planned linking operations to set up workspace dependencies',
-    requires: ['@kb-labs/devlink-core'],
+    requires: ['@kb-labs/devlink-core@^0.1.0'],
     flags: [
       {
         name: 'cwd',
@@ -103,7 +103,7 @@ export const commands: CommandManifest[] = [
     group: 'devlink',
     describe: 'Show workspace linking status',
     longDescription: 'Display current status of workspace linking and dependencies',
-    requires: ['@kb-labs/devlink-core'],
+    requires: ['@kb-labs/devlink-core@^0.1.0'],
     flags: [
       {
         name: 'cwd',
@@ -146,7 +146,7 @@ export const commands: CommandManifest[] = [
     group: 'devlink',
     describe: 'Freeze current workspace state',
     longDescription: 'Lock current workspace dependencies to prevent automatic changes',
-    requires: ['@kb-labs/devlink-core'],
+    requires: ['@kb-labs/devlink-core@^0.1.0'],
     flags: [
       {
         name: 'cwd',
@@ -178,7 +178,7 @@ export const commands: CommandManifest[] = [
     group: 'devlink',
     describe: 'Undo last apply operation',
     longDescription: 'Rollback the last devlink apply operation',
-    requires: ['@kb-labs/devlink-core'],
+    requires: ['@kb-labs/devlink-core@^0.1.0'],
     flags: [
       {
         name: 'cwd',
@@ -204,7 +204,7 @@ export const commands: CommandManifest[] = [
     group: 'devlink',
     describe: 'Switch workspace mode',
     longDescription: 'Switch between npm, local, and auto dependency resolution modes',
-    requires: ['@kb-labs/devlink-core'],
+    requires: ['@kb-labs/devlink-core@^0.1.0'],
     flags: [
       {
         name: 'cwd',
@@ -238,7 +238,7 @@ export const commands: CommandManifest[] = [
     group: 'devlink',
     describe: 'Update workspace dependencies',
     longDescription: 'Update workspace dependencies and relink packages',
-    requires: ['@kb-labs/devlink-core'],
+    requires: ['@kb-labs/devlink-core@^0.1.0'],
     flags: [
       {
         name: 'cwd',
@@ -271,7 +271,7 @@ export const commands: CommandManifest[] = [
     group: 'devlink',
     describe: 'Watch and auto-rebuild workspace',
     longDescription: 'Watch for changes and automatically rebuild/relink packages',
-    requires: ['@kb-labs/devlink-core'],
+    requires: ['@kb-labs/devlink-core@^0.1.0'],
     flags: [
       {
         name: 'cwd',
@@ -305,7 +305,7 @@ export const commands: CommandManifest[] = [
     group: 'devlink',
     describe: 'Clean workspace artifacts',
     longDescription: 'Remove temporary files, caches, and stale artifacts from workspace',
-    requires: ['@kb-labs/devlink-core'],
+    requires: ['@kb-labs/devlink-core@^0.1.0'],
     flags: [
       {
         name: 'cwd',
