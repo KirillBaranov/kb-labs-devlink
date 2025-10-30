@@ -13,6 +13,7 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
     const mode = flags.mode as 'npm' | 'local' | 'auto';
     const force = !!flags.force;
     const yes = !!flags.yes;
+    const dryRun = !!flags.dryRun;
     
     if (!mode) {
       ctx.presenter.error('Mode is required. Use --mode npm|local|auto');
@@ -51,6 +52,7 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
     // Step 2: Apply the plan with timeout and progress
     const applyPromise = apply(scanResult.plan!, {
       yes,
+      dryRun,
     });
     
     const timeoutPromise = new Promise((_, reject) => {

@@ -79,6 +79,31 @@ function resolveDepKind(plan: DevLinkPlan, consumer: string, provider: string): 
   return "prod"; // "dep" → prod
 }
 
+/**
+ * Get package directory path from plan index
+ */
+function getPackageDir(plan: DevLinkPlan, packageName: string): string | undefined {
+  return plan.index?.packages?.[packageName]?.dir;
+}
+
+/**
+ * Create a manifest patch for updating package.json
+ */
+function createManifestPatch(
+  consumerDir: string,
+  consumerName: string,
+  depName: string,
+  newVersion: string
+): ManifestPatch {
+  return {
+    manifestPath: path.join(consumerDir, "package.json"),
+    consumerName,
+    depName,
+    to: newVersion,
+    // section will be resolved during apply
+  };
+}
+
 // Resolve dependency section with fallback to current package.json
 function resolveDepSection(
   plan: DevLinkPlan, 
@@ -380,8 +405,8 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
         break;
       }
       case "link-local": {
-        const providerDir = plan.index.packages[a.dep]?.dir;
-        const consumerDir = plan.index.packages[a.target]?.dir;
+        const providerDir = getPackageDir(plan, a.dep);
+        const consumerDir = getPackageDir(plan, a.target);
         
         // Guard: skip self-links
         if (a.target === a.dep) {
@@ -402,13 +427,7 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
           rel = rel.split(path.sep).join("/").replace(/\/$/, "");
           const linkSpec = `link:${rel}`;
           
-          b.manifestPatches.push({
-            manifestPath: path.join(consumerDir, "package.json"),
-            consumerName: a.target,
-            depName: a.dep,
-            to: linkSpec,
-            // section will be resolved during apply
-          });
+          b.manifestPatches.push(createManifestPatch(consumerDir, a.target, a.dep, linkSpec));
         } else {
           // For workspace/auto/npm modes, use workspace: or npm
           // This will be handled by the use-workspace and use-npm cases
@@ -422,14 +441,30 @@ export async function applyPlan(plan: DevLinkPlan, opts: ApplyOptions = {}): Pro
         if (kind === "dev") { b.wsDev.add(token); }
         else if (kind === "peer") { b.wsPeer.add(token); }
         else { b.wsProd.add(token); }
+        
+        // Add manifest patch to ensure workspace: protocol
+        const consumerDir = getPackageDir(plan, a.target);
+        if (consumerDir) {
+          b.manifestPatches.push(createManifestPatch(consumerDir, a.target, a.dep, "workspace:*"));
+        }
         break;
       }
       case "use-npm": {
         const kind = resolveDepKind(plan, a.target, a.dep);
         b.yalcRemove.add(a.dep); // safety: снять yalc перед npm
+        
+        // Get version from lockfile or package.json
+        const npmVersion = plan.index?.packages?.[a.dep]?.version || "*";
+        
         if (kind === "dev") { b.npmDev.add(a.dep); }
         else if (kind === "peer") { b.npmPeer.add(a.dep); }
         else { b.npmProd.add(a.dep); }
+        
+        // Add manifest patch for npm dependencies
+        const consumerDir = getPackageDir(plan, a.target);
+        if (consumerDir) {
+          b.manifestPatches.push(createManifestPatch(consumerDir, a.target, a.dep, npmVersion));
+        }
         break;
       }
     }

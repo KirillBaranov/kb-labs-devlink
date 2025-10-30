@@ -67,6 +67,8 @@ export interface LinkAction {
   dep: string;              // что подключаем/меняем (provider)
   kind: LinkActionKind;
   reason?: string;
+  from?: string;            // текущее значение (before) для дебага
+  to?: string;              // новое значение (after) для дебага
 }
 
 export interface BuildPlanOptions {

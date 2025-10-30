@@ -27,6 +27,46 @@ export async function buildPlan(
 
   const actionsMap = new Map<string, LinkAction>();
   const skipped: Array<{ consumer: string; provider: string; reason: string }> = [];
+  
+  /**
+   * Helper to create LinkAction with current version tracking
+   */
+  const createAction = (
+    target: string,
+    dep: string,
+    kind: LinkAction["kind"],
+    reason: string,
+    newVersion?: string
+  ): LinkAction => {
+    const consumerPkg = index.packages[target];
+    let currentVersion: string | undefined;
+    
+    if (consumerPkg?.manifest) {
+      currentVersion = consumerPkg.manifest.dependencies?.[dep] ||
+                      consumerPkg.manifest.devDependencies?.[dep] ||
+                      consumerPkg.manifest.peerDependencies?.[dep];
+    }
+    
+    // For use-npm, get version from provider package if not specified
+    let effectiveNewVersion = newVersion;
+    if (!effectiveNewVersion && kind === "use-npm") {
+      const providerPkg = index.packages[dep];
+      // For workspace packages, use version from index
+      // For external packages, keep currentVersion if it exists (probably a range like ^1.0.0)
+      effectiveNewVersion = providerPkg?.version || currentVersion;
+    }
+    
+    const action: LinkAction = {
+      target,
+      dep,
+      kind,
+      reason,
+      from: currentVersion,
+      to: effectiveNewVersion,
+    };
+    
+    return action;
+  };
 
   for (const edge of graph.edges) {
     const consumer = edge.from;
@@ -44,7 +84,6 @@ export async function buildPlan(
     if (actionsMap.has(key)) {
       continue; // Already processed this dependency
     }
-
     // Check if provider is denied by policy
     if (policy.deny?.includes(provider)) {
       skipped.push({ consumer, provider, reason: "denied by policy" });
@@ -64,22 +103,12 @@ export async function buildPlan(
 
     // forceNpm takes precedence
     if (policy.forceNpm?.includes(provider)) {
-      action = {
-        target: consumer,
-        dep: provider,
-        kind: "use-npm",
-        reason: "forceNpm policy",
-      };
+      action = createAction(consumer, provider, "use-npm", "forceNpm policy");
     }
     // forceLocal next
     else if (policy.forceLocal?.includes(provider)) {
       if (providerLocal) {
-        action = {
-          target: consumer,
-          dep: provider,
-          kind: "link-local",
-          reason: "forceLocal policy",
-        };
+        action = createAction(consumer, provider, "link-local", "forceLocal policy");
       } else {
         skipped.push({ consumer, provider, reason: "forceLocal but not available locally" });
         diagnostics.push(`Cannot force-local ${provider}: not found locally`);
@@ -89,37 +118,17 @@ export async function buildPlan(
     // mode === "local"
     else if (options.mode === "local") {
       if (providerLocal) {
-        action = {
-          target: consumer,
-          dep: provider,
-          kind: "link-local",
-          reason: "mode=local",
-        };
+        action = createAction(consumer, provider, "link-local", "mode=local");
       } else {
-        action = {
-          target: consumer,
-          dep: provider,
-          kind: "use-npm",
-          reason: "mode=local but provider not local, fallback to npm",
-        };
+        action = createAction(consumer, provider, "use-npm", "mode=local but provider not local, fallback to npm");
       }
     }
     // mode === "workspace"
     else if (options.mode === "workspace") {
       if (providerLocal) {
-        action = {
-          target: consumer,
-          dep: provider,
-          kind: "use-workspace",
-          reason: "mode=workspace",
-        };
+        action = createAction(consumer, provider, "use-workspace", "mode=workspace", "workspace:*");
       } else {
-        action = {
-          target: consumer,
-          dep: provider,
-          kind: "use-npm",
-          reason: "mode=workspace but provider not local, fallback to npm",
-        };
+        action = createAction(consumer, provider, "use-npm", "mode=workspace but provider not local, fallback to npm");
       }
     }
     // mode === "auto"
@@ -132,32 +141,17 @@ export async function buildPlan(
         const providerRootDir = providerPkg?.rootDir;
         
         const sameRepo = consumerRootDir && providerRootDir && consumerRootDir === providerRootDir;
+        const kind = sameRepo ? "use-workspace" : "link-local";
+        const reason = sameRepo ? "auto: same monorepo → workspace" : "auto: cross-repo → link";
         
-        action = {
-          target: consumer,
-          dep: provider,
-          kind: sameRepo ? "use-workspace" : "link-local",
-          reason: sameRepo 
-            ? "auto: same monorepo → workspace"
-            : "auto: cross-repo → link",
-        };
+        action = createAction(consumer, provider, kind, reason, sameRepo ? "workspace:*" : undefined);
       } else {
-        action = {
-          target: consumer,
-          dep: provider,
-          kind: "use-npm",
-          reason: "auto: external → npm",
-        };
+        action = createAction(consumer, provider, "use-npm", "auto: external → npm");
       }
     }
     // mode === "npm" (default fallback)
     else {
-      action = {
-        target: consumer,
-        dep: provider,
-        kind: "use-npm",
-        reason: "mode=npm",
-      };
+      action = createAction(consumer, provider, "use-npm", "mode=npm");
     }
 
     if (action) {

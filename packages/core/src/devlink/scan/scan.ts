@@ -2,6 +2,8 @@ import type { PackageIndex, PackageGraph, ScanOptions } from "../types";
 import { discover } from "../../discovery";
 import { logger } from "../../utils/logger";
 import type { DepEdge, DevlinkState } from "../../types";
+import { join } from "path";
+import { promises as fsp } from "fs";
 
 /**
  * Build a dependency graph from DevlinkState
@@ -118,7 +120,7 @@ function findCycleEdges(cycleNodes: string[], edges: Array<{ from: string; to: s
 /**
  * Build a package index for quick access
  */
-function buildIndex(state: DevlinkState, rootDir: string, allRoots?: string[]): PackageIndex {
+async function buildIndex(state: DevlinkState, rootDir: string, allRoots?: string[]): Promise<PackageIndex> {
   const packages: Record<string, any> = {};
   const byDir: Record<string, any> = {};
 
@@ -163,10 +165,22 @@ function buildIndex(state: DevlinkState, rootDir: string, allRoots?: string[]): 
     logger.info('Multiple roots detected', { roots, rootDir });
   }
 
+  // Load manifest data for each package
   for (const pkg of state.packages) {
     const pkgRootDir = findRootDirByRepo(pkg);
+    
+    // Read package.json to get current dependencies
+    let manifest: any = {};
+    try {
+      const packageJsonPath = join(pkg.pathAbs, 'package.json');
+      const content = await fsp.readFile(packageJsonPath, 'utf8');
+      manifest = JSON.parse(content);
+    } catch (err) {
+      // If read fails, manifest remains empty
+    }
+    
     const ref = {
-      manifest: {},
+      manifest,
       name: pkg.name,
       version: pkg.version,
       dir: pkg.pathAbs,
@@ -215,7 +229,7 @@ export async function scanPackages(opts: ScanOptions): Promise<{
   const graph = buildGraph(state);
   // choose first root as index root (for deterministic behavior)
   const indexRootDir = roots?.length ? roots[0]! : rootDir;
-  const index = buildIndex(state, indexRootDir, roots);
+  const index = await buildIndex(state, indexRootDir, roots);
 
   logger.info(`Scan complete`, {
     packages: Object.keys(index.packages).length,
