@@ -11,7 +11,6 @@ import {
   generateDevlinkSuggestions, 
   generateQuickActions,
   MultiCLISuggestions,
-  createKBLabsCommandDiscovery,
   type CommandSuggestion 
 } from "@kb-labs/shared-cli-ui";
 import { getDevlinkCommandIds } from '../commands.js';
@@ -908,24 +907,8 @@ export async function computeSuggestions(
   context: StatusContext,
   rootDir: string = process.cwd()
 ): Promise<ActionSuggestion[]> {
-  try {
-    // Try to use dynamic command discovery
-    const dynamicDiscovery = createKBLabsCommandDiscovery();
-    const availableCommands = await dynamicDiscovery.getAvailableCommands();
-    
-    if (availableCommands.length > 0) {
-      // Use dynamically discovered commands
-      const registry = createCommandRegistry(availableCommands);
-      const warningCodes = new Set(warnings.map((w) => w.code));
-      const suggestions = generateDevlinkSuggestions(warningCodes, context, registry);
-      
-      return suggestions;
-    }
-  } catch (error) {
-    console.warn('Dynamic command discovery failed, falling back to static:', error);
-  }
-
-  // Fallback to static devlink commands
+  // Use static devlink commands for suggestions
+  // Dynamic discovery is too complex and causes errors during development
   const devlinkCommands = getDevlinkCommands();
   const registry = createCommandRegistry(devlinkCommands);
   const warningCodes = new Set(warnings.map((w) => w.code));
