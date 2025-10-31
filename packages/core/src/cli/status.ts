@@ -14,24 +14,43 @@ import {
 } from '@kb-labs/shared-cli-ui';
 import { parseBackupTimestamp } from '../utils/timestamp';
 import { getDevlinkQuickActionCommands } from '../devlink/commands.js';
+import { runScope } from '@kb-labs/analytics-sdk-node';
+import { ANALYTICS_EVENTS, ANALYTICS_ACTOR } from '../analytics/events';
 
 export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
-  try {
-    // Parse flags with defaults
-    const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
-    const roots = flags.roots ? flags.roots.split(',') : undefined;
-    const consumer = flags.consumer;
-    const warningLevel = flags.warningLevel as any;
-    const verbose = flags.verbose as boolean;
-    const showSources = flags.sources as boolean;
-    const showDiff = flags.diff as boolean;
-    
-    const result = await status({
-      rootDir: cwd,
-      roots,
-      consumer,
-      warningLevel,
-    });
+  const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
+  
+  return await runScope(
+    {
+      actor: ANALYTICS_ACTOR,
+      ctx: { workspace: cwd },
+    },
+    async (emit) => {
+      try {
+        // Parse flags with defaults
+        const roots = flags.roots ? flags.roots.split(',') : undefined;
+        const consumer = flags.consumer;
+        const warningLevel = flags.warningLevel as any;
+        const verbose = flags.verbose as boolean;
+        const showSources = flags.sources as boolean;
+        const showDiff = flags.diff as boolean;
+        
+        // Track command start
+        await emit({
+          type: ANALYTICS_EVENTS.STATUS_STARTED,
+          payload: {
+            verbose,
+            sources: showSources,
+            diff: showDiff,
+          },
+        });
+        
+        const result = await status({
+          rootDir: cwd,
+          roots,
+          consumer,
+          warningLevel,
+        });
 
     if (flags.json) {
       ctx.presenter.json(result);
@@ -192,19 +211,43 @@ export const run: CommandModule['run'] = async (ctx, _argv, flags) => {
       const output = box('DevLink Status', sections);
       ctx.presenter.write(output);
       
-      if (result.timings) {
-        ctx.presenter.write('');
-        ctx.presenter.write(safeColors.dim(`Status check: ${formatTiming(result.timings.total)}`));
+        if (result.timings) {
+          ctx.presenter.write('');
+          ctx.presenter.write(safeColors.dim(`Status check: ${formatTiming(result.timings.total)}`));
+        }
       }
-    }
 
-    return result.ok ? 0 : 1;
-  } catch (e: any) {
-    if (flags.json) {
-      ctx.presenter.json({ ok: false, error: e?.message });
-    } else {
-      ctx.presenter.error(e?.message ?? 'Status failed');
+      // Track command completion
+      await emit({
+        type: ANALYTICS_EVENTS.STATUS_FINISHED,
+        payload: {
+          mode: result.context.mode,
+          warnings: result.warnings.length,
+          consumers: result.lock.consumers,
+          deps: result.lock.deps,
+          durationMs: result.timings?.total ?? 0,
+          result: result.ok ? 'success' : 'failed',
+        },
+      });
+
+      return result.ok ? 0 : 1;
+    } catch (e: any) {
+      // Track command failure
+      await emit({
+        type: ANALYTICS_EVENTS.STATUS_FINISHED,
+        payload: {
+          result: 'error',
+          error: e?.message ?? 'Status failed',
+        },
+      });
+      
+      if (flags.json) {
+        ctx.presenter.json({ ok: false, error: e?.message });
+      } else {
+        ctx.presenter.error(e?.message ?? 'Status failed');
+      }
+      return 1;
     }
-    return 1;
   }
+);
 };
