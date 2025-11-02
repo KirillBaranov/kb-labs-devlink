@@ -1,41 +1,22 @@
-# @kb-labs/devlink
+# KB Labs DevLink (@kb-labs/devlink)
 
-[![npm version](https://img.shields.io/npm/v/@kb-labs/devlink.svg?style=flat-square)](https://www.npmjs.com/package/@kb-labs/devlink)
-[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg?style=flat-square)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
-[![ESM](https://img.shields.io/badge/Module-ESM-purple.svg?style=flat-square)](https://nodejs.org/api/esm.html)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
+> **Developer linker and ecosystem orchestrator for KB Labs.** A fast and flexible tool that automates local package linking, version sync, and publishing across multiple repositories using Yalc and PNPM — optimized for solo and team workflows.
 
-Developer linker and ecosystem orchestrator for KB Labs. A fast and flexible tool that automates local package linking, version sync, and publishing across multiple repositories using Yalc and PNPM — optimized for solo and team workflows.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-18.18.0+-green.svg)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-9.0.0+-orange.svg)](https://pnpm.io/)
 
-## Features
+## 🎯 Vision
 
-- **Auto-Discovery** ![Discovery](https://img.shields.io/badge/Discovery-Automatic-green.svg?style=flat-square): Automatically scans repositories and detects local packages with dependencies.
-- **Smart Linking** ![Linking](https://img.shields.io/badge/Linking-Smart-blue.svg?style=flat-square): Intelligent linking strategies (`auto`, `local`, `npm`) with dependency graph analysis.
-- **Watch Mode** 🆕 ![Watch](https://img.shields.io/badge/Watch-Live-brightgreen.svg?style=flat-square): Live file watching with automatic rebuild and consumer refresh — zero manual steps.
-- **Version Management** ![Versions](https://img.shields.io/badge/Versions-Managed-orange.svg?style=flat-square): Policy-driven version pinning, upgrades, and prerelease handling.
-- **State Tracking** ![State](https://img.shields.io/badge/State-Tracked-purple.svg?style=flat-square): Persistent state snapshots and rollback capabilities.
-- **Yalc Integration** ![Yalc](https://img.shields.io/badge/Yalc-Integrated-red.svg?style=flat-square): Leverages Yalc for reliable local package publishing.
-- **PNPM Optimized** ![PNPM](https://img.shields.io/badge/PNPM-Optimized-yellow.svg?style=flat-square): Built specifically for PNPM workspaces and monorepos.
+KB Labs DevLink is a developer linker and ecosystem orchestrator for KB Labs. It automates local package linking, version sync, and publishing across multiple repositories using Yalc and PNPM, optimized for solo and team workflows.
 
-## Why DevLink?
+The project solves the problem of manual, error-prone package linking across multiple repositories in a local development environment by providing automated discovery, policy enforcement, state management, and team workflows. Instead of manually linking packages with `pnpm link` or `yalc`, developers can use `kb devlink plan` and `kb devlink apply` to automatically link packages based on dependency graphs and policies.
 
-Working across multiple repositories in a local development environment can be challenging:
+This project is part of the **@kb-labs** ecosystem and integrates seamlessly with Core, CLI, Release Manager, and all other KB Labs tools.
 
-- **Manual linking** is error-prone and time-consuming
-- **Version mismatches** between linked packages cause hard-to-debug issues
-- **State management** across repos requires careful coordination
-- **Team workflows** need reproducible linking strategies
+## 🚀 Quick Start
 
-DevLink solves these problems by providing:
-
-✅ **Zero-config discovery** — automatically finds and links packages  
-✅ **Deterministic linking** — reproducible across machines and CI  
-✅ **Policy enforcement** — version rules applied consistently  
-✅ **Observable state** — explicit state files show what's linked where  
-✅ **Team-friendly** — share linking plans via lockfiles
-
-## Install
+### Installation
 
 ```bash
 pnpm add -D @kb-labs/devlink
@@ -43,9 +24,25 @@ pnpm add -D @kb-labs/devlink
 npm i -D @kb-labs/devlink
 ```
 
-## Quick start
+### Development
 
-### 1. Check status
+```bash
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Run tests
+pnpm test
+
+# Lint code
+pnpm lint
+```
+
+### Basic Usage
+
+#### 1. Check Status
 
 ```bash
 # Show current linking state
@@ -55,7 +52,7 @@ kb devlink status
 kb devlink status --check
 ```
 
-### 2. Generate linking plan
+#### 2. Generate Linking Plan
 
 ```bash
 # Auto mode: smart linking based on local availability
@@ -70,7 +67,7 @@ kb devlink plan --mode=npm
 
 The plan shows what will be linked, where, and at what version.
 
-### 3. Apply the plan
+#### 3. Apply the Plan
 
 ```bash
 # Link packages according to the plan
@@ -80,14 +77,14 @@ kb devlink apply
 kb devlink apply --yes
 ```
 
-### 4. Freeze state (optional)
+#### 4. Freeze State (Optional)
 
 ```bash
 # Create a lockfile for reproducible linking
 kb devlink freeze
 ```
 
-### 5. Watch for changes (optional)
+#### 5. Watch for Changes (Optional)
 
 ```bash
 # Start watch mode for automatic rebuild & refresh
@@ -96,7 +93,7 @@ kb devlink watch
 # Watch detects changes → rebuilds providers → refreshes consumers
 ```
 
-### 6. Rollback if needed
+#### 6. Rollback if Needed
 
 ```bash
 # Undo last operation
@@ -107,9 +104,105 @@ kb devlink backups --list
 kb devlink undo --backup=2025-10-30T20-25-33
 ```
 
-## Core Concepts
+## ✨ Features
 
-### Discovery Phase
+- **Auto-Discovery**: Automatically scans repositories and detects local packages with dependencies
+- **Smart Linking**: Intelligent linking strategies (`auto`, `local`, `npm`) with dependency graph analysis
+- **Watch Mode**: Live file watching with automatic rebuild and consumer refresh — zero manual steps
+- **Version Management**: Policy-driven version pinning, upgrades, and prerelease handling
+- **State Tracking**: Persistent state snapshots and rollback capabilities
+- **Yalc Integration**: Leverages Yalc for reliable local package publishing
+- **PNPM Optimized**: Built specifically for PNPM workspaces and monorepos
+- **Safety Features**: Git dirty detection, automatic backups, confirmation prompts, dry-run mode
+
+## 📁 Repository Structure
+
+```
+kb-labs-devlink/
+├── packages/                # Core packages
+│   └── core/                # Core engine (discovery, graph, planning, state management)
+├── docs/                    # Documentation
+│   └── adr/                 # Architecture Decision Records
+└── scripts/                 # Utility scripts
+```
+
+### Directory Descriptions
+
+- **`packages/core/`** - Core engine for discovery, graph building, planning, and state management
+- **`docs/`** - Documentation including ADRs and guides
+- **`scripts/`** - Utility scripts for development and maintenance
+
+## 📦 Packages
+
+| Package | Description |
+|---------|-------------|
+| [@kb-labs/devlink-core](./packages/core/) | Core engine: discovery, graph, planning, state management, watch mode, and CLI integration |
+
+### Package Details
+
+**@kb-labs/devlink-core** provides the complete DevLink engine:
+- **Discovery**: Scans repositories and detects local packages with dependencies
+- **Graph Building**: Builds dependency DAG and computes relations
+- **Planning**: Generates linking plans with policy enforcement
+- **State Management**: Persistent state snapshots with rollback capabilities
+- **Watch Mode**: Live file watching with automatic rebuild and refresh
+- **CLI Integration**: Commands registered in `@kb-labs/cli`
+
+## 🛠️ Available Scripts
+
+| Script | Description |
+|--------|-------------|
+| `pnpm dev` | Start development mode for all packages |
+| `pnpm build` | Build all packages |
+| `pnpm build:clean` | Clean and build all packages |
+| `pnpm test` | Run all tests |
+| `pnpm test:coverage` | Run tests with coverage reporting |
+| `pnpm test:watch` | Run tests in watch mode |
+| `pnpm lint` | Lint all code |
+| `pnpm lint:fix` | Fix linting issues |
+| `pnpm format` | Format code with Prettier |
+| `pnpm type-check` | TypeScript type checking |
+| `pnpm check` | Run lint, type-check, and tests |
+| `pnpm ci` | Full CI pipeline (clean, build, check) |
+| `pnpm clean` | Clean build artifacts |
+| `pnpm clean:all` | Clean all node_modules and build artifacts |
+
+## 📋 Development Policies
+
+- **Code Style**: ESLint + Prettier, TypeScript strict mode
+- **Testing**: Vitest with comprehensive test coverage
+- **Versioning**: SemVer with automated releases through Changesets
+- **Architecture**: Document decisions in ADRs (see `docs/adr/`)
+- **Design Principles**: Deterministic, composable, isolated, observable, safe, fast
+
+## 🔧 Requirements
+
+- **Node.js**: >= 18.18.0
+- **pnpm**: >= 9.0.0
+
+## ⚙️ Configuration
+
+### DevLink Configuration
+
+Create `.devlink.config.json` in your project root to customize behavior:
+
+```json
+{
+  "roots": ["~/projects/repo-a", "~/projects/repo-b"],
+  "mode": "auto",
+  "policy": {
+    "pin": "exact",
+    "upgrade": "none",
+    "prerelease": "block"
+  },
+  "exclude": ["node_modules", "dist"],
+  "include": ["packages/*"]
+}
+```
+
+### Core Concepts
+
+#### Discovery Phase
 
 DevLink scans repositories to build a dependency graph:
 
@@ -128,14 +221,14 @@ DevLink scans repositories to build a dependency graph:
 └──────────────────────┘
 ```
 
-### Linking Modes
+#### Linking Modes
 
 - **`auto`** (default): Smart mode - uses `workspace:` for same-monorepo packages, `link:` for cross-repo packages
 - **`local`**: Forces all dependencies to use local versions with `link:` protocol (fails if not found)
 - **`workspace`**: Uses `workspace:` protocol for local packages, falls back to npm for others
 - **`npm`**: Uses only npm registry versions (no local linking)
 
-### Version Policies
+#### Version Policies
 
 Control how versions are handled during linking:
 
@@ -144,16 +237,15 @@ Control how versions are handled during linking:
 - **Prerelease**: `allow`, `block`, `only`
 
 Example:
-
 ```bash
 # Pin exact versions, no upgrades, block prereleases
-devlink plan --pin=exact --upgrade=none --prerelease=block
+kb devlink plan --pin=exact --upgrade=none --prerelease=block
 
 # Allow caret ranges, upgrade to latest minor, allow prereleases
-devlink plan --pin=caret --upgrade=minor --prerelease=allow
+kb devlink plan --pin=caret --upgrade=minor --prerelease=allow
 ```
 
-### State Management
+#### State Management
 
 All DevLink operations produce explicit state files under `.kb/devlink/`:
 
@@ -169,7 +261,7 @@ All DevLink operations produce explicit state files under `.kb/devlink/`:
         └── packages/b/package.json
 ```
 
-### Safety Features
+#### Safety Features
 
 DevLink includes built-in safety mechanisms to prevent accidental data loss:
 
@@ -180,14 +272,9 @@ DevLink includes built-in safety mechanisms to prevent accidental data loss:
 - **Undo Support**: Restore previous state with `kb devlink undo`
 - **Backup Management**: List, show, protect, and restore from any backup with `kb devlink backups`
 
-Example warning:
-```bash
-⚠️  Uncommitted changes detected in: packages/a/package.json (and 2 more)
-   DevLink will modify package.json files. Consider committing first.
-   Use --yes to skip this warning and proceed anyway.
-```
+## 🏗️ Architecture
 
-## Architecture Flow
+### Architecture Flow
 
 ```
       ┌──────────────────────┐
@@ -225,23 +312,23 @@ Example warning:
       └──────────────────────┘
 ```
 
-## CLI Commands
+## 💻 CLI Commands
 
-| Command                   | Description                                   |
-| ------------------------- | --------------------------------------------- |
-| `kb devlink scan [roots...]` | Discover packages and build dependency graph  |
-| `kb devlink plan`            | Generate linking plan based on current state  |
-| `kb devlink apply`           | Apply linking plan (uses Yalc under the hood) |
-| `kb devlink switch`          | Switch between linking modes                  |
-| `kb devlink update`          | Update dependencies and relink packages       |
-| `kb devlink watch`           | 🆕 Watch providers and auto-rebuild/refresh consumers |
-| `kb devlink freeze`          | Create lockfile for reproducible linking      |
-| `kb devlink status`          | Show current linking state                    |
-| `kb devlink undo`            | Restore previous state from backup            |
-| `kb devlink backups`         | Manage backup snapshots                       |
-| `kb devlink clean`           | Remove temporary files and caches             |
-| `kb devlink clean --hard`    | Also remove lock file                          |
-| `kb devlink clean --deep`    | Deep clean including global yalc store         |
+| Command | Description |
+|---------|-------------|
+| `kb devlink scan [roots...]` | Discover packages and build dependency graph |
+| `kb devlink plan` | Generate linking plan based on current state |
+| `kb devlink apply` | Apply linking plan (uses Yalc under the hood) |
+| `kb devlink switch` | Switch between linking modes |
+| `kb devlink update` | Update dependencies and relink packages |
+| `kb devlink watch` | Watch providers and auto-rebuild/refresh consumers |
+| `kb devlink freeze` | Create lockfile for reproducible linking |
+| `kb devlink status` | Show current linking state |
+| `kb devlink undo` | Restore previous state from backup |
+| `kb devlink backups` | Manage backup snapshots |
+| `kb devlink clean` | Remove temporary files and caches |
+| `kb devlink clean --hard` | Also remove lock file |
+| `kb devlink clean --deep` | Deep clean including global yalc store |
 
 ### CLI Options
 
@@ -276,16 +363,7 @@ Example warning:
 --force              # Force operation even with warnings
 ```
 
-## Packages
-
-This monorepo includes:
-
-| Package                                    | Description                                               |
-| ------------------------------------------ | --------------------------------------------------------- |
-| [`@kb-labs/devlink-core`](./packages/core) | Core engine: discovery, graph, planning, state management |
-| `@kb-labs/devlink-cli`                     | Command-line interface (coming soon)                      |
-
-## Use Cases
+## 💡 Use Cases
 
 - **Multi-repo development**: Work on multiple interdependent repositories simultaneously
 - **Library development**: Test library changes in consuming applications locally
@@ -294,191 +372,62 @@ This monorepo includes:
 - **Team coordination**: Share reproducible linking states via lockfiles
 - **CI/CD integration**: Validate linking plans in continuous integration
 
-## Design Principles
-
-- **Deterministic**: Reproducible linking across machines and CI
-- **Composable**: CLI is a thin wrapper; all logic in `@kb-labs/devlink-core`
-- **Isolated**: Never mutates `node_modules` directly; uses Yalc
-- **Observable**: Everything produces explicit state and plan files
-- **Safe**: Built-in preflight checks, backups, and confirmation prompts
-- **Fast**: Optimized for PNPM workspaces and large monorepos
-
 ## ⚖️ Comparison
 
 ### DevLink vs Yalc
 
-| Aspect               | DevLink                                                                      | Yalc                                       |
-| -------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
-| **Purpose**          | High-level orchestrator with discovery, linking policies, and state tracking | Low-level package linker for local testing |
-| **Automation**       | Full — scans, plans, freezes, and rolls back automatically                   | Manual — requires explicit link/unlink     |
-| **State & Policies** | Maintains `.kb/devlink/state.json` and version policies                      | No state or version management             |
-| **Integration**      | Works with PNPM, DevKit, and KB Labs Studio                                  | Standalone utility                         |
+| Aspect | DevLink | Yalc |
+|--------|---------|------|
+| **Purpose** | High-level orchestrator with discovery, linking policies, and state tracking | Low-level package linker for local testing |
+| **Automation** | Full — scans, plans, freezes, and rolls back automatically | Manual — requires explicit link/unlink |
+| **State & Policies** | Maintains `.kb/devlink/state.json` and version policies | No state or version management |
+| **Integration** | Works with PNPM, DevKit, and KB Labs Studio | Standalone utility |
 
 > DevLink uses Yalc under the hood but extends it with orchestration, analytics, and reproducibility.
 
----
-
 ### DevLink vs pnpm link
 
-| Aspect                | DevLink                                       | pnpm link                         |
-| --------------------- | --------------------------------------------- | --------------------------------- |
-| **Scope**             | Cross-repository linking and version sync     | Single-workspace symbolic linking |
-| **Governance**        | Centralized policy engine                     | None                              |
-| **CI/CD Integration** | Deterministic builds with lock-state tracking | Local-only linking                |
-| **Reversibility**     | Rollback and drift detection                  | No rollback mechanism             |
-
----
+| Aspect | DevLink | pnpm link |
+|--------|---------|-----------|
+| **Scope** | Cross-repository linking and version sync | Single-workspace symbolic linking |
+| **Governance** | Centralized policy engine | None |
+| **CI/CD Integration** | Deterministic builds with lock-state tracking | Local-only linking |
+| **Reversibility** | Rollback and drift detection | No rollback mechanism |
 
 ### DevLink vs npm/yarn link
 
-| Aspect        | DevLink                                        | npm/yarn link             |
-| ------------- | ---------------------------------------------- | ------------------------- |
-| **Ecosystem** | PNPM-first, monorepo and polyrepo friendly     | Legacy monorepo linking   |
-| **Workflow**  | Declarative (`devlink plan`, `devlink freeze`) | Manual linking            |
-| **State**     | Persisted lock and state files                 | None                      |
-| **Safety**    | Version-aware, rollback-safe                   | Can break dependency tree |
+| Aspect | DevLink | npm/yarn link |
+|--------|---------|---------------|
+| **Ecosystem** | PNPM-first, monorepo and polyrepo friendly | Legacy monorepo linking |
+| **Workflow** | Declarative (`devlink plan`, `devlink freeze`) | Manual linking |
+| **State** | Persisted lock and state files | None |
+| **Safety** | Version-aware, rollback-safe | Can break dependency tree |
 
----
+## 📚 Documentation
 
-## Configuration
+- [Documentation Standard](./docs/DOCUMENTATION.md) - Full documentation guidelines
+- [Contributing Guide](./CONTRIBUTING.md) - How to contribute
+- [Architecture Decisions](./docs/adr/) - ADRs for this project
 
-Create `.devlink.config.json` in your project root to customize behavior:
+**Guides:**
+- [Watch Mode Guide](./docs/WATCH.md) - Complete guide to live watching and automatic rebuild
 
-```json
-{
-  "roots": ["~/projects/repo-a", "~/projects/repo-b"],
-  "mode": "auto",
-  "policy": {
-    "pin": "exact",
-    "upgrade": "none",
-    "prerelease": "block"
-  },
-  "exclude": ["node_modules", "dist"],
-  "include": ["packages/*"]
-}
-```
+## 🔗 Related Packages
 
-## DevKit Integration
+### Dependencies
 
-This project uses `@kb-labs/devkit` for shared tooling configurations:
+- [@kb-labs/core](https://github.com/KirillBaranov/kb-labs-core) - Core utilities
 
-- **TypeScript**: `@kb-labs/devkit/tsconfig/node.json`
-- **ESLint**: `@kb-labs/devkit/eslint/node.js`
-- **Prettier**: `@kb-labs/devkit/prettier/index.json`
-- **Vitest**: `@kb-labs/devkit/vitest/node.js`
-- **Tsup**: `@kb-labs/devkit/tsup/node.js`
+### Used By
 
-To sync DevKit assets:
+- All KB Labs projects for local package linking
+- [@kb-labs/release-manager](https://github.com/KirillBaranov/kb-labs-release-manager) - Release orchestration
 
-```bash
-pnpm devkit:sync
-```
+### Ecosystem
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for more details on DevKit integration.
+- [KB Labs](https://github.com/KirillBaranov/kb-labs) - Main ecosystem repository
 
-## Architecture Decision Records (ADR)
-
-This project follows architectural decision records to document important design decisions.
-
-See [`docs/adr/`](./docs/adr/) for the full list of ADRs.
-
-## Examples
-
-### Example 1: Basic workflow
-
-```bash
-# Check current status
-kb devlink status
-
-# Generate and apply linking plan
-kb devlink plan
-kb devlink apply --yes
-
-# Check what's linked
-kb devlink status
-```
-
-### Example 2: Multi-repo development
-
-```bash
-# Generate plan with exact versions
-kb devlink plan --pin=exact
-
-# Apply the plan (with safety confirmation)
-kb devlink apply
-
-# Freeze for reproducibility
-kb devlink freeze
-```
-
-### Example 3: Active development with watch mode
-
-```bash
-# Link packages in local mode
-kb devlink apply --mode local
-
-# Start watching for changes
-kb devlink watch
-
-# Now edit any provider package
-# → Watch detects change → rebuilds → refreshes consumers
-# → All automatic! ✨
-
-# Watch specific packages only
-kb devlink watch --providers "@kb-labs/cli-*"
-
-# See what would be watched (dry run)
-kb devlink watch --dry-run
-```
-
-See [docs/WATCH.md](./docs/WATCH.md) for complete watch mode documentation.
-
-### Example 4: CI/CD Integration
-
-```bash
-# In CI, skip confirmation prompts
-kb devlink apply --yes
-
-# Or use dry-run to validate without executing
-kb devlink plan --dry-run
-
-# Restore from lock file in CI
-kb devlink apply --from-lock --yes
-```
-
-### Example 6: Testing prerelease versions
-
-```bash
-# Allow prerelease versions
-kb devlink plan --prerelease=allow --upgrade=minor
-
-# Apply and test
-kb devlink apply
-
-# Rollback if needed
-kb devlink rollback
-```
-
-### Example 7: Managing backups
-
-```bash
-# List all backups
-kb devlink backups --list
-
-# Show details of a specific backup
-kb devlink backups --show 2025-10-30T20-25-33
-
-# Protect an important backup from cleanup
-kb devlink backups --protect 2025-10-30T20-25-33
-
-# Restore from a specific backup (if you need to go back further than undo)
-kb devlink undo --backup=2025-10-30T20-25-33
-
-# Run cleanup to remove old backups (keeps protected ones)
-kb devlink backups --cleanup
-```
-
-## FAQ
+## ❓ FAQ
 
 ### General
 
@@ -503,19 +452,14 @@ kb devlink backups --cleanup
 - **Blocked by git warnings?** — Commit your changes or use `--yes` to proceed anyway.
 - **Need to restore a backup?** — Use `kb devlink backups --list` to see all backups, then `kb devlink undo` to restore the latest, or `kb devlink undo --backup=timestamp` for a specific backup.
 
-## Documentation
+## 🤝 Contributing
 
-- **[Watch Mode Guide](./docs/WATCH.md)** — Complete guide to live watching and automatic rebuild
-- **[Architecture Decision Records](./docs/adr/)** — Design decisions and rationale
-  - [ADR-0022: Watch Mode Implementation](./docs/adr/0022-watch-mode-implementation.md)
-  - [ADR-0010: Local Linking and Watch Pipeline](./docs/adr/0010-local-linkind-and-watch-pipelin.md)
-  - [ADR-0009: Core Architecture](./docs/adr/0009-core-architecture.md)
-- **[Contributing Guide](./CONTRIBUTING.md)** — Guidelines for contributors
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines and contribution process.
 
-## Contributing
+## 📄 License
 
-We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+MIT © KB Labs
 
-## License
+---
 
-MIT © 2025 KB Labs — Built for automated developer ecosystems.
+**See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines and contribution process.**
