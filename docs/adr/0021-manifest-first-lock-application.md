@@ -1,8 +1,10 @@
 # ADR-0021: Manifest-First Lock Application
 
-**Date:** 2025-10-17  
-**Status:** Accepted  
-**Deciders:** KB Labs Team  
+**Date:** 2025-10-17
+**Status:** Accepted
+**Deciders:** KB Labs Team
+**Last Reviewed:** 2025-11-03
+**Tags:** [tooling, process]  
 **Related:** ADR-0014 (Preflight Checks), ADR-0012 (Version & Source Policy)
 
 ## Context

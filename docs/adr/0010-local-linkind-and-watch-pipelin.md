@@ -1,8 +1,10 @@
 # ADR-0010: Local Linking and Watch Pipeline
 
-**Date:** 2025-10-05  
-**Status:** Accepted  
+**Date:** 2025-10-05
+**Status:** Accepted
 **Deciders:** KB Labs Team
+**Last Reviewed:** 2025-11-03
+**Tags:** [tooling, process]
 
 ## Context
 

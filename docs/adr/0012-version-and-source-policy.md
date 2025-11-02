@@ -1,8 +1,10 @@
 # ADR-0012: Version & Source Policy
 
-**Date:** 2025-10-05  
-**Status:** Proposed  
-**Deciders:** KB Labs Team  
+**Date:** 2025-10-05
+**Status:** Proposed
+**Deciders:** KB Labs Team
+**Last Reviewed:** 2025-11-03
+**Tags:** [tooling, process]  
 **Related:** ADR-0010, ADR-0011, ADR-0013
 
 ## Context

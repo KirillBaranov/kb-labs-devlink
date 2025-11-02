@@ -1,8 +1,10 @@
 # ADR-0022: Watch Mode Implementation
 
-**Date:** 2025-10-19  
-**Status:** Accepted  
+**Date:** 2025-10-19
+**Status:** Accepted
 **Deciders:** KB Labs Team
+**Last Reviewed:** 2025-11-03
+**Tags:** [tooling, process]
 
 ## Context
 

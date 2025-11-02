@@ -1,8 +1,10 @@
 # ADR-0011: Package Discovery & Mapping
 
-**Date:** 2025-10-05  
-**Status:** Proposed  
-**Deciders:** KB Labs Team  
+**Date:** 2025-10-05
+**Status:** Proposed
+**Deciders:** KB Labs Team
+**Last Reviewed:** 2025-11-03
+**Tags:** [tooling, architecture]  
 **Related:** ADR-0010 Local Linking & Watch Pipeline, ADR-0012 Version & Source Policy, ADR-0013 Safety & Cleanup
 
 ## Context

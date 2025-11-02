@@ -1,8 +1,10 @@
 # ADR-0009: Core Architecture and Local Linking Flow
 
-**Date:** 2025-10-05  
-**Status:** Accepted  
-**Deciders:** KB Labs Team  
+**Date:** 2025-10-05
+**Status:** Accepted
+**Deciders:** KB Labs Team
+**Last Reviewed:** 2025-11-03
+**Tags:** [architecture, tooling]  
 
 ## Context
 
