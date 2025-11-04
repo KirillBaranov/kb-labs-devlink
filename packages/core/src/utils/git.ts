@@ -42,7 +42,7 @@ export async function checkGitDirty(
       .filter((line) => line.trim().length > 0);
 
     // Get all files from git status
-    let allFiles = lines.map((line) => {
+    const allFiles = lines.map((line) => {
       // Format: "XY filename" where X and Y are status codes
       return line.slice(3).trim();
     });

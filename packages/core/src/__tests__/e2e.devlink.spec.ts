@@ -80,7 +80,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should build plan in local mode", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, { mode: "local" });
 
     expect(plan.actions).toBeDefined();
@@ -101,7 +101,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should print dry-run table", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, { mode: "local" });
 
     // Capture console output
@@ -129,7 +129,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should apply plan and call yalc/pnpm commands", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, { mode: "local" });
 
     const result = await applyPlan(plan, { dryRun: false });
@@ -148,7 +148,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should create lock file", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, { mode: "local" });
 
     await freezeToLock(plan, tmpRoot);
@@ -164,7 +164,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should write and read last-apply journal", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, { mode: "local" });
 
     await applyPlan(plan, { dryRun: false });
@@ -176,7 +176,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should undo last apply in dry-run", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, { mode: "local" });
 
     await applyPlan(plan, { dryRun: false });
@@ -192,7 +192,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should handle policy.deny correctly", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, {
       mode: "auto",
       policy: {
@@ -215,7 +215,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should handle policy.forceLocal correctly", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, {
       mode: "npm",
       policy: {
@@ -232,7 +232,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should handle policy.forceNpm correctly", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, {
       mode: "local",
       policy: {
@@ -249,7 +249,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should deduplicate and sort actions deterministically", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan1 = await buildPlan(index, graph, { mode: "local" });
     const plan2 = await buildPlan(index, graph, { mode: "local" });
 
@@ -269,7 +269,7 @@ describe("DevLink E2E", () => {
   });
 
   it("should get status", async () => {
-    const { state, index, graph } = await scanPackages({ rootDir: tmpRoot });
+    const { state: _state, index, graph } = await scanPackages({ rootDir: tmpRoot });
     const plan = await buildPlan(index, graph, { mode: "local" });
     await applyPlan(plan, { dryRun: false });
 

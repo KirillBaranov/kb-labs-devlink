@@ -64,13 +64,13 @@ function buildGraph(state: DevlinkState): PackageGraph {
  * Find edges that form a cycle from nodes in the cycle
  */
 function findCycleEdges(cycleNodes: string[], edges: Array<{ from: string; to: string }>): Array<{ from: string; to: string }> {
-  if (cycleNodes.length === 0) return [];
+  if (cycleNodes.length === 0) {return [];}
   
   // Build adjacency map
   const adjMap = new Map<string, string[]>();
   for (const edge of edges) {
     if (cycleNodes.includes(edge.from) && cycleNodes.includes(edge.to)) {
-      if (!adjMap.has(edge.from)) adjMap.set(edge.from, []);
+      if (!adjMap.has(edge.from)) {adjMap.set(edge.from, []);}
       adjMap.get(edge.from)!.push(edge.to);
     }
   }
@@ -84,7 +84,7 @@ function findCycleEdges(cycleNodes: string[], edges: Array<{ from: string; to: s
       if (node === startNode && path.length > 0) {
         return [...path];
       }
-      if (visited.has(node)) return null;
+      if (visited.has(node)) {return null;}
       
       visited.add(node);
       path.push(node);
@@ -92,7 +92,7 @@ function findCycleEdges(cycleNodes: string[], edges: Array<{ from: string; to: s
       const neighbors = adjMap.get(node) || [];
       for (const neighbor of neighbors) {
         const result = dfs(neighbor);
-        if (result) return result;
+        if (result) {return result;}
       }
       
       path.pop();

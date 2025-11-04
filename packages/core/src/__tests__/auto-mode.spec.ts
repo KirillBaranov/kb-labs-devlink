@@ -7,7 +7,7 @@ import { promises as fsp } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { buildPlan } from '../devlink/plan';
-import { scanPackages } from '../devlink/scan';
+// import { scanPackages } from '../devlink/scan'; // Unused in tests
 import type { DevLinkMode } from '../devlink/types';
 
 describe('Auto Mode', () => {
