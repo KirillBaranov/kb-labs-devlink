@@ -4,16 +4,17 @@
 **Status:** Accepted
 **Deciders:** KB Labs Team
 **Last Reviewed:** 2025-11-03
-**Tags:** [architecture, tooling]  
+**Tags:** [architecture, tooling]
 
 ## Context
 
 The KB Labs ecosystem includes multiple independent repositories (core, cli, shared, ai-*, etc.).
 Traditional workspace tools (e.g. pnpm, lerna) introduce several issues:
-	•	Cyclic dependency limitations between internal packages (e.g. core/sys ↔ core/config)
-	•	Frequent rebuilds and re-linking after changes
-	•	Overhead of managing multiple workspace roots
-	•	Inconsistent behavior between local and CI environments
+
+- Cyclic dependency limitations between internal packages (e.g. core/sys ↔ core/config)
+- Frequent rebuilds and re-linking after changes
+- Overhead of managing multiple workspace roots
+- Inconsistent behavior between local and CI environments
 
 To solve these, we introduce a custom local linking orchestrator: KB Labs DevLink.
 
@@ -22,27 +23,29 @@ To solve these, we introduce a custom local linking orchestrator: KB Labs DevLin
 Implement a lightweight local dependency linker and publisher (devlink) that replaces workspace-based development for local KB Labs packages.
 
 ## Goals
-	1.	Automatic local linking
-	•	Detect all local @kb-labs/* packages recursively across the umbrella directory.
-	•	Auto-link dependencies using yalc or file: without manual configuration.
-	2.	Hot-sync development
-	•	Detect file changes and rebuild + relink affected packages automatically.
-	•	Provide a devlink watch mode for continuous local development.
-	3.	Safe publish pipeline
-	•	Use devlink publish to push updated packages to npm with:
-	•	auto semver bump
-	•	changelog generation
-	•	tag + push + npm publish
-	•	Switch seamlessly between local and npm sources.
-	4.	Declarative config
-	•	Optional devlink.config.json at repo root (auto-generated defaults)
-	•	Configurable include/exclude patterns per repo
-	•	Integration with @kb-labs/devkit for consistent CLI experience
+
+1. Automatic local linking
+   - Detect all local @kb-labs/* packages recursively across the umbrella directory.
+   - Auto-link dependencies using yalc or file: without manual configuration.
+2. Hot-sync development
+   - Detect file changes and rebuild + relink affected packages automatically.
+   - Provide a devlink watch mode for continuous local development.
+3. Safe publish pipeline
+   - Use devlink publish to push updated packages to npm with:
+     - auto semver bump
+     - changelog generation
+     - tag + push + npm publish
+   - Switch seamlessly between local and npm sources.
+4. Declarative config
+   - Optional devlink.config.json at repo root (auto-generated defaults)
+   - Configurable include/exclude patterns per repo
+   - Integration with @kb-labs/devkit for consistent CLI experience
 
 ## Non-Goals
-	•	Not a replacement for npm or pnpm
-	•	Not a CI runner — CI uses npm registry for reproducibility
-	•	Not a build system (delegates builds to devkit or existing commands)
+
+- Not a replacement for npm or pnpm
+- Not a CI runner — CI uses npm registry for reproducibility
+- Not a build system (delegates builds to devkit or existing commands)
 
 ## Architecture Overview
 
@@ -99,12 +102,12 @@ devlink publish
 
 ### Positive
 
-- ✅ No manual rebuilds or relinking
-- ✅ Supports cyclic dependencies safely
-- ✅ Seamless switch between local and npm
-- ✅ Unified versioning and changelog flow
-- ✅ Faster iteration for single-developer workflows
-- ✅ Integrates naturally with existing KB Labs CLI & DevKit
+- No manual rebuilds or relinking
+- Supports cyclic dependencies safely
+- Seamless switch between local and npm
+- Unified versioning and changelog flow
+- Faster iteration for single-developer workflows
+- Integrates naturally with existing KB Labs CLI & DevKit
 
 ### Negative
 
