@@ -1,16 +1,15 @@
 import { defineConfig } from "vitest/config";
+import nodePreset from "@kb-labs/devkit/vitest/node.js";
 
 export default defineConfig({
+  ...nodePreset,
   test: {
-    environment: "node",
+    ...nodePreset.test,
     globals: false,
-    reporters: ["default"],
-    exclude: ["node_modules", "dist", "**/dist/**"],
     coverage: {
-      provider: "v8",
+      ...(nodePreset.test?.coverage || {}),
       all: true,
       reportsDirectory: "./coverage",
-      reporter: ["text", "html"],
       exclude: [
         "**/node_modules/**",
         "**/dist/**",
