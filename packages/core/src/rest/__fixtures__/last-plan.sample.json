@@ -1,0 +1,72 @@
+{
+  "rootDir": "/workspace/repo",
+  "mode": "local",
+  "actions": [
+    {
+      "target": "package-a",
+      "dep": "package-b",
+      "kind": "link-local",
+      "reason": "mode=local",
+      "from": "link:../package-b",
+      "to": "link:../package-b"
+    },
+    {
+      "target": "package-b",
+      "dep": "external-lib",
+      "kind": "use-npm",
+      "reason": "mode=local but provider not local, fallback to npm",
+      "from": "^1.0.0",
+      "to": "^1.0.0"
+    }
+  ],
+  "graph": {
+    "nodes": ["package-a", "package-b", "external-lib"],
+    "edges": [
+      { "from": "package-a", "to": "package-b", "type": "dep" },
+      { "from": "package-b", "to": "external-lib", "type": "dep" }
+    ],
+    "cycles": [],
+    "topological": ["package-a", "package-b", "external-lib"]
+  },
+  "index": {
+    "packages": {
+      "package-a": {
+        "manifest": {
+          "name": "package-a",
+          "version": "1.0.0",
+          "dependencies": {
+            "package-b": "link:../package-b"
+          }
+        },
+        "name": "package-a",
+        "version": "1.0.0",
+        "dir": "/workspace/repo/packages/package-a",
+        "rootDir": "/workspace/repo",
+        "private": false,
+        "pkg": {
+          "name": "package-a",
+          "version": "1.0.0"
+        }
+      },
+      "package-b": {
+        "manifest": {
+          "name": "package-b",
+          "version": "1.0.0",
+          "dependencies": {
+            "external-lib": "^1.0.0"
+          }
+        },
+        "name": "package-b",
+        "version": "1.0.0",
+        "dir": "/workspace/repo/packages/package-b",
+        "rootDir": "/workspace/repo",
+        "private": false,
+        "pkg": {
+          "name": "package-b",
+          "version": "1.0.0"
+        }
+      }
+    }
+  },
+  "diagnostics": []
+}
