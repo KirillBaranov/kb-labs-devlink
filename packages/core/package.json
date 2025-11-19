@@ -15,7 +15,8 @@
     "./dist/*": "./dist/*"
   },
   "kb": {
-    "commandsManifest": "./dist/cli.manifest.js"
+    "manifest": "./dist/manifest.v2.js",
+    "plugin": true
   },
   "author": {
     "name": "Kirill Baranov",
@@ -47,10 +48,15 @@
   "sideEffects": false,
   "dependencies": {
     "@kb-labs/analytics-sdk-node": "link:../../../kb-labs-analytics/packages/analytics-sdk-node",
+    "@kb-labs/core-workspace": "link:../../../kb-labs-core/packages/core",
+    "@kb-labs/devlink-contracts": "link:../contracts",
+    "@kb-labs/plugin-manifest": "link:../../../kb-labs-plugin/packages/manifest",
     "@kb-labs/shared-cli-ui": "link:../../../kb-labs-shared/packages/cli-ui",
     "chokidar": "^4.0.0",
     "glob": "^11.0.0",
-    "p-queue": "^8.0.0"
+    "minimatch": "^10.0.0",
+    "p-queue": "^8.0.0",
+    "zod": "^4.0.0"
   },
   "scripts": {
     "clean": "rimraf dist",

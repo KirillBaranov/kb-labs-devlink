@@ -1,9 +1,16 @@
 {
-  "extends": "@kb-labs/devkit/tsconfig/node.json",
+  "extends": "../../tsconfig.base.json",
   "include": [
     "src"
   ],
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    "moduleResolution": "node",
+    "paths": {
+      "@devlink/shared/*": ["src/shared/*"],
+      "@devlink/application/*": ["src/application/*"],
+      "@devlink/domain/*": ["src/domain/*"],
+      "@devlink/infra/*": ["src/infra/*"]
+    }
   }
 }
