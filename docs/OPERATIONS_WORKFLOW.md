@@ -412,3 +412,101 @@ kb devlink freeze
 - Windows-safe rename operations
 - Works on macOS/Linux/Windows
 
+## REST API: DevLink Plan DTO
+
+DevLink exposes the most recent plan via the plugin REST API so that downstream tools (Studio, dashboards, automation) can consume a normalized graph without shelling out.
+
+```
+GET /api/v1/plugins/devlink/plan
+```
+
+- **Source file:** `.kb/devlink/last-plan.json`
+- **Caching:** responses are cached in-memory by SHA1 hash; the hash is returned in `meta.hash`
+- **Query parameters:**
+  - `cwd` *(optional)* — workspace root override. Without it the handler resolves the umbrella root via `KB_LABS_WORKSPACE_ROOT` / `KB_LABS_REPO_ROOT` or the nearest `.kb/kb-labs.config.json`, falling back to the request workdir.
+- **Success response:**
+
+```json
+{
+  "nodes": [
+    {
+      "id": "package-a",
+      "workspace": true,
+      "actionCounts": { "total": 1, "byKind": { "link-local": 1 } },
+      "dependencyCounts": { "incoming": 0, "outgoing": 1, "incomingByType": { "dep": 0, "dev": 0, "peer": 0 }, "outgoingByType": { "dep": 1, "dev": 0, "peer": 0 } }
+    }
+  ],
+  "edges": [
+    {
+      "id": "package-a->package-b",
+      "from": "package-a",
+      "to": "package-b",
+      "type": "dep",
+      "action": {
+        "kind": "link-local",
+        "reason": "mode=local"
+      }
+    }
+  ],
+  "cycles": [],
+  "summary": {
+    "rootDir": "/workspace/repo",
+    "mode": "local",
+    "packageCount": 3,
+    "actionCount": 2,
+    "actionsByKind": { "link-local": 1, "use-npm": 1 },
+    "cycleCount": 0,
+    "diagnosticsCount": 0
+  },
+  "diagnostics": [],
+  "meta": {
+    "sourcePath": "/workspace/repo/.kb/devlink/last-plan.json",
+    "hash": "c0ffee...",
+    "lastModified": "2025-11-08T14:13:52.000Z",
+    "generatedAt": "2025-11-08T14:13:52.783Z"
+  },
+  "widgets": {
+    "overview": {
+      "infoPanel": { "sections": [/* … */] },
+      "actionsChart": [
+        {
+          "name": "Actions",
+          "points": [
+            { "x": "link-local", "y": 1 },
+            { "x": "use-npm", "y": 1 }
+          ]
+        }
+      ],
+      "diagnostics": { "cards": [/* … */] }
+    },
+    "dependencies": {
+      "repoTree": { "id": "repo:Workspace", "label": "Workspace", "children": [/* … */] },
+      "packagesTable": [
+        {
+          "package": "package-a",
+          "repo": "workspace",
+          "version": "1.0.0",
+          "scope": "workspace",
+          "actions": 1,
+          "actionKinds": "link-local ×1",
+          "outgoingDeps": 1,
+          "incomingDeps": 0
+        }
+      ]
+    }
+  }
+}
+```
+
+- **Error response:** `{ "ok": false, "code": "DEVLINK_PLAN_*", "message": "..." }`
+- **Contracts:** Zod schemas (`PlanRequestSchema`, `DevLinkPlanSchema`) are published with the plugin bundle for consumers that need static validation.
+
+- **Widget slices:** Studio widgets request filtered payloads by appending a `view` query parameter:
+  - `view=overview` → overview info panel sections
+  - `view=overview.actions` → action chart series
+  - `view=overview.diagnostics` → diagnostics cards
+  - `view=dependencies.tree` → repository/package tree
+  - `view=dependencies.table` → package table rows
+
+Studio renders everything declaratively via four widgets (`overview`, `actions`, `dependencies`, `packages`), each pointing to the REST slice above—no bespoke frontend logic required.
+

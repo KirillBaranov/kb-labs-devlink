@@ -146,7 +146,7 @@ kb-labs-devlink/
 - **Planning**: Generates linking plans with policy enforcement
 - **State Management**: Persistent state snapshots with rollback capabilities
 - **Watch Mode**: Live file watching with automatic rebuild and refresh
-- **CLI Integration**: Commands registered in `@kb-labs/cli`
+- **CLI Integration**: Manifest v2-driven registration via `packages/core/src/manifest.v2.ts`
 
 ## 🛠️ Available Scripts
 
@@ -360,7 +360,6 @@ DevLink includes built-in safety mechanisms to prevent accidental data loss:
 # Other options
 --verbose            # Detailed output
 --json               # JSON output for scripting
---force              # Force operation even with warnings
 ```
 
 ## 💡 Use Cases
@@ -407,6 +406,7 @@ DevLink includes built-in safety mechanisms to prevent accidental data loss:
 
 - [Documentation Standard](./docs/DOCUMENTATION.md) - Full documentation guidelines
 - [Contributing Guide](./CONTRIBUTING.md) - How to contribute
+- [`@kb-labs/devlink-contracts` Guide](./packages/contracts/README.md) - Public API manifest and schemas
 - [Architecture Decisions](./docs/adr/) - ADRs for this project
 
 **Guides:**
@@ -426,6 +426,7 @@ DevLink includes built-in safety mechanisms to prevent accidental data loss:
 ### Ecosystem
 
 - [KB Labs](https://github.com/KirillBaranov/kb-labs) - Main ecosystem repository
+- [`@kb-labs/devlink-contracts`](./packages/contracts/README.md) - Canonical contract definitions (CLI, REST, Studio, artifacts)
 
 ## ❓ FAQ
 
