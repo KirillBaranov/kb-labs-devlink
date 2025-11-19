@@ -1,6 +1,6 @@
 import { promises as fsp } from 'fs';
 import { join, dirname } from 'path';
-import { logger } from '../utils/logger';
+import { logger } from '@devlink/shared/utils/logger';
 
 export async function rollback(cwd = process.cwd(), id?: string) {
   const base = join(cwd, '.kb', 'devlink', 'backup');
