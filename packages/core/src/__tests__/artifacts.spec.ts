@@ -6,11 +6,12 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fsp } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { 
-  findYalcArtifacts, 
-  detectProtocolConflicts, 
-  detectStaleArtifacts 
-} from '../devlink/artifacts';
+import {
+  findYalcArtifacts,
+  detectProtocolConflicts,
+  getCleanupSuggestions,
+  detectStaleArtifacts,
+} from '@devlink/application/devlink/legacy/artifacts';
 
 describe('Artifact Detection', () => {
   let tempDir: string;
@@ -88,9 +89,10 @@ describe('Artifact Detection', () => {
       const conflicts = await detectProtocolConflicts(tempDir);
 
       expect(conflicts).toHaveLength(1);
-      expect(conflicts[0].package).toBe('@test/dep1');
-      expect(conflicts[0].protocols).toContain('link');
-      expect(conflicts[0].protocols).toContain('npm');
+      const conflict = conflicts[0]!;
+      expect(conflict.package).toBe('@test/dep1');
+      expect(conflict.protocols).toContain('link');
+      expect(conflict.protocols).toContain('npm');
     });
 
     it('should not detect conflicts for different packages', async () => {
@@ -153,7 +155,8 @@ describe('Artifact Detection', () => {
 
       expect(artifacts.yalc).toContain('yalc.lock');
       expect(artifacts.conflicts).toHaveLength(1);
-      expect(artifacts.conflicts[0].package).toBe('@test/dep1');
+      const conflict = artifacts.conflicts[0]!;
+      expect(conflict.package).toBe('@test/dep1');
     });
 
     it('should return empty arrays when no artifacts found', async () => {

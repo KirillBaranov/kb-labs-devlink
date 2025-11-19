@@ -10,7 +10,7 @@ import {
   undo,
   status,
 } from "../api";
-import * as runCommandModule from "../utils/runCommand";
+import * as runCommandModule from '@devlink/shared/utils/runCommand';
 
 describe("API Facade", () => {
   let tmpRoot: string;
@@ -122,7 +122,7 @@ describe("API Facade", () => {
     expect(mockRunCommand).not.toHaveBeenCalled();
 
     // Check that state file was not created
-    const { exists } = await import("../utils/fs");
+    const { exists } = await import('@devlink/shared/utils/fs');
     const statePath = join(tmpRoot, ".kb", "devlink", "state.json");
     expect(await exists(statePath)).toBe(false);
   });
@@ -147,7 +147,7 @@ describe("API Facade", () => {
     expect(mockRunCommand).toHaveBeenCalled();
 
     // Check that state and journal were created
-    const { exists } = await import("../utils/fs");
+    const { exists } = await import('@devlink/shared/utils/fs');
     const statePath = join(tmpRoot, ".kb", "devlink", "state.json");
     const journalPath = join(tmpRoot, ".kb", "devlink", "last-apply.json");
 
@@ -171,7 +171,7 @@ describe("API Facade", () => {
     expect(freezeResult.lockPath).toContain("lock.json");
 
     // Verify lock file was created
-    const { exists } = await import("../utils/fs");
+    const { exists } = await import('@devlink/shared/utils/fs');
     expect(await exists(freezeResult.lockPath)).toBe(true);
   });
 
@@ -191,7 +191,7 @@ describe("API Facade", () => {
     expect(freezeResult.ok).toBe(true);
 
     // Check that lock file was created with exact versions
-    const { readJson } = await import("../utils/fs");
+    const { readJson } = await import('@devlink/shared/utils/fs');
     const lockFile = await readJson(freezeResult.lockPath);
     expect(lockFile).toBeDefined();
   });
@@ -251,9 +251,10 @@ describe("API Facade", () => {
     });
 
     expect(statusResult).toBeDefined();
-    expect(statusResult.packages).toBeGreaterThan(0);
-    expect(statusResult.entries).toBeInstanceOf(Array);
-    expect(statusResult.links).toBeGreaterThanOrEqual(0);
+    expect(statusResult.lock.consumers).toBeGreaterThan(0);
+    expect(statusResult.lock.deps).toBeGreaterThanOrEqual(0);
+    expect(statusResult.lock.entries ?? []).toBeInstanceOf(Array);
+    expect(statusResult.context.mode).toBeDefined();
   });
 
   it("scanAndPlan reports cycles in diagnostics", async () => {

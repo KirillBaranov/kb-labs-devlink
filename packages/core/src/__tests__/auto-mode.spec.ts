@@ -6,9 +6,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fsp } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { buildPlan } from '../devlink/plan';
-// import { scanPackages } from '../devlink/scan'; // Unused in tests
-import type { DevLinkMode } from '../devlink/types';
+import { buildPlan } from '@devlink/application/devlink/legacy/plan';
+// import { scanPackages } from '@devlink/application/devlink/legacy/scan'; // Unused in tests
+import type { DevLinkMode } from '@devlink/application/devlink/legacy/types';
 
 describe('Auto Mode', () => {
   let tempDir: string;

@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { join } from "path";
 import { mkdtemp, rm, mkdir, writeFile } from "fs/promises";
 import { tmpdir } from "os";
-import * as runCommandModule from "../utils/runCommand";
-import { checkGitDirty } from "../utils/git";
-import { runPreflightChecks } from "../utils/preflight";
+import * as runCommandModule from '@devlink/shared/utils/runCommand';
+import { checkGitDirty } from '@devlink/shared/utils/git';
+import { runPreflightChecks } from '@devlink/shared/utils/preflight';
 import { scanAndPlan, apply, applyLockFile, undo } from "../api";
 
 describe("Preflight Checks", () => {
@@ -291,7 +291,7 @@ describe("Preflight Checks", () => {
       });
 
       // Verify backup was created
-      const { exists } = await import("../utils/fs");
+      const { exists } = await import('@devlink/shared/utils/fs');
       const backupDir = join(tmpRoot, ".kb", "devlink", "backups");
       expect(await exists(backupDir)).toBe(true);
     });
@@ -326,7 +326,7 @@ describe("Preflight Checks", () => {
       expect(result.ok).toBe(true);
 
       // Verify backups exist (at least 2 timestamps worth)
-      const { exists } = await import("../utils/fs");
+      const { exists } = await import('@devlink/shared/utils/fs');
       const backupDir = join(tmpRoot, ".kb", "devlink", "backups");
       expect(await exists(backupDir)).toBe(true);
     });

@@ -2,13 +2,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { join } from "path";
 import { mkdtemp, rm, mkdir, writeFile } from "fs/promises";
 import { tmpdir } from "os";
-import { scanPackages } from "../devlink/scan";
-import { buildPlan } from "../devlink/plan";
-import { applyPlan } from "../devlink/apply";
-import { freezeToLock } from "../devlink/lock";
-import { undoLastApply, readLastApply } from "../devlink/journal";
+import { scanPackages } from '@devlink/application/devlink/legacy/scan';
+import { buildPlan } from '@devlink/application/devlink/legacy/plan';
+import { applyPlan } from '@devlink/application/devlink/legacy/apply';
+import { freezeToLock } from '@devlink/application/devlink/legacy/lock';
+import { undoLastApply, readLastApply } from '@devlink/application/devlink/legacy/journal';
 import { status } from "../api";
-import * as runCommandModule from "../utils/runCommand";
+import * as runCommandModule from '@devlink/shared/utils/runCommand';
 
 describe("DevLink E2E", () => {
   let tmpRoot: string;
@@ -154,12 +154,13 @@ describe("DevLink E2E", () => {
     await freezeToLock(plan, tmpRoot);
 
     // Verify lock file was created
-    const { readJson, exists } = await import("../utils/fs");
+    const { readJson, exists } = await import('@devlink/shared/utils/fs');
     const lockPath = join(tmpRoot, ".kb", "devlink", "lock.json");
     expect(await exists(lockPath)).toBe(true);
 
     const lockFile = await readJson(lockPath);
-    expect(lockFile.packages).toBeDefined();
+    expect(lockFile.consumers).toBeDefined();
+    expect(Object.keys(lockFile.consumers || {}).length).toBeGreaterThan(0);
     expect(lockFile.mode).toBe("local");
   });
 
@@ -258,8 +259,8 @@ describe("DevLink E2E", () => {
 
     // Check that actions are sorted
     for (let i = 1; i < plan1.actions.length; i++) {
-      const prev = plan1.actions[i - 1];
-      const curr = plan1.actions[i];
+      const prev = plan1.actions[i - 1]!;
+      const curr = plan1.actions[i]!;
 
       // Should be sorted by target, then dep, then kind
       const prevKey = `${prev.target}::${prev.dep}::${prev.kind}`;
@@ -276,8 +277,8 @@ describe("DevLink E2E", () => {
     const statusResult = await status({ rootDir: tmpRoot });
 
     expect(statusResult.lock.consumers).toBeGreaterThan(0);
-    expect(statusResult.lock.entries).toBeDefined();
-    expect(statusResult.lock.entries.length).toBeGreaterThan(0);
+    const entries = statusResult.lock.entries ?? [];
+    expect(entries.length).toBeGreaterThan(0);
   });
 });
 
