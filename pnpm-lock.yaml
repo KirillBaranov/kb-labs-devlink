@@ -53,7 +53,7 @@ importers:
     devDependencies:
       '@kb-labs/devkit':
         specifier: github:KirillBaranov/kb-labs-devkit#main
-        version: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/5dd910147b8c09742ca13aeb2ea6aba5ffc5159b(@typescript-eslint/parser@8.46.2(eslint@9.38.0)(typescript@5.9.3))(eslint@9.38.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3))(typescript-eslint@8.46.2(eslint@9.38.0)(typescript@5.9.3))(typescript@5.9.3)(vitest@3.2.4(@types/node@24.9.1))
+        version: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/47312cda88a7bd8fe33d665f4933785871f9a364(@typescript-eslint/parser@8.46.2(eslint@9.38.0)(typescript@5.9.3))(eslint@9.38.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3))(typescript-eslint@8.46.2(eslint@9.38.0)(typescript@5.9.3))(typescript@5.9.3)(vitest@3.2.4(@types/node@24.9.1))
       '@vitejs/plugin-vue':
         specifier: ^5.0.0
         version: 5.2.4(vite@5.4.21(@types/node@24.9.1))(vue@3.5.22(typescript@5.9.3))
@@ -70,11 +70,51 @@ importers:
         specifier: ^3
         version: 3.2.4(@types/node@24.9.1)
 
+  packages/contracts:
+    dependencies:
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      '@kb-labs/devkit':
+        specifier: link:../../../kb-labs-devkit
+        version: link:../../../kb-labs-devkit
+      '@types/node':
+        specifier: ^24.7.0
+        version: 24.9.1
+      eslint:
+        specifier: ^9.13.0
+        version: 9.38.0
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.0.1
+      semver:
+        specifier: ^7.6.3
+        version: 7.7.3
+      tsup:
+        specifier: ^8.5.0
+        version: 8.5.0(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@24.9.1)
+
   packages/core:
     dependencies:
       '@kb-labs/analytics-sdk-node':
         specifier: link:../../../kb-labs-analytics/packages/analytics-sdk-node
         version: link:../../../kb-labs-analytics/packages/analytics-sdk-node
+      '@kb-labs/core-workspace':
+        specifier: link:../../../kb-labs-core/packages/core
+        version: link:../../../kb-labs-core/packages/core
+      '@kb-labs/devlink-contracts':
+        specifier: link:../contracts
+        version: link:../contracts
+      '@kb-labs/plugin-manifest':
+        specifier: link:../../../kb-labs-plugin/packages/manifest
+        version: link:../../../kb-labs-plugin/packages/manifest
       '@kb-labs/shared-cli-ui':
         specifier: link:../../../kb-labs-shared/packages/cli-ui
         version: link:../../../kb-labs-shared/packages/cli-ui
@@ -84,10 +124,19 @@ importers:
       glob:
         specifier: ^11.0.0
         version: 11.0.3
+      minimatch:
+        specifier: ^10.0.0
+        version: 10.0.3
       p-queue:
         specifier: ^8.0.0
         version: 8.1.1
+      zod:
+        specifier: ^4.0.0
+        version: 4.1.12
     devDependencies:
+      '@kb-labs/devkit':
+        specifier: link:../../../kb-labs-devkit
+        version: link:../../../kb-labs-devkit
       '@types/node':
         specifier: ^24.7.0
         version: 24.9.1
@@ -514,8 +563,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@kb-labs/devkit@https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/5dd910147b8c09742ca13aeb2ea6aba5ffc5159b':
-    resolution: {tarball: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/5dd910147b8c09742ca13aeb2ea6aba5ffc5159b}
+  '@kb-labs/devkit@https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/47312cda88a7bd8fe33d665f4933785871f9a364':
+    resolution: {tarball: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/47312cda88a7bd8fe33d665f4933785871f9a364}
     version: 0.1.0
     engines: {node: '>=20.0.0', pnpm: '>=9.11.0'}
     hasBin: true
@@ -2346,6 +2395,12 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
+  zod@4.1.12:
+    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
+
 snapshots:
 
   '@ampproject/remapping@2.3.0':
@@ -2619,7 +2674,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@kb-labs/devkit@https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/5dd910147b8c09742ca13aeb2ea6aba5ffc5159b(@typescript-eslint/parser@8.46.2(eslint@9.38.0)(typescript@5.9.3))(eslint@9.38.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3))(typescript-eslint@8.46.2(eslint@9.38.0)(typescript@5.9.3))(typescript@5.9.3)(vitest@3.2.4(@types/node@24.9.1))':
+  '@kb-labs/devkit@https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/47312cda88a7bd8fe33d665f4933785871f9a364(@typescript-eslint/parser@8.46.2(eslint@9.38.0)(typescript@5.9.3))(eslint@9.38.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3))(typescript-eslint@8.46.2(eslint@9.38.0)(typescript@5.9.3))(typescript@5.9.3)(vitest@3.2.4(@types/node@24.9.1))':
     dependencies:
       eslint: 9.38.0
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.38.0)
@@ -4722,3 +4777,7 @@ snapshots:
   xml-name-validator@4.0.0: {}
 
   yocto-queue@0.1.0: {}
+
+  zod@3.25.76: {}
+
+  zod@4.1.12: {}
