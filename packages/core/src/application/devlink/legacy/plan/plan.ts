@@ -1,3 +1,4 @@
+import { getLogger } from '@kb-labs/core-sys/logging';
 import { mergePolicy } from '../../../../domain/devlink/policy/policy';
 import type {
   BuildPlanOptions,
@@ -8,6 +9,8 @@ import type {
   PackageIndex,
 } from "../types";
 
+const logger = getLogger('devlink:plan');
+
 export async function buildPlan(
   index: PackageIndex,
   graph: PackageGraph,
@@ -15,7 +18,7 @@ export async function buildPlan(
 ): Promise<DevLinkPlan> {
   const policy: DevLinkPolicy = await mergePolicy(index.rootDir, options.policy);
 
-  console.log("policy", policy);
+  logger.debug('Building plan with policy', { policy });
 
   const diagnostics: string[] = [];
   if (graph.cycles.length > 0) {

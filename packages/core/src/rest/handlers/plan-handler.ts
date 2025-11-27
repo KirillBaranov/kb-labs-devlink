@@ -67,6 +67,9 @@ type PlanResponse =
 
 interface HandlerRuntime {
   env?: (key: string) => string | undefined;
+  /**
+   * @deprecated Use ctx.logger instead. Will be removed in v2.0
+   */
   log?: (level: 'debug' | 'info' | 'warn' | 'error', message: string, meta?: Record<string, unknown>) => void;
 }
 
@@ -75,6 +78,13 @@ interface HandlerContext {
   pluginId: string;
   workdir?: string;
   runtime?: HandlerRuntime;
+  /** Unified logger interface (recommended) */
+  logger?: {
+    debug: (msg: string, meta?: Record<string, unknown>) => void;
+    info: (msg: string, meta?: Record<string, unknown>) => void;
+    warn: (msg: string, meta?: Record<string, unknown>) => void;
+    error: (msg: string, meta?: Record<string, unknown>) => void;
+  };
 }
 
 function resolveWidgetPayload(dto: DevLinkPlanDTO, viewKey: DevlinkPlanView): PlanWidgetResponse | undefined {
@@ -100,7 +110,6 @@ export async function handlePlan(
   input: unknown,
   ctx: HandlerContext
 ): Promise<PlanResponse> {
-  const log = ctx.runtime?.log ?? (() => undefined);
   const env = ctx.runtime?.env ?? ((key: string) => process.env[key]);
 
   const parseResult = PlanRequestSchema.safeParse(input);
@@ -116,7 +125,7 @@ export async function handlePlan(
       return result;
     }
 
-    log('warn', 'DevLink plan handler input validation failed', {
+    ctx.logger?.warn('DevLink plan handler input validation failed', {
       requestId: ctx.requestId,
       issues: parseResult.error.issues,
     });
@@ -145,7 +154,7 @@ export async function handlePlan(
 
   try {
     const dto: DevLinkPlanDTO = await loadPlanDTO(resolvedRoot);
-    log('info', 'DevLink plan served', {
+    ctx.logger?.info('DevLink plan served', {
       requestId: ctx.requestId,
       root: resolvedRoot,
       workspaceSource: workspaceResolution.source,
@@ -171,7 +180,7 @@ export async function handlePlan(
     return dto;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    log('error', 'DevLink plan handler failed', {
+    ctx.logger?.error('DevLink plan handler failed', {
       requestId: ctx.requestId,
       root: resolvedRoot,
       error: message,

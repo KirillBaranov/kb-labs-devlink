@@ -1,227 +1,219 @@
-import type { CommandModule } from './types';
-import type { z } from 'zod';
+import { defineCommand, type CommandResult } from '@kb-labs/cli-command-kit';
 import { scanAndPlan, apply } from '../../api';
-import { box, keyValue, formatTiming, safeSymbols, safeColors } from '@kb-labs/shared-cli-ui';
+import { keyValue, formatTiming, safeColors } from '@kb-labs/shared-cli-ui';
 import { Loader } from '@kb-labs/shared-cli-ui';
-import { runScope, type AnalyticsEventV1, type EmitResult } from '@kb-labs/analytics-sdk-node';
 import { ANALYTICS_EVENTS, ANALYTICS_ACTOR } from '@devlink/infra/analytics/events';
-import { DevlinkSwitchCommandInputSchema } from '@kb-labs/devlink-contracts/schema';
-import { parseCommandFlags } from './utils';
 
-type SwitchCommandFlags = z.infer<typeof DevlinkSwitchCommandInputSchema>;
+type DevlinkSwitchFlags = {
+  cwd: { type: 'string'; description?: string };
+  mode: { type: 'string'; description?: string; choices?: readonly string[] };
+  yes: { type: 'boolean'; description?: string; default?: boolean };
+  'dry-run': { type: 'boolean'; description?: string; default?: boolean };
+  dryRun: { type: 'boolean'; description?: string; default?: boolean };
+  json: { type: 'boolean'; description?: string; default?: boolean };
+};
 
-export const run: CommandModule<SwitchCommandFlags>['run'] = async (ctx, _argv, rawFlags): Promise<number | void> => {
-  const startTime = Date.now();
-  const jsonMode = !!(rawFlags as SwitchCommandFlags | undefined)?.json;
-  const flags = parseCommandFlags(DevlinkSwitchCommandInputSchema, rawFlags, {
-    ctx,
-    command: 'devlink switch',
-    jsonMode,
-  });
+type DevlinkSwitchResult = CommandResult & {
+  switched?: number;
+  skipped?: number;
+  errors?: number;
+  needsInstall?: boolean;
+  diagnostics?: string[];
+  timings?: any;
+};
 
-  if (!flags) {
-    return 1;
-  }
-
-  const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
-  
-  return (await runScope(
-    {
-      actor: ANALYTICS_ACTOR,
-      ctx: { workspace: cwd },
+export const run = defineCommand<DevlinkSwitchFlags, DevlinkSwitchResult>({
+  name: 'devlink:switch',
+  flags: {
+    cwd: {
+      type: 'string',
+      description: 'Working directory',
     },
-    async (emit: (event: Partial<AnalyticsEventV1>) => Promise<EmitResult>): Promise<number | void> => {
-      try {
-        // Parse flags with defaults
-        const mode = flags.mode as 'npm' | 'local' | 'auto';
-        const yes = !!flags.yes;
-        const dryRun = !!(flags['dry-run'] || flags.dryRun);
-    
-        if (!mode) {
-          ctx.presenter.error('Mode is required. Use --mode npm|local|auto');
-          return 1;
-        }
-        
-        // Track command start
-        await emit({
-          type: ANALYTICS_EVENTS.SWITCH_STARTED,
-          payload: {
-            mode,
-            yes,
-            dryRun,
-          },
-        });
-        
-        const loader = new Loader({ 
-          text: 'Scanning workspace...', 
-          spinner: true, 
-          jsonMode 
-        });
-        
-        if (!jsonMode) {
-          loader.start();
-        }
-        
-        // Step 1: Scan and plan with new mode
-        const scanResult = await scanAndPlan({
-          rootDir: cwd,
+    mode: {
+      type: 'string',
+      description: 'Switch mode',
+      choices: ['npm', 'local', 'auto'] as const,
+    },
+    yes: {
+      type: 'boolean',
+      description: 'Skip confirmation prompts',
+      default: false,
+    },
+    'dry-run': {
+      type: 'boolean',
+      description: 'Preview changes without executing',
+      default: false,
+    },
+    dryRun: {
+      type: 'boolean',
+      description: 'Preview changes without executing',
+      default: false,
+    },
+    json: {
+      type: 'boolean',
+      description: 'Output diagnostics in JSON format',
+      default: false,
+    },
+  },
+  analytics: {
+    startEvent: ANALYTICS_EVENTS.SWITCH_STARTED,
+    finishEvent: ANALYTICS_EVENTS.SWITCH_FINISHED,
+    actor: ANALYTICS_ACTOR,
+    includeFlags: true,
+  },
+  async handler(ctx, argv, flags) {
+    const cwd = flags.cwd && flags.cwd.length > 0 ? flags.cwd : process.cwd();
+    const mode = flags.mode as 'npm' | 'local' | 'auto';
+    const yes = !!flags.yes;
+    const dryRun = !!(flags['dry-run'] || flags.dryRun);
+    const jsonMode = !!flags.json;
+
+    if (!mode) {
+      ctx.output?.error(new Error('Mode is required. Use --mode npm|local|auto'));
+      return { ok: false };
+    }
+
+    const loader = new Loader({
+      text: 'Scanning workspace...',
+      spinner: true,
+      jsonMode
+    });
+
+    if (!jsonMode) {
+      loader.start();
+    }
+
+    // Step 1: Scan and plan with new mode
+    const scanResult = await scanAndPlan({
+      rootDir: cwd,
+      mode,
+    });
+
+    if (!scanResult.ok) {
+      loader.fail('Scan failed');
+      if (jsonMode) {
+        ctx.output?.json({ ok: false, error: 'Scan failed', diagnostics: scanResult.diagnostics });
+      } else {
+        ctx.output?.error(new Error('Failed to scan workspace'));
+        scanResult.diagnostics.forEach(msg => ctx.output?.write(`  ${safeColors.dim('•')} ${msg}`));
+      }
+      return { ok: false, diagnostics: scanResult.diagnostics };
+    }
+
+    loader.update({ text: 'Planning changes...' });
+
+    // Step 2: Apply the plan with timeout and progress
+    const applyPromise = apply(scanResult.plan!, {
+      yes,
+      dryRun,
+    });
+
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Operation timed out after 30 seconds')), 30000);
+    });
+
+    if (!jsonMode) {
+      loader.stop();
+      ctx.output?.write('');
+      ctx.output?.write(safeColors.info('→') + ' Starting apply operation...');
+      ctx.output?.write(safeColors.dim('  This may take a while due to yalc operations'));
+      ctx.output?.write('');
+
+      const applyLoader = new Loader({
+        text: 'Applying changes...',
+        spinner: true,
+        jsonMode: false
+      });
+      applyLoader.start();
+
+      const cleanup = () => {
+        applyLoader.stop();
+      };
+
+      applyPromise.finally(cleanup);
+      timeoutPromise.finally(cleanup);
+    }
+
+    const applyResult = await Promise.race([applyPromise, timeoutPromise]) as any;
+
+    const totalTime = ctx.tracker.total();
+
+    if (jsonMode) {
+      ctx.output?.json({
+        ok: applyResult.ok,
+        operation: 'switch',
+        summary: {
           mode,
-        });
-    
-        if (!scanResult.ok) {
-          loader.fail('Scan failed');
-          if (jsonMode) {
-            ctx.presenter.json({ ok: false, error: 'Scan failed', diagnostics: scanResult.diagnostics });
-          } else {
-            ctx.presenter.error('Failed to scan workspace');
-            scanResult.diagnostics.forEach(msg => ctx.presenter.write(`  ${safeColors.dim('•')} ${msg}`));
-          }
-          return 1;
-        }
-        
-        loader.update({ text: 'Planning changes...' });
-        
-        // Step 2: Apply the plan with timeout and progress
-        const applyPromise = apply(scanResult.plan!, {
-          yes,
-          dryRun,
-        });
-    
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Operation timed out after 30 seconds')), 30000);
-        });
-        
-        if (!jsonMode) {
-          loader.stop();
-          ctx.presenter.write('');
-          ctx.presenter.write(safeColors.info('→') + ' Starting apply operation...');
-          ctx.presenter.write(safeColors.dim('  This may take a while due to yalc operations'));
-          ctx.presenter.write('');
-          
-          // Создаем новый лоадер для apply операции
-          const applyLoader = new Loader({ 
-            text: 'Applying changes...', 
-            spinner: true, 
-            jsonMode: false 
-          });
-          applyLoader.start();
-          
-          // Останавливаем лоадер при завершении
-          const cleanup = () => {
-            applyLoader.stop();
-          };
-          
-          // Привязываем cleanup к завершению операции
-          applyPromise.finally(cleanup);
-          timeoutPromise.finally(cleanup);
-        }
-        
-        const applyResult = await Promise.race([applyPromise, timeoutPromise]) as any;
-        
-        const totalTime = Date.now() - startTime;
-        
-        if (jsonMode) {
-          ctx.presenter.json({
-            ok: applyResult.ok,
-            operation: 'switch',
-            summary: {
-              mode,
-              switched: applyResult.executed.length,
-              skipped: applyResult.skipped.length,
-              errors: applyResult.errors.length,
-            },
-            timings: {
-              discovery: scanResult.timings?.discovery || 0,
-              plan: scanResult.timings?.plan || 0,
-              apply: totalTime - (scanResult.timings?.discovery || 0) - (scanResult.timings?.plan || 0),
-              total: totalTime,
-            },
-            diagnostics: applyResult.diagnostics || [],
-          });
-        } else {
-          if (applyResult.ok) {
-            loader.succeed('Mode switched');
-            
-            const summary = keyValue({
-              'Switched': applyResult.executed.length,
-              'Skipped': applyResult.skipped.length,
-              'Mode': mode,
-              'Updated': `${applyResult.executed.length} package.json files`,
-              'Time': formatTiming(totalTime),
-            });
-            
-            const output = box(`Switch Mode: ${mode}`, summary);
-            ctx.presenter.write(output);
-            
-            if (applyResult.needsInstall) {
-              ctx.presenter.write('');
-              ctx.presenter.write(safeColors.warning('⚠️  Run: pnpm install'));
-            }
-            
-            if (applyResult.diagnostics && applyResult.diagnostics.length > 0) {
-              ctx.presenter.write('');
-              ctx.presenter.write(safeColors.warning('Diagnostics:'));
-              applyResult.diagnostics.forEach((msg: string) => 
-                ctx.presenter.write(`  ${safeColors.dim('•')} ${msg}`)
-              );
-            }
-          } else {
-            loader.fail('Switch failed');
-            ctx.presenter.error('Failed to switch mode');
-            if (applyResult.errors && applyResult.errors.length > 0) {
-              ctx.presenter.write(safeColors.error('Errors:'));
-              applyResult.errors.forEach((error: any) => 
-                ctx.presenter.write(`  ${safeColors.dim('•')} ${error}`)
-              );
-            }
-            if (applyResult.diagnostics) {
-              applyResult.diagnostics.forEach((msg: string) => 
-                ctx.presenter.write(`  ${safeColors.dim('•')} ${msg}`)
-              );
-            }
-          }
-        }
+          switched: applyResult.executed.length,
+          skipped: applyResult.skipped.length,
+          errors: applyResult.errors.length,
+        },
+        timings: {
+          discovery: scanResult.timings?.discovery || 0,
+          plan: scanResult.timings?.plan || 0,
+          apply: totalTime - (scanResult.timings?.discovery || 0) - (scanResult.timings?.plan || 0),
+          total: totalTime,
+        },
+        diagnostics: applyResult.diagnostics || [],
+      });
+    } else {
+      if (applyResult.ok) {
+        loader.succeed('Mode switched');
 
-        // Track command completion
-        await emit({
-          type: ANALYTICS_EVENTS.SWITCH_FINISHED,
-          payload: {
-            mode,
-            yes,
-            dryRun,
-            switched: applyResult.executed.length,
-            skipped: applyResult.skipped.length,
-            errors: applyResult.errors.length,
-            durationMs: totalTime,
-            result: applyResult.ok ? 'success' : 'failed',
-          },
+        const summary = keyValue({
+          'Switched': applyResult.executed.length,
+          'Skipped': applyResult.skipped.length,
+          'Mode': mode,
+          'Updated': `${applyResult.executed.length} package.json files`,
+          'Time': formatTiming(totalTime),
         });
 
-        return applyResult.ok ? 0 : 1;
-      } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : String(e);
-        const totalTime = Date.now() - startTime;
-        
-        // Track command failure
-        await emit({
-          type: ANALYTICS_EVENTS.SWITCH_FINISHED,
-          payload: {
-            mode: flags.mode as string,
-            yes: !!flags.yes,
-            dryRun: !!(flags['dry-run'] || flags.dryRun),
-            durationMs: totalTime,
-            result: 'error',
-            error: errorMessage,
-          },
-        });
-        
-        if (jsonMode) {
-          ctx.presenter.json({ ok: false, error: errorMessage });
-        } else {
-          ctx.presenter.error(errorMessage);
+        const { ui } = ctx.output!;
+        const output = ui.box(`Switch Mode: ${mode}`, summary);
+        ctx.output?.write(output);
+
+        if (applyResult.needsInstall) {
+          ctx.output?.write('');
+          ctx.output?.write(safeColors.warning('⚠️  Run: pnpm install'));
         }
-        return 1;
+
+        if (applyResult.diagnostics && applyResult.diagnostics.length > 0) {
+          ctx.output?.write('');
+          ctx.output?.write(safeColors.warning('Diagnostics:'));
+          applyResult.diagnostics.forEach((msg: string) =>
+            ctx.output?.write(`  ${safeColors.dim('•')} ${msg}`)
+          );
+        }
+      } else {
+        loader.fail('Switch failed');
+        ctx.output?.error(new Error('Failed to switch mode'));
+        if (applyResult.errors && applyResult.errors.length > 0) {
+          ctx.output?.write(safeColors.error('Errors:'));
+          applyResult.errors.forEach((error: any) =>
+            ctx.output?.write(`  ${safeColors.dim('•')} ${error}`)
+          );
+        }
+        if (applyResult.diagnostics) {
+          applyResult.diagnostics.forEach((msg: string) =>
+            ctx.output?.write(`  ${safeColors.dim('•')} ${msg}`)
+          );
+        }
       }
     }
-  )) as number | void;
-};
+
+    return {
+      ok: applyResult.ok,
+      switched: applyResult.executed.length,
+      skipped: applyResult.skipped.length,
+      errors: applyResult.errors.length,
+      needsInstall: applyResult.needsInstall,
+      diagnostics: applyResult.diagnostics,
+      timings: {
+        discovery: scanResult.timings?.discovery || 0,
+        plan: scanResult.timings?.plan || 0,
+        apply: totalTime - (scanResult.timings?.discovery || 0) - (scanResult.timings?.plan || 0),
+        total: totalTime,
+      },
+    };
+  },
+});

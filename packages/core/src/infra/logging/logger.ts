@@ -1,32 +1,40 @@
-type Level = 'debug' | 'info' | 'warn' | 'error';
+/**
+ * @module @devlink/infra/logging/logger
+ * DevLink logger - wrapper around @kb-labs/core-sys/logging
+ * 
+ * Provides backward-compatible API while using the new unified logging system.
+ * All logs are prefixed with 'devlink:' category.
+ */
 
-const LEVELS: Record<Level, number> = {
-  debug: 10,
-  info: 20,
-  warn: 30,
-  error: 40,
-};
+import { getLogger, type Logger } from '@kb-labs/core-sys/logging';
 
-const env = (process.env.KB_DEVLINK_LOG_LEVEL || 'info') as Level;
+// Создаем логгер с категорией devlink для всех логов
+const coreLogger = getLogger('devlink');
 
-function fmt(level: Level, msg: string, extra?: unknown) {
-  const time = new Date().toISOString();
-  if (extra === undefined) { return `[devlink] ${time} ${level.toUpperCase()} ${msg}`; }
-  return `[devlink] ${time} ${level.toUpperCase()} ${msg} ${JSON.stringify(extra)}`;
-}
-
+/**
+ * Backward-compatible logger interface
+ * Maintains the same API as the old logger for easy migration
+ */
 export const logger = {
-  level: env,
+  level: (process.env.KB_DEVLINK_LOG_LEVEL || process.env.LOG_LEVEL || 'info') as 'debug' | 'info' | 'warn' | 'error',
+  
   debug(msg: string, extra?: unknown) {
-    if (LEVELS[this.level] <= LEVELS.debug) { console.debug(fmt('debug', msg, extra)); }
+    coreLogger.debug(msg, typeof extra === 'object' && extra !== null ? extra as Record<string, unknown> : extra ? { value: extra } : undefined);
   },
+  
   info(msg: string, extra?: unknown) {
-    if (LEVELS[this.level] <= LEVELS.info) { console.info(fmt('info', msg, extra)); }
+    coreLogger.info(msg, typeof extra === 'object' && extra !== null ? extra as Record<string, unknown> : extra ? { value: extra } : undefined);
   },
+  
   warn(msg: string, extra?: unknown) {
-    if (LEVELS[this.level] <= LEVELS.warn) { console.warn(fmt('warn', msg, extra)); }
+    coreLogger.warn(msg, typeof extra === 'object' && extra !== null ? extra as Record<string, unknown> : extra ? { value: extra } : undefined);
   },
+  
   error(msg: string, extra?: unknown) {
-    console.error(fmt('error', msg, extra));
+    coreLogger.error(msg, typeof extra === 'object' && extra !== null ? extra as Record<string, unknown> : extra ? { value: extra } : undefined);
   },
 };
+
+// Экспортируем также новый Logger тип для постепенной миграции
+export type { Logger };
+export { getLogger };

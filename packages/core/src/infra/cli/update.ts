@@ -1,226 +1,216 @@
-import type { CommandModule } from './types';
-import type { z } from 'zod';
+import { defineCommand, type CommandResult } from '@kb-labs/cli-command-kit';
 import { scanAndPlan, apply } from '../../api';
-import { box, keyValue, formatTiming, safeSymbols, safeColors } from '@kb-labs/shared-cli-ui';
+import { keyValue, formatTiming, safeColors } from '@kb-labs/shared-cli-ui';
 import { Loader } from '@kb-labs/shared-cli-ui';
-import { runScope } from '@kb-labs/analytics-sdk-node';
 import { ANALYTICS_EVENTS, ANALYTICS_ACTOR } from '@devlink/infra/analytics/events';
-import { DevlinkUpdateCommandInputSchema } from '@kb-labs/devlink-contracts/schema';
-import { parseCommandFlags } from './utils';
 
-type UpdateCommandFlags = z.infer<typeof DevlinkUpdateCommandInputSchema>;
-
-export const run: CommandModule<UpdateCommandFlags>['run'] = async (ctx, _argv, rawFlags) => {
-  const startTime = Date.now();
-  const jsonMode = !!(rawFlags as UpdateCommandFlags | undefined)?.json;
-  const flags = parseCommandFlags(DevlinkUpdateCommandInputSchema, rawFlags, {
-    ctx,
-    command: 'devlink update',
-    jsonMode,
-  });
-
-  if (!flags) {
-    return 1;
-  }
-
-  const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
-  
-  const exitCode = await runScope(
-    {
-      actor: ANALYTICS_ACTOR,
-      ctx: { workspace: cwd },
-    },
-    async (emit) => {
-        try {
-          // Parse flags with defaults
-          const mode = (flags.mode as 'npm' | 'local' | 'auto') ?? 'auto';
-          const yes = !!flags.yes;
-          const dryRun = !!(flags['dry-run'] || flags.dryRun);
-    
-          // Track command start
-          await emit({
-            type: ANALYTICS_EVENTS.UPDATE_STARTED,
-            payload: {
-              mode,
-              yes,
-              dryRun,
-            },
-          });
-          
-          const loader = new Loader({ 
-            text: 'Scanning workspace...', 
-            spinner: false, // Отключаем спиннер
-            jsonMode 
-          });
-          
-          if (!jsonMode) {
-            loader.start();
-          }
-          
-          // Step 1: Scan and plan with upgrade mode
-          const scanResult = await scanAndPlan({
-            rootDir: cwd,
-            mode,
-            policy: {
-              upgrade: 'major',
-            },
-          });
-    
-          if (!scanResult.ok) {
-            loader.fail('Scan failed');
-            if (jsonMode) {
-              ctx.presenter.json({ ok: false, error: 'Scan failed', diagnostics: scanResult.diagnostics });
-            } else {
-              ctx.presenter.error('Failed to scan workspace');
-              scanResult.diagnostics.forEach((msg: string) => ctx.presenter.write(`  ${safeColors.dim('•')} ${msg}`));
-            }
-            return 1;
-          }
-          
-          loader.update({ text: 'Planning updates...' });
-          
-          // Step 2: Apply the plan with timeout and progress
-          const applyPromise = apply(scanResult.plan!, {
-            yes,
-            dryRun,
-          });
-    
-          const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Operation timed out after 30 seconds')), 30000);
-          });
-          
-          if (!jsonMode) {
-            loader.stop();
-            ctx.presenter.write('');
-            ctx.presenter.write(safeColors.info('→') + ' Starting update operation...');
-            ctx.presenter.write(safeColors.dim('  This may take a while due to yalc operations'));
-            ctx.presenter.write('');
-            
-            // Создаем новый лоадер для apply операции
-            const applyLoader = new Loader({ 
-              text: 'Applying updates...', 
-              spinner: true, 
-              jsonMode: false 
-            });
-            applyLoader.start();
-            
-            // Останавливаем лоадер при завершении
-            const cleanup = () => {
-              applyLoader.stop();
-            };
-            
-            // Привязываем cleanup к завершению операции
-            applyPromise.finally(cleanup);
-            timeoutPromise.finally(cleanup);
-          }
-          
-          const applyResult = await Promise.race([applyPromise, timeoutPromise]) as any;
-          
-          const totalTime = Date.now() - startTime;
-          
-          if (jsonMode) {
-            ctx.presenter.json({
-              ok: applyResult.ok,
-              operation: 'update',
-              summary: {
-                updated: applyResult.executed.length,
-                skipped: applyResult.skipped.length,
-                errors: applyResult.errors.length,
-              },
-              timings: {
-                discovery: scanResult.timings?.discovery || 0,
-                plan: scanResult.timings?.plan || 0,
-                apply: totalTime - (scanResult.timings?.discovery || 0) - (scanResult.timings?.plan || 0),
-                total: totalTime,
-              },
-              diagnostics: applyResult.diagnostics || [],
-            });
-          } else {
-            if (applyResult.ok) {
-              loader.succeed('Update complete');
-              
-              const summary = keyValue({
-                'Updated': applyResult.executed.length,
-                'Skipped': applyResult.skipped.length,
-                'Strategy': 'latest',
-                'Files': `${applyResult.executed.length} package.json files`,
-                'Time': formatTiming(totalTime),
-              });
-              
-              const output = box('Update Dependencies', summary);
-              ctx.presenter.write(output);
-              
-              if (applyResult.needsInstall) {
-                ctx.presenter.write('');
-                ctx.presenter.write(safeColors.warning('⚠️  Run: pnpm install'));
-              }
-              
-              if (applyResult.diagnostics && applyResult.diagnostics.length > 0) {
-                ctx.presenter.write('');
-                ctx.presenter.write(safeColors.warning('Diagnostics:'));
-                applyResult.diagnostics.forEach((msg: string) => 
-                  ctx.presenter.write(`  ${safeColors.dim('•')} ${msg}`)
-                );
-              }
-            } else {
-              loader.fail('Update failed');
-              ctx.presenter.error('Failed to update dependencies');
-              if (applyResult.errors && applyResult.errors.length > 0) {
-                ctx.presenter.write(safeColors.error('Errors:'));
-                applyResult.errors.forEach((error: unknown) => 
-                  ctx.presenter.write(`  ${safeColors.dim('•')} ${error}`)
-                );
-              }
-              if (applyResult.diagnostics) {
-                applyResult.diagnostics.forEach((msg: string) => 
-                  ctx.presenter.write(`  ${safeColors.dim('•')} ${msg}`)
-                );
-              }
-            }
-          }
-
-          // Track command completion
-          await emit({
-            type: ANALYTICS_EVENTS.UPDATE_FINISHED,
-            payload: {
-              mode,
-              yes,
-              dryRun,
-              updated: applyResult.executed.length,
-              skipped: applyResult.skipped.length,
-              errors: applyResult.errors.length,
-              durationMs: totalTime,
-              result: applyResult.ok ? 'success' : 'failed',
-            },
-          });
-
-          return applyResult.ok ? 0 : 1;
-        } catch (e: unknown) {
-          const errorMessage = e instanceof Error ? e.message : String(e);
-          const totalTime = Date.now() - startTime;
-          
-          // Track command failure
-          await emit({
-            type: ANALYTICS_EVENTS.UPDATE_FINISHED,
-            payload: {
-              mode: (flags.mode as string) ?? 'auto',
-              yes: !!flags.yes,
-              dryRun: !!(flags['dry-run'] || flags.dryRun),
-              durationMs: totalTime,
-              result: 'error',
-              error: errorMessage,
-            },
-          });
-          
-          if (jsonMode) {
-            ctx.presenter.json({ ok: false, error: errorMessage });
-          } else {
-            ctx.presenter.error(errorMessage);
-          }
-          return 1;
-        }
-    }
-  );
-
-  return exitCode as number | void;
+type DevlinkUpdateFlags = {
+  cwd: { type: 'string'; description?: string };
+  mode: { type: 'string'; description?: string; choices?: readonly string[] };
+  yes: { type: 'boolean'; description?: string; default?: boolean };
+  'dry-run': { type: 'boolean'; description?: string; default?: boolean };
+  dryRun: { type: 'boolean'; description?: string; default?: boolean };
+  json: { type: 'boolean'; description?: string; default?: boolean };
 };
+
+type DevlinkUpdateResult = CommandResult & {
+  updated?: number;
+  skipped?: number;
+  errors?: number;
+  needsInstall?: boolean;
+  diagnostics?: string[];
+  timings?: any;
+};
+
+export const run = defineCommand<DevlinkUpdateFlags, DevlinkUpdateResult>({
+  name: 'devlink:update',
+  flags: {
+    cwd: {
+      type: 'string',
+      description: 'Working directory',
+    },
+    mode: {
+      type: 'string',
+      description: 'Update mode',
+      choices: ['npm', 'local', 'auto'] as const,
+    },
+    yes: {
+      type: 'boolean',
+      description: 'Skip confirmation prompts',
+      default: false,
+    },
+    'dry-run': {
+      type: 'boolean',
+      description: 'Preview changes without executing',
+      default: false,
+    },
+    dryRun: {
+      type: 'boolean',
+      description: 'Preview changes without executing',
+      default: false,
+    },
+    json: {
+      type: 'boolean',
+      description: 'Output diagnostics in JSON format',
+      default: false,
+    },
+  },
+  analytics: {
+    startEvent: ANALYTICS_EVENTS.UPDATE_STARTED,
+    finishEvent: ANALYTICS_EVENTS.UPDATE_FINISHED,
+    actor: ANALYTICS_ACTOR,
+    includeFlags: true,
+  },
+  async handler(ctx, argv, flags) {
+    const cwd = flags.cwd && flags.cwd.length > 0 ? flags.cwd : process.cwd();
+    const mode = (flags.mode as 'npm' | 'local' | 'auto') ?? 'auto';
+    const yes = !!flags.yes;
+    const dryRun = !!(flags['dry-run'] || flags.dryRun);
+    const jsonMode = !!flags.json;
+
+    const loader = new Loader({
+      text: 'Scanning workspace...',
+      spinner: false,
+      jsonMode
+    });
+
+    if (!jsonMode) {
+      loader.start();
+    }
+
+    // Step 1: Scan and plan with upgrade mode
+    const scanResult = await scanAndPlan({
+      rootDir: cwd,
+      mode,
+      policy: {
+        upgrade: 'major',
+      },
+    });
+
+    if (!scanResult.ok) {
+      loader.fail('Scan failed');
+      if (jsonMode) {
+        ctx.output?.json({ ok: false, error: 'Scan failed', diagnostics: scanResult.diagnostics });
+      } else {
+        ctx.output?.error(new Error('Failed to scan workspace'));
+        scanResult.diagnostics.forEach((msg: string) => ctx.output?.write(`  ${safeColors.dim('•')} ${msg}`));
+      }
+      return { ok: false, diagnostics: scanResult.diagnostics };
+    }
+
+    loader.update({ text: 'Planning updates...' });
+
+    // Step 2: Apply the plan with timeout and progress
+    const applyPromise = apply(scanResult.plan!, {
+      yes,
+      dryRun,
+    });
+
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Operation timed out after 30 seconds')), 30000);
+    });
+
+    if (!jsonMode) {
+      loader.stop();
+      ctx.output?.write('');
+      ctx.output?.write(safeColors.info('→') + ' Starting update operation...');
+      ctx.output?.write(safeColors.dim('  This may take a while due to yalc operations'));
+      ctx.output?.write('');
+
+      const applyLoader = new Loader({
+        text: 'Applying updates...',
+        spinner: true,
+        jsonMode: false
+      });
+      applyLoader.start();
+
+      const cleanup = () => {
+        applyLoader.stop();
+      };
+
+      applyPromise.finally(cleanup);
+      timeoutPromise.finally(cleanup);
+    }
+
+    const applyResult = await Promise.race([applyPromise, timeoutPromise]) as any;
+
+    const totalTime = ctx.tracker.total();
+
+    if (jsonMode) {
+      ctx.output?.json({
+        ok: applyResult.ok,
+        operation: 'update',
+        summary: {
+          updated: applyResult.executed.length,
+          skipped: applyResult.skipped.length,
+          errors: applyResult.errors.length,
+        },
+        timings: {
+          discovery: scanResult.timings?.discovery || 0,
+          plan: scanResult.timings?.plan || 0,
+          apply: totalTime - (scanResult.timings?.discovery || 0) - (scanResult.timings?.plan || 0),
+          total: totalTime,
+        },
+        diagnostics: applyResult.diagnostics || [],
+      });
+    } else {
+      if (applyResult.ok) {
+        loader.succeed('Update complete');
+
+        const summary = keyValue({
+          'Updated': applyResult.executed.length,
+          'Skipped': applyResult.skipped.length,
+          'Strategy': 'latest',
+          'Files': `${applyResult.executed.length} package.json files`,
+          'Time': formatTiming(totalTime),
+        });
+
+        const { ui } = ctx.output!;
+        const output = ui.box('Update Dependencies', summary);
+        ctx.output?.write(output);
+
+        if (applyResult.needsInstall) {
+          ctx.output?.write('');
+          ctx.output?.write(safeColors.warning('⚠️  Run: pnpm install'));
+        }
+
+        if (applyResult.diagnostics && applyResult.diagnostics.length > 0) {
+          ctx.output?.write('');
+          ctx.output?.write(safeColors.warning('Diagnostics:'));
+          applyResult.diagnostics.forEach((msg: string) =>
+            ctx.output?.write(`  ${safeColors.dim('•')} ${msg}`)
+          );
+        }
+      } else {
+        loader.fail('Update failed');
+        ctx.output?.error(new Error('Failed to update dependencies'));
+        if (applyResult.errors && applyResult.errors.length > 0) {
+          ctx.output?.write(safeColors.error('Errors:'));
+          applyResult.errors.forEach((error: unknown) =>
+            ctx.output?.write(`  ${safeColors.dim('•')} ${error}`)
+          );
+        }
+        if (applyResult.diagnostics) {
+          applyResult.diagnostics.forEach((msg: string) =>
+            ctx.output?.write(`  ${safeColors.dim('•')} ${msg}`)
+          );
+        }
+      }
+    }
+
+    return {
+      ok: applyResult.ok,
+      updated: applyResult.executed.length,
+      skipped: applyResult.skipped.length,
+      errors: applyResult.errors.length,
+      needsInstall: applyResult.needsInstall,
+      diagnostics: applyResult.diagnostics,
+      timings: {
+        discovery: scanResult.timings?.discovery || 0,
+        plan: scanResult.timings?.plan || 0,
+        apply: totalTime - (scanResult.timings?.discovery || 0) - (scanResult.timings?.plan || 0),
+        total: totalTime,
+      },
+    };
+  },
+});

@@ -1,133 +1,108 @@
-import type { CommandModule } from './types';
-import type { z } from 'zod';
+import { defineCommand, type CommandResult } from '@kb-labs/cli-command-kit';
 import { clean } from '../maintenance/clean';
-import { box, keyValue, formatTiming, TimingTracker, safeSymbols, safeColors } from '@kb-labs/shared-cli-ui';
-import { runScope } from '@kb-labs/analytics-sdk-node';
+import { keyValue, formatTiming, safeSymbols, safeColors } from '@kb-labs/shared-cli-ui';
 import { ANALYTICS_EVENTS, ANALYTICS_ACTOR } from '@devlink/infra/analytics/events';
-import { DevlinkCleanCommandInputSchema } from '@kb-labs/devlink-contracts/schema';
-import { parseCommandFlags } from './utils';
 
-type CleanCommandFlags = z.infer<typeof DevlinkCleanCommandInputSchema>;
+type DevlinkCleanFlags = {
+  cwd: { type: 'string'; description?: string };
+  hard: { type: 'boolean'; description?: string; default?: boolean };
+  deep: { type: 'boolean'; description?: string; default?: boolean };
+  json: { type: 'boolean'; description?: string; default?: boolean };
+};
 
-export const run: CommandModule<CleanCommandFlags>['run'] = async (ctx, _argv, rawFlags) => {
-  const tracker = new TimingTracker();
-  const jsonMode = !!(rawFlags as CleanCommandFlags | undefined)?.json;
-  const flags = parseCommandFlags(DevlinkCleanCommandInputSchema, rawFlags, {
-    ctx,
-    command: 'devlink clean',
-    jsonMode,
-  });
+type DevlinkCleanResult = CommandResult & {
+  removed?: string[];
+  hard?: boolean;
+  deep?: boolean;
+};
 
-  if (!flags) {
-    return 1;
-  }
-
-  const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
-  
-  const exitCode = await runScope(
-    {
-      actor: ANALYTICS_ACTOR,
-      ctx: { workspace: cwd },
+export const run = defineCommand<DevlinkCleanFlags, DevlinkCleanResult>({
+  name: 'devlink:clean',
+  flags: {
+    cwd: {
+      type: 'string',
+      description: 'Working directory',
     },
-    async (emit) => {
-      try {
-        // Parse flags with defaults
-        const hard = !!flags.hard;
-        const deep = !!flags.deep;
-        
-        // Track command start
-        await emit({
-          type: ANALYTICS_EVENTS.CLEAN_STARTED,
-          payload: {
-            hard,
-            deep,
-          },
-        });
-        
-        tracker.checkpoint('clean');
-        
-        const result = await clean(cwd, { hard, deep });
+    hard: {
+      type: 'boolean',
+      description: 'Hard clean (remove lock files)',
+      default: false,
+    },
+    deep: {
+      type: 'boolean',
+      description: 'Deep clean (clean global yalc store)',
+      default: false,
+    },
+    json: {
+      type: 'boolean',
+      description: 'Output diagnostics in JSON format',
+      default: false,
+    },
+  },
+  analytics: {
+    startEvent: ANALYTICS_EVENTS.CLEAN_STARTED,
+    finishEvent: ANALYTICS_EVENTS.CLEAN_FINISHED,
+    actor: ANALYTICS_ACTOR,
+    includeFlags: true,
+  },
+  async handler(ctx, argv, flags) {
+    const cwd = flags.cwd && flags.cwd.length > 0 ? flags.cwd : process.cwd();
+    const hard = !!flags.hard;
+    const deep = !!flags.deep;
+    const jsonMode = !!flags.json;
 
-        const totalTime = tracker.total();
+    ctx.tracker.checkpoint('clean');
 
-        if (jsonMode) {
-          ctx.presenter.json({
-            ok: true,
-            removed: result.removed,
-            hard,
-            deep,
-            timing: totalTime,
-          });
-        } else {
-          const summary = keyValue({
-            'Removed': result.removed.length,
-            'Hard Mode': hard ? 'Yes' : 'No',
-            'Deep Clean': deep ? 'Yes' : 'No',
-          });
+    const result = await clean(cwd, { hard, deep });
 
-          const output = box('DevLink Clean', [...summary, '', `Time: ${formatTiming(totalTime)}`]);
-          ctx.presenter.write(output);
-          
-          if (result.removed.length > 0) {
-            ctx.presenter.write('');
-            ctx.presenter.write(safeColors.info('Removed files:'));
-            result.removed.forEach(file => 
-              ctx.presenter.write(`  ${safeSymbols.success} ${file}`)
-            );
-          } else {
-            ctx.presenter.write('');
-            ctx.presenter.write(`${safeSymbols.info} No files to clean`);
-          }
-          
-          if (hard) {
-            ctx.presenter.write('');
-            ctx.presenter.write(safeColors.warning('⚠️  Hard mode: lock file removed'));
-          }
-          
-          if (deep) {
-            ctx.presenter.write('');
-            ctx.presenter.write(safeColors.warning('⚠️  Deep mode: global yalc store cleaned'));
-          }
-        }
+    const totalTime = ctx.tracker.total();
 
-        // Track command completion
-        await emit({
-          type: ANALYTICS_EVENTS.CLEAN_FINISHED,
-          payload: {
-            hard,
-            deep,
-            removedCount: result.removed.length,
-            durationMs: totalTime,
-            result: 'success',
-          },
-        });
+    if (jsonMode) {
+      ctx.output?.json({
+        ok: true,
+        removed: result.removed,
+        hard,
+        deep,
+        timing: totalTime,
+      });
+    } else {
+      const summary = keyValue({
+        'Removed': result.removed.length,
+        'Hard Mode': hard ? 'Yes' : 'No',
+        'Deep Clean': deep ? 'Yes' : 'No',
+      });
 
-        return 0;
-      } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : String(e);
-        const totalTime = tracker.total();
-        
-        // Track command failure
-        await emit({
-          type: ANALYTICS_EVENTS.CLEAN_FINISHED,
-          payload: {
-            hard: !!flags.hard,
-            deep: !!flags.deep,
-            durationMs: totalTime,
-            result: 'error',
-            error: errorMessage,
-          },
-        });
-        
-        if (jsonMode) {
-          ctx.presenter.json({ ok: false, error: errorMessage, timing: totalTime });
-        } else {
-          ctx.presenter.error(errorMessage);
-        }
-        return 1;
+      const { ui } = ctx.output!;
+      const output = ui.box('DevLink Clean', [...summary, '', `Time: ${formatTiming(totalTime)}`]);
+      ctx.output?.write(output);
+
+      if (result.removed.length > 0) {
+        ctx.output?.write('');
+        ctx.output?.write(safeColors.info('Removed files:'));
+        result.removed.forEach(file =>
+          ctx.output?.write(`  ${safeSymbols.success} ${file}`)
+        );
+      } else {
+        ctx.output?.write('');
+        ctx.output?.write(`${safeSymbols.info} No files to clean`);
+      }
+
+      if (hard) {
+        ctx.output?.write('');
+        ctx.output?.write(safeColors.warning('⚠️  Hard mode: lock file removed'));
+      }
+
+      if (deep) {
+        ctx.output?.write('');
+        ctx.output?.write(safeColors.warning('⚠️  Deep mode: global yalc store cleaned'));
       }
     }
-  );
 
-  return exitCode as number | void;
-};
+    return {
+      ok: true,
+      removed: result.removed,
+      hard,
+      deep,
+    };
+  },
+});

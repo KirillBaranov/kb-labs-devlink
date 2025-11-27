@@ -30,6 +30,12 @@ describe('handlePlan', () => {
         requestId: 'test-1',
         pluginId: '@kb-labs/devlink',
         workdir: tmpDir,
+        logger: {
+          debug: () => undefined,
+          info: () => undefined,
+          warn: () => undefined,
+          error: () => undefined,
+        },
         runtime: {
           log: () => undefined,
         },
@@ -50,6 +56,12 @@ describe('handlePlan', () => {
         requestId: 'test-3',
         pluginId: '@kb-labs/devlink',
         workdir: nestedWorkdir,
+        logger: {
+          debug: () => undefined,
+          info: () => undefined,
+          warn: () => undefined,
+          error: () => undefined,
+        },
         runtime: {
           log: () => undefined,
         },
@@ -66,6 +78,12 @@ describe('handlePlan', () => {
         requestId: 'test-4',
         pluginId: '@kb-labs/devlink',
         workdir: tmpDir,
+        logger: {
+          debug: () => undefined,
+          info: () => undefined,
+          warn: () => undefined,
+          error: () => undefined,
+        },
         runtime: {
           log: () => undefined,
         },
@@ -82,6 +100,12 @@ describe('handlePlan', () => {
         requestId: 'test-5',
         pluginId: '@kb-labs/devlink',
         workdir: tmpDir,
+        logger: {
+          debug: () => undefined,
+          info: () => undefined,
+          warn: () => undefined,
+          error: () => undefined,
+        },
         runtime: {
           log: () => undefined,
         },
@@ -103,6 +127,12 @@ describe('handlePlan', () => {
         requestId: 'env-test',
         pluginId: '@kb-labs/devlink',
         workdir: undefined,
+        logger: {
+          debug: () => undefined,
+          info: () => undefined,
+          warn: () => undefined,
+          error: () => undefined,
+        },
         runtime: {
           log: () => undefined,
           env: (key) => (key === 'KB_LABS_REPO_ROOT' ? tmpDir : undefined),
@@ -123,6 +153,12 @@ describe('handlePlan', () => {
           requestId: 'test-6',
           pluginId: '@kb-labs/devlink',
           workdir: undefined,
+          logger: {
+            debug: () => undefined,
+            info: () => undefined,
+            warn: () => undefined,
+            error: () => undefined,
+          },
           runtime: {
             log: () => undefined,
           },

@@ -48,6 +48,7 @@
   "sideEffects": false,
   "dependencies": {
     "@kb-labs/analytics-sdk-node": "link:../../../kb-labs-analytics/packages/analytics-sdk-node",
+    "@kb-labs/core-sys": "link:../../../kb-labs-core/packages/sys",
     "@kb-labs/core-workspace": "link:../../../kb-labs-core/packages/core",
     "@kb-labs/devlink-contracts": "link:../contracts",
     "@kb-labs/plugin-manifest": "link:../../../kb-labs-plugin/packages/manifest",

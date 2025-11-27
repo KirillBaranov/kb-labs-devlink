@@ -1,225 +1,184 @@
-import type { CommandModule } from './types';
-import type { z } from 'zod';
+import { defineCommand, type CommandResult } from '@kb-labs/cli-command-kit';
 import { DevLinkWatcher } from '../../api';
-import { box, keyValue, formatTiming, safeSymbols, safeColors } from '@kb-labs/shared-cli-ui';
+import { keyValue, formatTiming, safeSymbols, safeColors } from '@kb-labs/shared-cli-ui';
 import type { WatchMode } from '@devlink/application/devlink/legacy/watch';
-import { runScope } from '@kb-labs/analytics-sdk-node';
 import { ANALYTICS_EVENTS, ANALYTICS_ACTOR } from '@devlink/infra/analytics/events';
-import { DevlinkWatchCommandInputSchema } from '@kb-labs/devlink-contracts/schema';
-import { parseCommandFlags } from './utils';
 
-type WatchCommandFlags = z.infer<typeof DevlinkWatchCommandInputSchema>;
-
-export const run: CommandModule<WatchCommandFlags>['run'] = async (ctx, _argv, rawFlags) => {
-  const startTime = Date.now();
-  const jsonMode = !!(rawFlags as WatchCommandFlags | undefined)?.json;
-  const flags = parseCommandFlags(DevlinkWatchCommandInputSchema, rawFlags, {
-    ctx,
-    command: 'devlink watch',
-    jsonMode,
-  });
-
-  if (!flags) {
-    return 1;
-  }
-
-  const cwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : process.cwd();
-  
-  const exitCode = await runScope(
-    {
-      actor: ANALYTICS_ACTOR,
-      ctx: { workspace: cwd },
-    },
-    async (emit) => {
-      try {
-        // Parse flags with defaults
-        const requestedMode = (flags.mode as 'npm' | 'local' | 'auto') ?? 'auto';
-        const mode: WatchMode = requestedMode === 'npm' ? 'auto' : requestedMode;
-        const verbose = !!flags.verbose;
-        const dryRun = !!(flags['dry-run'] || flags.dryRun);
-        
-        // Track command start
-        await emit({
-          type: ANALYTICS_EVENTS.WATCH_STARTED,
-          payload: {
-            mode,
-            verbose,
-            dryRun,
-          },
-        });
-    
-        if (jsonMode) {
-          ctx.presenter.json({
-            ok: true,
-            operation: 'watch',
-            summary: {
-              mode,
-              verbose,
-              watching: true,
-            },
-            timings: {
-              startTime: Date.now(),
-            },
-          });
-          await emit({
-            type: ANALYTICS_EVENTS.WATCH_FINISHED,
-            payload: {
-              mode,
-              verbose,
-              durationMs: Date.now() - startTime,
-              result: 'success',
-            },
-          });
-          return 0;
-        }
-        
-        // Show initial status
-        const statusInfo = keyValue({
-          'Mode': mode,
-          'Verbose': verbose ? 'enabled' : 'disabled',
-          'Watching': 'Starting...',
-        });
-        
-        const output = box('DevLink Watch', statusInfo);
-        ctx.presenter.write(output);
-        ctx.presenter.write('');
-        
-        // Create watcher
-        const watcher = new DevLinkWatcher({
-          rootDir: cwd,
-          mode,
-          dryRun,
-        });
-        
-        let changeCount = 0;
-        
-        // Set up event handlers
-        watcher.on('change', (event) => {
-          changeCount++;
-          const timestamp = new Date().toLocaleTimeString();
-          
-          ctx.presenter.write(`${safeColors.dim(`[${timestamp}]`)} ${safeColors.info('→')} Change detected: ${event.file}`);
-          
-          if (event.package) {
-            ctx.presenter.write(`  ${safeColors.dim('•')} Package: ${event.package}`);
-          }
-          
-          if (event.dependents && event.dependents.length > 0) {
-            ctx.presenter.write(`  ${safeColors.dim('•')} Dependents: ${event.dependents.join(', ')}`);
-          }
-          
-          ctx.presenter.write('');
-        });
-        
-        watcher.on('rebuild', (event) => {
-          const timestamp = new Date().toLocaleTimeString();
-          ctx.presenter.write(`${safeColors.dim(`[${timestamp}]`)} ${safeColors.info('→')} Rebuilding ${event.package}...`);
-        });
-        
-        watcher.on('rebuild-complete', (event) => {
-          const timestamp = new Date().toLocaleTimeString();
-          const duration = formatTiming(event.duration);
-          ctx.presenter.write(`${safeColors.dim(`[${timestamp}]`)} ${safeSymbols.success} Rebuild complete (${duration})`);
-          ctx.presenter.write('');
-        });
-        
-        watcher.on('error', (error) => {
-          const timestamp = new Date().toLocaleTimeString();
-          ctx.presenter.write(`${safeColors.dim(`[${timestamp}]`)} ${safeSymbols.error} Error: ${error.message}`);
-          ctx.presenter.write('');
-        });
-        
-        watcher.on('ready', () => {
-          const timestamp = new Date().toLocaleTimeString();
-          ctx.presenter.write(`${safeColors.dim(`[${timestamp}]`)} ${safeSymbols.success} Watcher ready`);
-          ctx.presenter.write('');
-          ctx.presenter.write(safeColors.dim('Press Ctrl+C to stop'));
-          ctx.presenter.write('');
-        });
-        
-        // Start watching
-        await watcher.start();
-        
-        // For dry-run, exit immediately after showing results
-        if (dryRun) {
-          const totalTime = Date.now() - startTime;
-          await emit({
-            type: ANALYTICS_EVENTS.WATCH_FINISHED,
-            payload: {
-              mode,
-              verbose,
-              changeCount,
-              durationMs: totalTime,
-              result: 'success',
-            },
-          });
-          ctx.presenter.write('');
-          ctx.presenter.write(safeColors.success('✓') + ' Dry-run complete');
-          return 0;
-        }
-    
-        // Handle graceful shutdown
-        const shutdown = async () => {
-          ctx.presenter.write('');
-          ctx.presenter.write(safeColors.info('→') + ' Stopping watcher...');
-          await watcher.stop();
-          
-          const totalTime = Date.now() - startTime;
-          
-          // Track command completion
-          await emit({
-            type: ANALYTICS_EVENTS.WATCH_FINISHED,
-            payload: {
-              mode,
-              verbose,
-              changeCount,
-              durationMs: totalTime,
-              result: 'success',
-            },
-          });
-          
-          const summary = keyValue({
-            'Changes detected': changeCount,
-            'Total time': formatTiming(totalTime),
-            'Mode': mode,
-          });
-          
-          const finalOutput = box('Watch Complete', summary);
-          ctx.presenter.write(finalOutput);
-          
-          process.exit(0);
-        };
-        
-        process.on('SIGINT', shutdown);
-        process.on('SIGTERM', shutdown);
-        
-        // Keep the process alive
-        return new Promise(() => {});
-        
-      } catch (e: any) {
-        const totalTime = Date.now() - startTime;
-        
-        // Track command failure
-        await emit({
-          type: ANALYTICS_EVENTS.WATCH_FINISHED,
-          payload: {
-            mode: (flags.mode as string) ?? 'auto',
-            verbose: !!flags.verbose,
-            durationMs: totalTime,
-            result: 'error',
-            error: e?.message ?? 'Watch failed',
-          },
-        });
-        
-        if (jsonMode) {
-          ctx.presenter.json({ ok: false, error: e?.message });
-        } else {
-          ctx.presenter.error(e?.message ?? 'Watch failed');
-        }
-        return 1;
-      }
-    }
-  );
-
-  return exitCode as number | void;
+type DevlinkWatchFlags = {
+  cwd: { type: 'string'; description?: string };
+  mode: { type: 'string'; description?: string; choices?: readonly string[] };
+  verbose: { type: 'boolean'; description?: string; default?: boolean };
+  'dry-run': { type: 'boolean'; description?: string; default?: boolean };
+  dryRun: { type: 'boolean'; description?: string; default?: boolean };
+  json: { type: 'boolean'; description?: string; default?: boolean };
 };
+
+type DevlinkWatchResult = CommandResult & {
+  changeCount?: number;
+};
+
+export const run = defineCommand<DevlinkWatchFlags, DevlinkWatchResult>({
+  name: 'devlink:watch',
+  flags: {
+    cwd: {
+      type: 'string',
+      description: 'Working directory',
+    },
+    mode: {
+      type: 'string',
+      description: 'Watch mode',
+      choices: ['npm', 'local', 'auto'] as const,
+    },
+    verbose: {
+      type: 'boolean',
+      description: 'Enable verbose output',
+      default: false,
+    },
+    'dry-run': {
+      type: 'boolean',
+      description: 'Preview changes without executing',
+      default: false,
+    },
+    dryRun: {
+      type: 'boolean',
+      description: 'Preview changes without executing',
+      default: false,
+    },
+    json: {
+      type: 'boolean',
+      description: 'Output diagnostics in JSON format',
+      default: false,
+    },
+  },
+  analytics: {
+    startEvent: ANALYTICS_EVENTS.WATCH_STARTED,
+    finishEvent: ANALYTICS_EVENTS.WATCH_FINISHED,
+    actor: ANALYTICS_ACTOR,
+    includeFlags: true,
+  },
+  async handler(ctx, argv, flags) {
+    const cwd = flags.cwd && flags.cwd.length > 0 ? flags.cwd : process.cwd();
+    const requestedMode = (flags.mode as 'npm' | 'local' | 'auto') ?? 'auto';
+    const mode: WatchMode = requestedMode === 'npm' ? 'auto' : requestedMode;
+    const verbose = !!flags.verbose;
+    const dryRun = !!(flags['dry-run'] || flags.dryRun);
+    const jsonMode = !!flags.json;
+
+    if (jsonMode) {
+      ctx.output?.json({
+        ok: true,
+        operation: 'watch',
+        summary: {
+          mode,
+          verbose,
+          watching: true,
+        },
+        timings: {
+          startTime: Date.now(),
+        },
+      });
+      return { ok: true };
+    }
+
+    // Show initial status
+    const statusInfo = keyValue({
+      'Mode': mode,
+      'Verbose': verbose ? 'enabled' : 'disabled',
+      'Watching': 'Starting...',
+    });
+
+    const { ui } = ctx.output!;
+    const output = ui.box('DevLink Watch', statusInfo);
+    ctx.output?.write(output);
+    ctx.output?.write('');
+
+    // Create watcher
+    const watcher = new DevLinkWatcher({
+      rootDir: cwd,
+      mode,
+      dryRun,
+    });
+
+    let changeCount = 0;
+
+    // Set up event handlers
+    watcher.on('change', (event) => {
+      changeCount++;
+      const timestamp = new Date().toLocaleTimeString();
+
+      ctx.output?.write(`${safeColors.dim(`[${timestamp}]`)} ${safeColors.info('→')} Change detected: ${event.file}`);
+
+      if (event.package) {
+        ctx.output?.write(`  ${safeColors.dim('•')} Package: ${event.package}`);
+      }
+
+      if (event.dependents && event.dependents.length > 0) {
+        ctx.output?.write(`  ${safeColors.dim('•')} Dependents: ${event.dependents.join(', ')}`);
+      }
+
+      ctx.output?.write('');
+    });
+
+    watcher.on('rebuild', (event) => {
+      const timestamp = new Date().toLocaleTimeString();
+      ctx.output?.write(`${safeColors.dim(`[${timestamp}]`)} ${safeColors.info('→')} Rebuilding ${event.package}...`);
+    });
+
+    watcher.on('rebuild-complete', (event) => {
+      const timestamp = new Date().toLocaleTimeString();
+      const duration = formatTiming(event.duration);
+      ctx.output?.write(`${safeColors.dim(`[${timestamp}]`)} ${safeSymbols.success} Rebuild complete (${duration})`);
+      ctx.output?.write('');
+    });
+
+    watcher.on('error', (error) => {
+      const timestamp = new Date().toLocaleTimeString();
+      ctx.output?.write(`${safeColors.dim(`[${timestamp}]`)} ${safeSymbols.error} Error: ${error.message}`);
+      ctx.output?.write('');
+    });
+
+    watcher.on('ready', () => {
+      const timestamp = new Date().toLocaleTimeString();
+      ctx.output?.write(`${safeColors.dim(`[${timestamp}]`)} ${safeSymbols.success} Watcher ready`);
+      ctx.output?.write('');
+      ctx.output?.write(safeColors.dim('Press Ctrl+C to stop'));
+      ctx.output?.write('');
+    });
+
+    // Start watching
+    await watcher.start();
+
+    // For dry-run, exit immediately after showing results
+    if (dryRun) {
+      ctx.output?.write('');
+      ctx.output?.write(safeColors.success('✓') + ' Dry-run complete');
+      return { ok: true, changeCount };
+    }
+
+    // Handle graceful shutdown
+    const shutdown = async () => {
+      ctx.output?.write('');
+      ctx.output?.write(safeColors.info('→') + ' Stopping watcher...');
+      await watcher.stop();
+
+      const totalTime = ctx.tracker.total();
+
+      const summary = keyValue({
+        'Changes detected': changeCount,
+        'Total time': formatTiming(totalTime),
+        'Mode': mode,
+      });
+
+      const finalOutput = ui.box('Watch Complete', summary);
+      ctx.output?.write(finalOutput);
+
+      process.exit(0);
+    };
+
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+
+    // Keep the process alive
+    return new Promise(() => {});
+  },
+});

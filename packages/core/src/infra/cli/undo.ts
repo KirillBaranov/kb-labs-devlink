@@ -1,156 +1,138 @@
-import type { CommandModule } from './types';
-import type { z } from 'zod';
+import { defineCommand, type CommandResult } from '@kb-labs/cli-command-kit';
 import { undo } from '../../api';
-import { box, keyValue, formatTiming, safeSymbols, safeColors } from '@kb-labs/shared-cli-ui';
+import { keyValue, formatTiming, safeColors } from '@kb-labs/shared-cli-ui';
 import { Loader } from '@kb-labs/shared-cli-ui';
-import { runScope } from '@kb-labs/analytics-sdk-node';
 import { ANALYTICS_EVENTS, ANALYTICS_ACTOR } from '@devlink/infra/analytics/events';
 import { resolveWorkspaceRoot } from '@kb-labs/core-workspace';
-import { DevlinkUndoCommandInputSchema } from '@kb-labs/devlink-contracts/schema';
-import { parseCommandFlags } from './utils';
 
-type UndoCommandFlags = z.infer<typeof DevlinkUndoCommandInputSchema>;
+type DevlinkUndoFlags = {
+  cwd: { type: 'string'; description?: string };
+  'dry-run': { type: 'boolean'; description?: string; default?: boolean };
+  dryRun: { type: 'boolean'; description?: string; default?: boolean };
+  json: { type: 'boolean'; description?: string; default?: boolean };
+};
 
-export const run: CommandModule<UndoCommandFlags>['run'] = async (ctx, _argv, rawFlags) => {
-  const startTime = Date.now();
-  const jsonMode = !!(rawFlags as UndoCommandFlags | undefined)?.json;
-  const flags = parseCommandFlags(DevlinkUndoCommandInputSchema, rawFlags, {
-    ctx,
-    command: 'devlink undo',
-    jsonMode,
-  });
+type DevlinkUndoResult = CommandResult & {
+  reverted?: boolean;
+  operationType?: string;
+  details?: any;
+  diagnostics?: string[];
+  warnings?: string[];
+};
 
-  if (!flags) {
-    return 1;
-  }
-
-  const requestedCwd = typeof flags.cwd === 'string' && flags.cwd ? flags.cwd : undefined;
-  const workspaceResolution = await resolveWorkspaceRoot({
-    cwd: requestedCwd,
-    startDir: requestedCwd ?? process.cwd(),
-  });
-  const cwd = workspaceResolution.rootDir;
-  
-  const exitCode = await runScope(
-    {
-      actor: ANALYTICS_ACTOR,
-      ctx: { workspace: cwd, workspaceSource: workspaceResolution.source },
+export const run = defineCommand<DevlinkUndoFlags, DevlinkUndoResult>({
+  name: 'devlink:undo',
+  flags: {
+    cwd: {
+      type: 'string',
+      description: 'Working directory',
     },
-    async (emit) => {
-      const dryRun = !!(flags['dry-run'] || flags.dryRun);
+    'dry-run': {
+      type: 'boolean',
+      description: 'Preview changes without executing',
+      default: false,
+    },
+    dryRun: {
+      type: 'boolean',
+      description: 'Preview changes without executing',
+      default: false,
+    },
+    json: {
+      type: 'boolean',
+      description: 'Output diagnostics in JSON format',
+      default: false,
+    },
+  },
+  analytics: {
+    startEvent: ANALYTICS_EVENTS.UNDO_STARTED,
+    finishEvent: ANALYTICS_EVENTS.UNDO_FINISHED,
+    actor: ANALYTICS_ACTOR,
+    includeFlags: true,
+  },
+  async handler(ctx, argv, flags) {
+    const requestedCwd = flags.cwd && flags.cwd.length > 0 ? flags.cwd : undefined;
+    const workspaceResolution = await resolveWorkspaceRoot({
+      cwd: requestedCwd,
+      startDir: requestedCwd ?? process.cwd(),
+    });
+    const cwd = workspaceResolution.rootDir;
+    const dryRun = !!(flags['dry-run'] || flags.dryRun);
+    const jsonMode = !!flags.json;
 
-      try {
-    
-        // Track command start
-        await emit({
-          type: ANALYTICS_EVENTS.UNDO_STARTED,
-          payload: {
-            dryRun,
-          },
-        });
-        
-        const loader = new Loader({ 
-          text: 'Reading journal...', 
-          spinner: true, 
-          jsonMode 
-        });
-        
-        if (!jsonMode) {
-          loader.start();
-        }
-        
-        // Execute undo
-        const result = await undo({
-          rootDir: cwd,
-          dryRun,
-        });
-        
-        const totalTime = Date.now() - startTime;
-    
-        if (jsonMode) {
-          ctx.presenter.json({
-            ok: result.ok,
-            operation: 'undo',
-            summary: {
-              reverted: result.reverted,
-              operationType: result.operationType,
-              details: result.details,
-            },
-            timings: {
-              total: totalTime,
-            },
-            diagnostics: result.diagnostics || [],
-            warnings: result.warnings || [],
-          });
-        } else {
-          if (result.ok) {
-            loader.succeed('Undo complete');
-            
-            const summary = keyValue({
-              'Reverted': result.reverted,
-              'Type': result.operationType || 'unknown',
-              'From': result.details?.backupDir ? 
-                result.details.backupDir.split('/').pop() : 'backup',
-              'Time': formatTiming(totalTime),
-            });
-            
-            const output = box('Undo Last Operation', summary);
-            ctx.presenter.write(output);
-            
-            if (result.warnings && result.warnings.length > 0) {
-              ctx.presenter.write('');
-              ctx.presenter.write(safeColors.warning('Warnings:'));
-              result.warnings.forEach(msg => 
-                ctx.presenter.write(`  ${safeColors.dim('•')} ${msg}`)
-              );
-            }
-          } else {
-            loader.fail('Undo failed');
-            ctx.presenter.error('Failed to undo last operation');
-            if (result.diagnostics) {
-              result.diagnostics.forEach(msg => 
-                ctx.presenter.write(`  ${safeColors.dim('•')} ${msg}`)
-              );
-            }
-          }
-        }
+    const loader = new Loader({
+      text: 'Reading journal...',
+      spinner: true,
+      jsonMode
+    });
 
-        // Track command completion
-        await emit({
-          type: ANALYTICS_EVENTS.UNDO_FINISHED,
-          payload: {
-            dryRun,
-            reverted: result.reverted,
-            operationType: result.operationType || 'unknown',
-            durationMs: totalTime,
-            result: result.ok ? 'success' : 'failed',
-          },
+    if (!jsonMode) {
+      loader.start();
+    }
+
+    // Execute undo
+    const result = await undo({
+      rootDir: cwd,
+      dryRun,
+    });
+
+    const totalTime = ctx.tracker.total();
+
+    if (jsonMode) {
+      ctx.output?.json({
+        ok: result.ok,
+        operation: 'undo',
+        summary: {
+          reverted: result.reverted,
+          operationType: result.operationType,
+          details: result.details,
+        },
+        timings: {
+          total: totalTime,
+        },
+        diagnostics: result.diagnostics || [],
+        warnings: result.warnings || [],
+      });
+    } else {
+      if (result.ok) {
+        loader.succeed('Undo complete');
+
+        const summary = keyValue({
+          'Reverted': result.reverted,
+          'Type': result.operationType || 'unknown',
+          'From': result.details?.backupDir ?
+            result.details.backupDir.split('/').pop() : 'backup',
+          'Time': formatTiming(totalTime),
         });
 
-        return result.ok ? 0 : 1;
-      } catch (e: any) {
-        const totalTime = Date.now() - startTime;
-        
-        // Track command failure
-        await emit({
-          type: ANALYTICS_EVENTS.UNDO_FINISHED,
-          payload: {
-            dryRun,
-            durationMs: totalTime,
-            result: 'error',
-            error: e?.message ?? 'Undo failed',
-          },
-        });
-        
-        if (jsonMode) {
-          ctx.presenter.json({ ok: false, error: e?.message });
-        } else {
-          ctx.presenter.error(e?.message ?? 'Undo failed');
+        const { ui } = ctx.output!;
+        const output = ui.box('Undo Last Operation', summary);
+        ctx.output?.write(output);
+
+        if (result.warnings && result.warnings.length > 0) {
+          ctx.output?.write('');
+          ctx.output?.write(safeColors.warning('Warnings:'));
+          result.warnings.forEach(msg =>
+            ctx.output?.write(`  ${safeColors.dim('•')} ${msg}`)
+          );
         }
-        return 1;
+      } else {
+        loader.fail('Undo failed');
+        ctx.output?.error(new Error('Failed to undo last operation'));
+        if (result.diagnostics) {
+          result.diagnostics.forEach(msg =>
+            ctx.output?.write(`  ${safeColors.dim('•')} ${msg}`)
+          );
+        }
       }
     }
-  );
 
-  return exitCode as number | void;
-};
+    return {
+      ok: result.ok,
+      reverted: result.reverted,
+      operationType: result.operationType,
+      details: result.details,
+      diagnostics: result.diagnostics,
+      warnings: result.warnings,
+    };
+  },
+});
