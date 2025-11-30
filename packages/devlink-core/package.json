@@ -1,0 +1,85 @@
+{
+  "name": "@kb-labs/devlink-core",
+  "version": "0.1.0",
+  "description": "Core engine for KB Labs DevLink — local linking and orchestration layer for multi-repository ecosystems.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./cli": "./dist/cli/index.js",
+    "./rest": "./dist/rest/index.js",
+    "./studio": "./dist/studio/index.js",
+    "./core": "./dist/core/index.js",
+    "./infrastructure": "./dist/infrastructure/index.js",
+    "./utils": "./dist/utils/index.js",
+    "./types": "./dist/types/index.js",
+    "./dist/*": "./dist/*"
+  },
+  "kb": {
+    "manifest": "./dist/types/manifest.js",
+    "plugin": true
+  },
+  "author": {
+    "name": "Kirill Baranov",
+    "url": "https://github.com/kirill-baranov"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kirill-baranov/kb-labs-devlink.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/kirill-baranov/kb-labs-devlink/issues"
+  },
+  "homepage": "https://github.com/kirill-baranov/kb-labs-devlink#readme",
+  "keywords": [
+    "devlink",
+    "linking",
+    "yalc",
+    "pnpm",
+    "monorepo",
+    "dependency-management"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@kb-labs/analytics-sdk-node": "link:../../../kb-labs-analytics/packages/analytics-sdk-node",
+    "@kb-labs/core-sys": "link:../../../kb-labs-core/packages/sys",
+    "@kb-labs/core-workspace": "link:../../../kb-labs-core/packages/core",
+    "@kb-labs/devlink-contracts": "link:../devlink-contracts",
+    "@kb-labs/plugin-manifest": "link:../../../kb-labs-plugin/packages/manifest",
+    "@kb-labs/plugin-runtime": "link:../../../kb-labs-plugin/packages/runtime",
+    "@kb-labs/shared-cli-ui": "link:../../../kb-labs-shared/packages/cli-ui",
+    "chokidar": "^4.0.0",
+    "glob": "^11.0.0",
+    "minimatch": "^10.0.0",
+    "p-queue": "^8.0.0",
+    "zod": "^4.0.0"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run -c ../../vitest.config.ts",
+    "test:watch": "vitest -c ../../vitest.config.ts"
+  },
+  "devDependencies": {
+    "@kb-labs/devkit": "link:../../../kb-labs-devkit",
+    "@types/node": "^24.7.0",
+    "tsup": "^8",
+    "tsx": "^4.20.5",
+    "vitest": "^3"
+  }
+}
