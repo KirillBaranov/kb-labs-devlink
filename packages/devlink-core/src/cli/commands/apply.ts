@@ -1,4 +1,4 @@
-import { defineCommand, type CommandResult } from '@kb-labs/cli-command-kit';
+import { defineCommand, type CommandResult } from '@kb-labs/shared-command-kit';
 import { join } from 'node:path';
 import { apply } from '../rest';
 import { readJson } from '../filesystem/fs';

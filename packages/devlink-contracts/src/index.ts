@@ -1,6 +1,6 @@
-export { pluginContractsManifest } from './contract.js';
-export { contractsVersion, contractsSchemaId } from './version.js';
+export { pluginContractsManifest } from './contract';
+export { contractsVersion, contractsSchemaId } from './version';
 
-export * from './types.js';
-export * from './schema.js';
+export * from './types';
+export * from './schema';
 

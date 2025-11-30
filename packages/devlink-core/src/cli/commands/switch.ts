@@ -1,4 +1,4 @@
-import { defineCommand, type CommandResult } from '@kb-labs/cli-command-kit';
+import { defineCommand, type CommandResult } from '@kb-labs/shared-command-kit';
 import { scanAndPlan, apply } from '../rest';
 import { keyValue, formatTiming, safeColors } from '@kb-labs/shared-cli-ui';
 import { Loader } from '@kb-labs/shared-cli-ui';

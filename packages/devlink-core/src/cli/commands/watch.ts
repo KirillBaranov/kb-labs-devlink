@@ -1,4 +1,4 @@
-import { defineCommand, type CommandResult } from '@kb-labs/cli-command-kit';
+import { defineCommand, type CommandResult } from '@kb-labs/shared-command-kit';
 import { DevLinkWatcher } from '../rest';
 import { keyValue, formatTiming, safeSymbols, safeColors } from '@kb-labs/shared-cli-ui';
 import type { WatchMode } from '../core/operations/watch';

@@ -1,4 +1,4 @@
-import { defineCommand, type CommandResult } from '@kb-labs/cli-command-kit';
+import { defineCommand, type CommandResult } from '@kb-labs/shared-command-kit';
 import { clean } from '../maintenance/clean';
 import { keyValue, formatTiming, safeSymbols, safeColors } from '@kb-labs/shared-cli-ui';
 import { ANALYTICS_EVENTS, ANALYTICS_ACTOR } from '../infrastructure/analytics/events';

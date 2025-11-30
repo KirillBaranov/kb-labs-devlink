@@ -1,8 +1,8 @@
-import type { ApiContract } from './types/api.js';
-import type { ArtifactContractsMap } from './types/artifacts.js';
-import type { CommandContractsMap } from './types/commands.js';
-import type { WorkflowContractsMap } from './types/workflows.js';
-import type { ContractsSchemaId } from './version.js';
+import type { ApiContract } from './types/api';
+import type { ArtifactContractsMap } from './types/artifacts';
+import type { CommandContractsMap } from './types/commands';
+import type { WorkflowContractsMap } from './types/workflows';
+import type { ContractsSchemaId } from './version';
 
 export interface PluginContracts {
   schema: ContractsSchemaId;
@@ -14,8 +14,8 @@ export interface PluginContracts {
   api?: ApiContract;
 }
 
-export type { ApiContract, RestApiContract, RestRouteContract, SchemaReference } from './types/api.js';
-export type { ArtifactKind, ArtifactContractsMap, PluginArtifactContract, ArtifactExample } from './types/artifacts.js';
-export type { CommandContract, CommandContractsMap } from './types/commands.js';
-export type { WorkflowContract, WorkflowContractsMap, WorkflowStepContract } from './types/workflows.js';
+export type { ApiContract, RestApiContract, RestRouteContract, SchemaReference } from './types/api';
+export type { ArtifactKind, ArtifactContractsMap, PluginArtifactContract, ArtifactExample } from './types/artifacts';
+export type { CommandContract, CommandContractsMap } from './types/commands';
+export type { WorkflowContract, WorkflowContractsMap, WorkflowStepContract } from './types/workflows';
 
