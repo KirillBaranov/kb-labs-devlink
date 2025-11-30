@@ -1,7 +1,7 @@
 import { promises as fsp } from 'fs';
 import { basename, join, relative } from 'path';
-import { sha1 } from '@devlink/shared/utils/hash';
-import type { DevLinkPlan, GraphEdge, LinkAction } from '@devlink/application/devlink/legacy/types';
+import { sha1 } from '../utils/hash';
+import type { DevLinkPlan, GraphEdge, LinkAction } from '../core/operations/types';
 
 const DEFAULT_PLAN_PATH = join('.kb', 'devlink', 'last-plan.json');
 

@@ -10,12 +10,17 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./api": "./dist/api/index.js",
-    "./utils/*": "./dist/utils/*.js",
+    "./cli": "./dist/cli/index.js",
+    "./rest": "./dist/rest/index.js",
+    "./studio": "./dist/studio/index.js",
+    "./core": "./dist/core/index.js",
+    "./infrastructure": "./dist/infrastructure/index.js",
+    "./utils": "./dist/utils/index.js",
+    "./types": "./dist/types/index.js",
     "./dist/*": "./dist/*"
   },
   "kb": {
-    "manifest": "./dist/manifest.v2.js",
+    "manifest": "./dist/types/manifest.js",
     "plugin": true
   },
   "author": {
@@ -52,6 +57,7 @@
     "@kb-labs/core-workspace": "link:../../../kb-labs-core/packages/core",
     "@kb-labs/devlink-contracts": "link:../contracts",
     "@kb-labs/plugin-manifest": "link:../../../kb-labs-plugin/packages/manifest",
+    "@kb-labs/plugin-runtime": "link:../../../kb-labs-plugin/packages/runtime",
     "@kb-labs/shared-cli-ui": "link:../../../kb-labs-shared/packages/cli-ui",
     "chokidar": "^4.0.0",
     "glob": "^11.0.0",

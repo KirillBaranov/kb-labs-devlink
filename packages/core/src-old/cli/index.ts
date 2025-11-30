@@ -1,0 +1,11 @@
+export * from './types';
+export { run as runPlanCommand } from './plan';
+export { run as runApplyCommand } from './apply';
+export { run as runStatusCommand } from './status';
+export { run as runFreezeCommand } from './freeze';
+export { run as runUndoCommand } from './undo';
+export { run as runSwitchCommand } from './switch';
+export { run as runUpdateCommand } from './update';
+export { run as runWatchCommand } from './watch';
+export { run as runCleanCommand } from './clean';
+export { run as runBackupsCommand } from './backups';

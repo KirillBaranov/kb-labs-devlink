@@ -1,10 +1,7 @@
-export * from './shared/index';
-export * from './domain/index';
-export * from './application/index';
-export * from './rest/index';
-export * from './studio/index';
-export * from './rollback/index';
-// CLI exports (avoid conflicts with infra)
+// Main barrel export for @kb-labs/devlink-core
+// Maintains backward compatibility while exposing new structure
+
+// CLI Commands
 export {
   runApplyCommand,
   runBackupsCommand,
@@ -16,6 +13,31 @@ export {
   runUndoCommand,
   runUpdateCommand,
   runWatchCommand,
-} from './cli/index';
-// Infra exports (avoid conflicts with CLI)
-export * from './infra/index';
+} from './cli/commands';
+
+// Core Operations (публичные типы)
+export type {
+  DevLinkPlan,
+  DevLinkStatus,
+  ScanResult,
+  ApplyResult,
+  WatchOptions,
+  PlanOptions,
+  ApplyOptions,
+} from './core/operations';
+
+// Models (публичные типы)
+export type {
+  DependencyGraph,
+  DependencyNode,
+  DevLinkPolicy,
+} from './core/models';
+
+// REST API
+export * from './rest';
+
+// Studio
+export * from './studio';
+
+// Types (публичные)
+export type * from './types';
