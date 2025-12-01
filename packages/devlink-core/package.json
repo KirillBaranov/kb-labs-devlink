@@ -31,7 +31,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/kirill-baranov/kb-labs-devlink.git",
-    "directory": "packages/core"
+    "directory": "packages/core-framework"
   },
   "bugs": {
     "url": "https://github.com/kirill-baranov/kb-labs-devlink/issues"
@@ -53,11 +53,11 @@
   "sideEffects": false,
   "dependencies": {
     "@kb-labs/core-sys": "link:../../../kb-labs-core/packages/core-sys",
-    "@kb-labs/core-workspace": "link:../../../kb-labs-core/packages/core",
+    "@kb-labs/core-workspace": "link:../../../kb-labs-core/packages/core-framework",
     "@kb-labs/devlink-contracts": "link:../devlink-contracts",
-    "@kb-labs/plugin-manifest": "link:../../../kb-labs-plugin/packages/manifest",
-    "@kb-labs/plugin-runtime": "link:../../../kb-labs-plugin/packages/runtime",
-    "@kb-labs/shared-cli-ui": "link:../../../kb-labs-shared/packages/cli-ui",
+    "@kb-labs/plugin-manifest": "link:../../../kb-labs-plugin/packages/plugin-manifest",
+    "@kb-labs/plugin-runtime": "link:../../../kb-labs-plugin/packages/plugin-runtime",
+    "@kb-labs/shared-cli-ui": "link:../../../kb-labs-shared/packages/shared-cli-ui",
     "@kb-labs/shared-command-kit": "workspace:*",
     "chokidar": "^4.0.3",
     "glob": "^11.0.0",

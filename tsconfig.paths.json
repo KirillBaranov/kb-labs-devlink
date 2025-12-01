@@ -22,22 +22,22 @@
         "packages/devlink-contracts/src/*"
       ],
       "@kb-labs/plugin-manifest": [
-        "../kb-labs-plugin/packages/manifest/src/index.ts"
+        "../kb-labs-plugin/packages/plugin-manifest/src/index.ts"
       ],
       "@kb-labs/plugin-manifest/*": [
-        "../kb-labs-plugin/packages/manifest/src/*"
+        "../kb-labs-plugin/packages/plugin-manifest/src/*"
       ],
       "@kb-labs/plugin-runtime": [
-        "../kb-labs-plugin/packages/runtime/src/index.ts"
+        "../kb-labs-plugin/packages/plugin-runtime/src/index.ts"
       ],
       "@kb-labs/plugin-runtime/*": [
-        "../kb-labs-plugin/packages/runtime/src/*"
+        "../kb-labs-plugin/packages/plugin-runtime/src/*"
       ],
       "@kb-labs/shared-cli-ui": [
-        "../kb-labs-shared/packages/cli-ui/src/index.ts"
+        "../kb-labs-shared/packages/shared-cli-ui/src/index.ts"
       ],
       "@kb-labs/shared-cli-ui/*": [
-        "../kb-labs-shared/packages/cli-ui/src/*"
+        "../kb-labs-shared/packages/shared-cli-ui/src/*"
       ],
       "@kb-labs/shared-command-kit": [
         "../kb-labs-shared/packages/shared-command-kit/src/index.ts"
