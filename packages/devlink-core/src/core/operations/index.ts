@@ -1,11 +1,14 @@
-
-export * from "./types";
+export * from "./operations-types";
 export { scanPackages } from "./scan";
 export { buildPlan } from "./plan";
 export { applyPlan } from "./apply";
 export { switchMode } from "./switch";
 export { updateDeps } from "./update";
-export * from "./lock";
-export * from "./journal";
+export * from "./lock-freeze";
+export * from "./lock-apply";
+export * from "./journal-undo";
+export * from "./journal-last-apply";
 export * from "./status";
 export * from "./watch";
+export * from "./commands";
+export * from "./artifacts";

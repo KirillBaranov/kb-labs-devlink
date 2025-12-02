@@ -3,7 +3,7 @@
  * Single source of truth for devlink commands
  */
 
-import { manifest } from '../types/manifest/manifest.v2';
+import { manifest } from '../../types/manifest';
 
 const manifestCommands = manifest.cli?.commands ?? [];
 

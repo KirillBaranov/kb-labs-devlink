@@ -1,1 +1,1 @@
-export * from '../infrastructure/artifacts/artifacts';
+export * from '@kb-labs/devlink-adapters/artifacts';
