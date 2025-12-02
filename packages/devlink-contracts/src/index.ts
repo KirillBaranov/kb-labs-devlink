@@ -3,4 +3,5 @@ export { contractsVersion, contractsSchemaId } from './version';
 
 export * from './types';
 export * from './schema';
+export * from './events';
 
