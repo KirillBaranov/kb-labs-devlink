@@ -44,6 +44,18 @@
     "./logging": {
       "types": "./dist/logging/index.d.ts",
       "default": "./dist/logging/index.js"
+    },
+    "./artifacts": {
+      "types": "./dist/artifacts/index.d.ts",
+      "default": "./dist/artifacts/index.js"
+    },
+    "./watch": {
+      "types": "./dist/watch/index.d.ts",
+      "default": "./dist/watch/index.js"
+    },
+    "./preflight": {
+      "types": "./dist/preflight/index.d.ts",
+      "default": "./dist/preflight/index.js"
     }
   },
   "scripts": {
@@ -52,6 +64,8 @@
   },
   "dependencies": {
     "@kb-labs/devlink-contracts": "workspace:*",
+    "@kb-labs/core-sys": "link:../../../kb-labs-core/packages/core-sys",
+    "@kb-labs/core-workspace": "link:../../../kb-labs-core/packages/core-framework",
     "glob": "^11.0.0",
     "p-queue": "^8.0.0",
     "chokidar": "^4.0.3"

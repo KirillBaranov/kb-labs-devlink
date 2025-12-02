@@ -107,7 +107,7 @@ export const manifest = createManifestV2<typeof pluginContractsManifest>({
           },
         ],
         examples: ['kb devlink plan', 'kb devlink plan --mode local --strict', 'kb devlink plan --container --json'],
-        handler: './commands/plan.js#run',
+        handler: './commands/plan#run',
       },
       {
         id: 'devlink:apply',
@@ -138,7 +138,7 @@ export const manifest = createManifestV2<typeof pluginContractsManifest>({
           },
         ],
         examples: ['kb devlink apply', 'kb devlink apply --dry-run', 'kb devlink apply --yes --json'],
-        handler: './commands/apply.js#run',
+        handler: './commands/apply#run',
       },
       {
         id: 'devlink:status',
@@ -193,7 +193,7 @@ export const manifest = createManifestV2<typeof pluginContractsManifest>({
           'kb devlink status --verbose',
           'kb devlink status --sources --diff',
         ],
-        handler: './commands/status.js#run',
+        handler: './commands/status#run',
       },
       {
         id: 'devlink:freeze',
@@ -227,7 +227,7 @@ export const manifest = createManifestV2<typeof pluginContractsManifest>({
           'kb devlink freeze --dry-run',
           'kb devlink freeze --merge',
         ],
-        handler: './commands/freeze.js#run',
+        handler: './commands/freeze#run',
       },
       {
         id: 'devlink:undo',
@@ -252,7 +252,7 @@ export const manifest = createManifestV2<typeof pluginContractsManifest>({
           },
         ],
         examples: ['kb devlink undo', 'kb devlink undo --dry-run'],
-        handler: './commands/undo.js#run',
+        handler: './commands/undo#run',
       },
       {
         id: 'devlink:switch',
@@ -290,7 +290,7 @@ export const manifest = createManifestV2<typeof pluginContractsManifest>({
           },
         ],
         examples: ['kb devlink switch --mode local', 'kb devlink switch --mode npm --yes --dry-run'],
-        handler: './commands/switch.js#run',
+        handler: './commands/switch#run',
       },
       {
         id: 'devlink:update',
@@ -328,7 +328,7 @@ export const manifest = createManifestV2<typeof pluginContractsManifest>({
           },
         ],
         examples: ['kb devlink update', 'kb devlink update --mode local --dry-run --yes'],
-        handler: './commands/update.js#run',
+        handler: './commands/update#run',
       },
       {
         id: 'devlink:watch',
@@ -370,7 +370,7 @@ export const manifest = createManifestV2<typeof pluginContractsManifest>({
           'kb devlink watch --mode local --verbose',
           'kb devlink watch --dry-run',
         ],
-        handler: './commands/watch.js#run',
+        handler: './commands/watch#run',
       },
       {
         id: 'devlink:clean',
@@ -405,7 +405,7 @@ export const manifest = createManifestV2<typeof pluginContractsManifest>({
           'kb devlink clean --deep',
           'kb devlink clean --hard --deep',
         ],
-        handler: './commands/clean.js#run',
+        handler: './commands/clean#run',
       },
       {
         id: 'devlink:backups',
@@ -461,7 +461,7 @@ export const manifest = createManifestV2<typeof pluginContractsManifest>({
           'kb devlink backups --protect 2025-10-30T20-25-33',
           'kb devlink backups --cleanup',
         ],
-        handler: './commands/backups.js#run',
+        handler: './commands/backups#run',
       },
     ],
   },
