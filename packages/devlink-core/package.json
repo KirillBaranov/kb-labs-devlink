@@ -12,10 +12,6 @@
     },
     "./types": "./dist/types/index.js"
   },
-  "kb": {
-    "manifest": "./dist/types/manifest.js",
-    "plugin": true
-  },
   "author": {
     "name": "Kirill Baranov",
     "url": "https://github.com/kirill-baranov"
