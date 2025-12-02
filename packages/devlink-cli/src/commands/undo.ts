@@ -3,7 +3,7 @@ import { undo } from '@kb-labs/devlink-core';
 import { keyValue, formatTiming, safeColors } from '@kb-labs/shared-cli-ui';
 import { Loader } from '@kb-labs/shared-cli-ui';
 import { ANALYTICS_EVENTS, ANALYTICS_ACTOR } from '@kb-labs/devlink-adapters/analytics';
-import { resolveWorkspaceRoot } from '@kb-labs/core-workspace';
+import { resolveWorkspaceRoot } from '@kb-labs/devlink-adapters/workspace';
 
 type DevlinkUndoFlags = {
   cwd: { type: 'string'; description?: string };

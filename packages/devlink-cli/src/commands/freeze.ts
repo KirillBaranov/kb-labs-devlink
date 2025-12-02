@@ -5,7 +5,7 @@ import { keyValue, formatTiming, safeColors, displayArtifactsCompact, Loader } f
 import { discoverArtifacts, determineMode } from '@kb-labs/devlink-core';
 import type { DevLinkMode } from '../core/operations/types';
 import { ANALYTICS_EVENTS, ANALYTICS_ACTOR } from '@kb-labs/devlink-adapters/analytics';
-import { resolveWorkspaceRoot } from '@kb-labs/core-workspace';
+import { resolveWorkspaceRoot } from '@kb-labs/devlink-adapters/workspace';
 
 type DevlinkFreezeFlags = {
   cwd: { type: 'string'; description?: string };

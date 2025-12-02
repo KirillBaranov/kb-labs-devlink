@@ -15,6 +15,7 @@ export default defineConfig({
     'src/time/index.ts',
     'src/vcs/index.ts',
     'src/watch/index.ts',
+    'src/workspace/index.ts',
   ],
   format: ['esm'],
   dts: false,

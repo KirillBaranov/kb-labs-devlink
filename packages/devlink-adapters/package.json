@@ -56,6 +56,10 @@
     "./preflight": {
       "types": "./dist/preflight/index.d.ts",
       "default": "./dist/preflight/index.js"
+    },
+    "./workspace": {
+      "types": "./dist/workspace/index.d.ts",
+      "default": "./dist/workspace/index.js"
     }
   },
   "scripts": {

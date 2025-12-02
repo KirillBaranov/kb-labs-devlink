@@ -5,7 +5,7 @@ import { keyValue, formatTiming, displayArtifactsCompact } from '@kb-labs/shared
 import { discoverArtifacts } from '@kb-labs/devlink-core';
 import { writeJson } from '@kb-labs/devlink-adapters/filesystem';
 import { ANALYTICS_EVENTS, ANALYTICS_ACTOR } from '@kb-labs/devlink-adapters/analytics';
-import { resolveWorkspaceRoot } from '@kb-labs/core-workspace';
+import { resolveWorkspaceRoot } from '@kb-labs/devlink-adapters/workspace';
 
 type DevlinkPlanFlags = {
   cwd: { type: 'string'; description?: string };
