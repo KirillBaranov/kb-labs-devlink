@@ -2,10 +2,10 @@ import { promises as fsp } from "node:fs";
 import path from "node:path";
 import { join } from "node:path";
 import crypto from "node:crypto";
-import { writeJson, readJson, exists } from '../utils/fs';
+import { writeJson, readJson, exists } from '@kb-labs/devlink-adapters/filesystem';
 import type { DevLinkPlan } from '../types';
-import { logger } from '../utils/logger';
-import { resolveInstalledVersionNear } from '../core/discovery/discovery';
+import { logger } from '@kb-labs/devlink-adapters/logging';
+import { resolveInstalledVersionNear } from '../../discovery/discovery';
 
 export interface LockFile {
   schemaVersion: 2;

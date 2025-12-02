@@ -1,9 +1,9 @@
 import { promises as fsp } from "node:fs";
 import path, { join } from "node:path";
 import { runCommand } from '../utils/runCommand';
-import { logger } from '../utils/logger';
+import { logger } from '@kb-labs/devlink-adapters/logging';
 import { readLastApply, readLastFreeze, writeLastFreeze, writeLastApplyJournal, type LastApplyJournal } from "./last-apply";
-import { readJson, exists, writeJson } from '../utils/fs';
+import { readJson, exists, writeJson } from '@kb-labs/devlink-adapters/filesystem';
 import type { LockFile } from "../lock/freeze";
 
 /**

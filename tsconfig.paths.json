@@ -15,11 +15,23 @@
       "@kb-labs/core-workspace/*": [
         "../kb-labs-core/packages/core-workspace/src/*"
       ],
+      "@kb-labs/devlink-adapters": [
+        "packages/devlink-adapters/src/index.ts"
+      ],
+      "@kb-labs/devlink-adapters/*": [
+        "packages/devlink-adapters/src/*"
+      ],
       "@kb-labs/devlink-contracts": [
         "packages/devlink-contracts/src/index.ts"
       ],
       "@kb-labs/devlink-contracts/*": [
         "packages/devlink-contracts/src/*"
+      ],
+      "@kb-labs/devlink-core": [
+        "packages/devlink-core/src/index.ts"
+      ],
+      "@kb-labs/devlink-core/*": [
+        "packages/devlink-core/src/*"
       ],
       "@kb-labs/plugin-manifest": [
         "../kb-labs-plugin/packages/plugin-manifest/src/index.ts"

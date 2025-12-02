@@ -1,5 +1,5 @@
-import { readJson, writeJson, exists } from '../utils/fs';
-import { logger } from '../utils/logger';
+import { readJson, writeJson, exists } from '@kb-labs/devlink-adapters/filesystem';
+import { logger } from '@kb-labs/devlink-adapters/logging';
 import type { DevLinkPlan, LinkAction, ManifestPatch } from '../types';
 
 export interface LastApplyJournal {

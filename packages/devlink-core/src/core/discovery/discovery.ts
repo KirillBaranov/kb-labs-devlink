@@ -1,10 +1,10 @@
 import { promises as fsp } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { createRequire } from 'module';
-import { exists, repoNameFromPath, pkgJsonPath, walkPatterns } from '../filesystem/fs';
-import { sha1 } from '../utils/hash';
+import { exists, repoNameFromPath, pkgJsonPath, walkPatterns } from '@kb-labs/devlink-adapters/filesystem';
+import { sha1 } from '@kb-labs/devlink-contracts';
 import type { PkgRef, DevlinkState, DepEdge, DepType } from '../types';
-import { logger } from '../logging/logger';
+import { logger } from '@kb-labs/devlink-adapters/logging';
 import {
   detectWorkspaceContainerRoots,
   isMonorepoRoot,

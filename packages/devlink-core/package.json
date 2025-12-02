@@ -1,6 +1,6 @@
 {
   "name": "@kb-labs/devlink-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Core engine for KB Labs DevLink — local linking and orchestration layer for multi-repository ecosystems.",
   "type": "module",
   "main": "./dist/index.js",
@@ -10,14 +10,7 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./cli": "./dist/cli/index.js",
-    "./rest": "./dist/rest/index.js",
-    "./studio": "./dist/studio/index.js",
-    "./core": "./dist/core/index.js",
-    "./infrastructure": "./dist/infrastructure/index.js",
-    "./utils": "./dist/utils/index.js",
-    "./types": "./dist/types/index.js",
-    "./dist/*": "./dist/*"
+    "./types": "./dist/types/index.js"
   },
   "kb": {
     "manifest": "./dist/types/manifest.js",
@@ -54,11 +47,12 @@
   "dependencies": {
     "@kb-labs/core-sys": "link:../../../kb-labs-core/packages/core-sys",
     "@kb-labs/core-workspace": "link:../../../kb-labs-core/packages/core-framework",
-    "@kb-labs/devlink-contracts": "link:../devlink-contracts",
+    "@kb-labs/devlink-contracts": "workspace:*",
+    "@kb-labs/devlink-adapters": "workspace:*",
     "@kb-labs/plugin-manifest": "link:../../../kb-labs-plugin/packages/plugin-manifest",
     "@kb-labs/plugin-runtime": "link:../../../kb-labs-plugin/packages/plugin-runtime",
     "@kb-labs/shared-cli-ui": "link:../../../kb-labs-shared/packages/shared-cli-ui",
-    "@kb-labs/shared-command-kit": "workspace:*",
+    "@kb-labs/shared-command-kit": "link:../../../kb-labs-shared/packages/shared-command-kit",
     "chokidar": "^4.0.3",
     "glob": "^11.0.0",
     "minimatch": "^9.0.4",

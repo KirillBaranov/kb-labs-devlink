@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 import type { DevLinkPolicy } from '../types';
 import type { DevlinkState, PlanEntry, PlanSnapshot, SourceMode, VersionPolicy, LockSnapshot } from '../types';
-import { logger } from '../utils/logger';
+import { logger } from '@kb-labs/devlink-adapters/logging';
 
 export type { DevLinkPolicy as DevLinkPolicyType } from "../types";
 
