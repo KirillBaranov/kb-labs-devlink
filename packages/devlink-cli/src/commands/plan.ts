@@ -1,6 +1,6 @@
 import { defineCommand, type CommandResult } from '@kb-labs/shared-command-kit';
 import { join } from 'node:path';
-import { scanAndPlan } from '@kb-labs/devlink-core';
+import { scanPackages, buildPlan } from '@kb-labs/devlink-core';
 import { keyValue, formatTiming, displayArtifactsCompact } from '@kb-labs/shared-cli-ui';
 import { discoverArtifacts } from '@kb-labs/devlink-core';
 import { writeJson } from '@kb-labs/devlink-adapters/filesystem';
@@ -74,13 +74,25 @@ export const run = defineCommand<DevlinkPlanFlags, DevlinkPlanResult>({
 
     ctx.tracker.checkpoint('scan');
 
-    const result = await scanAndPlan({
+    const scanResult = await scanPackages({
       rootDir: cwd,
-      mode,
       roots,
-      strict,
       container,
     });
+
+    ctx.tracker.checkpoint('plan');
+
+    const plan = await buildPlan(scanResult.index, scanResult.graph, {
+      mode,
+      strict,
+    });
+
+    const result = {
+      ok: true,
+      plan,
+      state: scanResult.state,
+      diagnostics: plan.diagnostics || [],
+    };
 
     const totalTime = ctx.tracker.total();
 
