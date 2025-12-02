@@ -1,0 +1,63 @@
+{
+  "name": "@kb-labs/devlink-adapters",
+  "version": "0.2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./filesystem": {
+      "types": "./dist/filesystem/index.d.ts",
+      "default": "./dist/filesystem/index.js"
+    },
+    "./analytics": {
+      "types": "./dist/analytics/index.d.ts",
+      "default": "./dist/analytics/index.js"
+    },
+    "./backup": {
+      "types": "./dist/backup/index.d.ts",
+      "default": "./dist/backup/index.js"
+    },
+    "./process": {
+      "types": "./dist/process/index.d.ts",
+      "default": "./dist/process/index.js"
+    },
+    "./vcs": {
+      "types": "./dist/vcs/index.d.ts",
+      "default": "./dist/vcs/index.js"
+    },
+    "./state": {
+      "types": "./dist/state/index.d.ts",
+      "default": "./dist/state/index.js"
+    },
+    "./time": {
+      "types": "./dist/time/index.d.ts",
+      "default": "./dist/time/index.js"
+    },
+    "./maintenance": {
+      "types": "./dist/maintenance/index.d.ts",
+      "default": "./dist/maintenance/index.js"
+    },
+    "./logging": {
+      "types": "./dist/logging/index.d.ts",
+      "default": "./dist/logging/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@kb-labs/devlink-contracts": "workspace:*",
+    "glob": "^11.0.0",
+    "p-queue": "^8.0.0",
+    "chokidar": "^4.0.3"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0"
+  }
+}

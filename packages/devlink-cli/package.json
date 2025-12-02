@@ -1,0 +1,29 @@
+{
+  "name": "@kb-labs/devlink-cli",
+  "version": "0.2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@kb-labs/devlink-core": "workspace:*",
+    "@kb-labs/devlink-adapters": "workspace:*",
+    "@kb-labs/devlink-contracts": "workspace:*",
+    "@kb-labs/shared-command-kit": "link:../../../kb-labs-shared/packages/shared-command-kit",
+    "@kb-labs/shared-cli-ui": "link:../../../kb-labs-shared/packages/shared-cli-ui",
+    "@kb-labs/core-workspace": "link:../../../kb-labs-core/packages/core-framework"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0"
+  }
+}
