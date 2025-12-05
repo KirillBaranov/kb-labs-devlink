@@ -3,7 +3,7 @@
  * Manifest v2 declaration for DevLink CLI
  */
 
-import { createManifestV2 } from '@kb-labs/plugin-manifest';
+import { defineManifest } from '@kb-labs/shared-command-kit';
 import { pluginContractsManifest } from '@kb-labs/devlink-contracts';
 import type { DevlinkPlanView } from '@kb-labs/devlink-contracts/schema';
 
@@ -23,7 +23,7 @@ const overviewActionsView: DevlinkPlanView = 'overview.actions';
 const dependenciesTreeView: DevlinkPlanView = 'dependencies.tree';
 const dependenciesTableView: DevlinkPlanView = 'dependencies.table';
 
-export const manifest = createManifestV2<typeof pluginContractsManifest>({
+export const manifest = defineManifest({
   schema: 'kb.plugin/2',
   id: '@kb-labs/devlink',
   version: '0.1.0',

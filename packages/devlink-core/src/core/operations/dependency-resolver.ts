@@ -1,5 +1,5 @@
 import { logger } from '@kb-labs/devlink-adapters/logging';
-import type { PackageGraph, PackageIndex } from "../types";
+import type { PackageGraph, PackageIndex } from "../../types";
 
 /**
  * Build reverse dependency map (provider -> consumers)

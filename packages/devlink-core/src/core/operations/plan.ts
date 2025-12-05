@@ -7,7 +7,7 @@ import type {
   LinkAction,
   PackageGraph,
   PackageIndex,
-} from "../types";
+} from "../../types";
 
 const logger = getLogger('devlink:plan');
 

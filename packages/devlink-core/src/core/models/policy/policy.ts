@@ -1,11 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
-import type { DevLinkPolicy } from '../types';
-import type { DevlinkState, PlanEntry, PlanSnapshot, SourceMode, VersionPolicy, LockSnapshot } from '../types';
-import { logger } from '@kb-labs/devlink-adapters/logging';
+import type { DevLinkPolicy } from '../../types';
+import type { DevlinkState, PlanEntry, PlanSnapshot, SourceMode, VersionPolicy, LockSnapshot } from '../../types';
+import { getLogger } from '@kb-labs/core-sys/logging';
 
-export type { DevLinkPolicy as DevLinkPolicyType } from "../types";
+const logger = getLogger('devlink:policy');
+
+export type { DevLinkPolicy as DevLinkPolicyType } from "../../types";
 
 /**
  * Базовые значения политики на случай, если файл/override не заданы

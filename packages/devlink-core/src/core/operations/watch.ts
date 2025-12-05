@@ -22,7 +22,7 @@ import type {
   DryRunResult,
   WatchMode,
 } from "./types";
-import type { PackageRef } from "../types";
+import type { PackageRef } from "../../types";
 
 /**
  * Главный класс DevLink Watcher v2

@@ -1,4 +1,4 @@
-import type { PackageJson } from 'packages/devlink-core/src/types';
+import type { PackageJson } from '../../../types';
 export type DevLinkMode = "local" | "npm" | "workspace" | "auto";
 
 export interface ScanOptions {

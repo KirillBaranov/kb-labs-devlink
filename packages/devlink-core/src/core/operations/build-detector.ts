@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { promises as fsp, existsSync } from "node:fs";
 import { exists } from '@kb-labs/devlink-adapters/filesystem';
 import { logger } from '@kb-labs/devlink-adapters/logging';
-import type { PackageRef } from "../types";
+import type { PackageRef } from "../../types";
 import { minimatch } from "minimatch";
 
 /**

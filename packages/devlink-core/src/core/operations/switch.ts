@@ -1,6 +1,6 @@
 import { buildPlan } from './plan';
 import { applyPlan } from './apply';
-import type { ApplyResult, DevLinkMode, PackageGraph, PackageIndex } from '../../types';
+import type { ApplyResult, DevLinkMode, PackageGraph, PackageIndex } from '../models';
 
 export async function switchMode(
   index: PackageIndex,
