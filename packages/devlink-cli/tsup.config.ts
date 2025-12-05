@@ -16,7 +16,7 @@ export default defineConfig({
     'src/commands/watch.ts',
   ],
   format: ['esm'],
-  dts: false,  // Disable DTS temporarily
+  dts: false,  // TODO: Enable after fixing devlink-core (see docs/tasks/devlink-types-refactoring.md)
   sourcemap: true,
   clean: true,
   splitting: false,  // Disable code splitting for manifest resolution

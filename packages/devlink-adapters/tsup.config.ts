@@ -18,7 +18,7 @@ export default defineConfig({
     'src/workspace/index.ts',
   ],
   format: ['esm'],
-  dts: false,
+  dts: false,  // TODO: Enable after fixing devlink-core (see docs/tasks/devlink-types-refactoring.md)
   sourcemap: true,
   clean: true,
   splitting: false,  // Disable code splitting
