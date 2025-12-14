@@ -1,6 +1,6 @@
 {
   "name": "@kb-labs/devlink-cli",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "CLI commands for KB Labs DevLink",
   "type": "module",
   "main": "./dist/index.js",

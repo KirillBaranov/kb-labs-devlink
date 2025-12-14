@@ -1,6 +1,6 @@
 {
   "name": "@kb-labs/devlink-core",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "Core engine for KB Labs DevLink — local linking and orchestration layer for multi-repository ecosystems.",
   "type": "module",
   "main": "./dist/index.js",
