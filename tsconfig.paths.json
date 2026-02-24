@@ -3,24 +3,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@kb-labs/core-sys": [
-        "../kb-labs-core/packages/core-sys/src/index.ts"
-      ],
-      "@kb-labs/core-sys/*": [
-        "../kb-labs-core/packages/core-sys/src/*"
-      ],
-      "@kb-labs/core-workspace": [
-        "../kb-labs-core/packages/core-workspace/src/index.ts"
-      ],
-      "@kb-labs/core-workspace/*": [
-        "../kb-labs-core/packages/core-workspace/src/*"
-      ],
-      "@kb-labs/devlink-adapters": [
-        "packages/devlink-adapters/src/index.ts"
-      ],
-      "@kb-labs/devlink-adapters/*": [
-        "packages/devlink-adapters/src/*"
-      ],
       "@kb-labs/devlink-contracts": [
         "packages/devlink-contracts/src/index.ts"
       ],
@@ -33,29 +15,11 @@
       "@kb-labs/devlink-core/*": [
         "packages/devlink-core/src/*"
       ],
-      "@kb-labs/plugin-manifest": [
-        "../kb-labs-plugin/packages/plugin-manifest/src/index.ts"
+      "@kb-labs/sdk": [
+        "../kb-labs-sdk/packages/sdk/src/index.ts"
       ],
-      "@kb-labs/plugin-manifest/*": [
-        "../kb-labs-plugin/packages/plugin-manifest/src/*"
-      ],
-      "@kb-labs/plugin-runtime": [
-        "../kb-labs-plugin/packages/plugin-runtime/src/index.ts"
-      ],
-      "@kb-labs/plugin-runtime/*": [
-        "../kb-labs-plugin/packages/plugin-runtime/src/*"
-      ],
-      "@kb-labs/shared-cli-ui": [
-        "../kb-labs-shared/packages/shared-cli-ui/src/index.ts"
-      ],
-      "@kb-labs/shared-cli-ui/*": [
-        "../kb-labs-shared/packages/shared-cli-ui/src/*"
-      ],
-      "@kb-labs/shared-command-kit": [
-        "../kb-labs-shared/packages/shared-command-kit/src/index.ts"
-      ],
-      "@kb-labs/shared-command-kit/*": [
-        "../kb-labs-shared/packages/shared-command-kit/src/*"
+      "@kb-labs/sdk/*": [
+        "../kb-labs-sdk/packages/sdk/src/*"
       ]
     }
   }

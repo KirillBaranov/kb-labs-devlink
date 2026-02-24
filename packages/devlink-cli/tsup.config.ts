@@ -1,33 +1,20 @@
 import { defineConfig } from 'tsup';
+import nodePreset from '@kb-labs/devkit/tsup/node';
 
 export default defineConfig({
+  ...nodePreset,
+  tsconfig: 'tsconfig.build.json',
   entry: [
     'src/index.ts',
-    'src/manifest.v2.ts',
-    'src/commands/apply.ts',
-    'src/commands/backups.ts',
-    'src/commands/clean.ts',
-    'src/commands/freeze.ts',
-    'src/commands/plan.ts',
-    'src/commands/status.ts',
-    'src/commands/switch.ts',
-    'src/commands/undo.ts',
-    'src/commands/update.ts',
-    'src/commands/watch.ts',
+    'src/manifest.ts',
+    'src/cli/commands/**/*.ts',
   ],
-  format: ['esm'],
-  dts: false,  // TODO: Enable after fixing devlink-core (see docs/tasks/devlink-types-refactoring.md)
-  sourcemap: true,
-  clean: true,
-  splitting: false,  // Disable code splitting for manifest resolution
-  tsconfig: './tsconfig.json',
   external: [
-    '@kb-labs/devlink-core',
-    '@kb-labs/devlink-adapters',
+    '@kb-labs/sdk',
     '@kb-labs/devlink-contracts',
-    '@kb-labs/plugin-manifest',
-    '@kb-labs/shared-command-kit',
-    '@kb-labs/shared-cli-ui',
-    '@kb-labs/core-workspace'
-  ]
+    '@kb-labs/devlink-core',
+  ],
+  dts: true,
+  clean: true,
+  sourcemap: true,
 });

@@ -1,174 +1,90 @@
-# @kb-labs/devlink-contracts
+# @kb-labs/plugin-template-contracts
 
-Public contracts for the KB Labs DevLink plugin. Declares artifacts, commands and API guarantees.
+Lightweight public contracts package for the plugin: it describes guaranteed artifacts, commands, workflows, API payloads, and the version of these promises.
 
-## Vision & Purpose
+## Why this package exists
 
-**@kb-labs/devlink-contracts** provides public contracts for KB Labs DevLink. It describes the guarantees that other products (CLI, Studio, REST gateway, Workflow Engine) can rely on without depending on DevLink runtime code.
+Every KB Labs plugin is expected to publish a clear, lightweight “promise” to the rest of the ecosystem. This package is that promise: it contains only types, manifests, and validation helpers, so other teams (CLI, Workflow Engine, Studio, REST, marketplace tooling) can rely on a single source of truth without dragging in plugin runtime code.
 
-### Core Goals
+## Quick start checklist
 
-- **Contract Definition**: Define public contracts for DevLink
-- **Schema Validation**: Zod schemas for validation
-- **Type Safety**: TypeScript types derived from schemas
-- **Versioning**: SemVer-based contract versioning
+1. Clone this package as part of your plugin workspace (`packages/contracts`).
+2. Update `pluginContractsManifest` with your plugin ID and initial artifacts/commands.
+3. Adjust Zod schemas in `src/schema.ts` (or add new ones) to match your payloads.
+4. Bump `contractsVersion` whenever the public promise changes (SemVer rules below).
+5. Run `pnpm test` and `pnpm type-check` to ensure the manifest validates.
+6. Import the manifest in your CLI/REST/workflow code to avoid hard-coded IDs.
 
-## Package Status
+### Renaming this package
 
-- **Version**: 0.1.0
-- **Stage**: Stable
-- **Status**: Production Ready ✅
+When you turn the template into your own plugin:
+- Change the npm name in `package.json` (e.g. `@kb-labs/my-plugin-contracts`).
+- Update `pluginContractsManifest.pluginId` in `src/contract.ts`.
+- Adjust aliases in `tsconfig.paths.json` and imports across the workspace (`@kb-labs/plugin-template-contracts` → your new name).
+- Replace sample artifact IDs (`template.hello.*`) with your own naming scheme.
 
-## Architecture
+## What's inside
 
-### High-Level Overview
+- `pluginContractsManifest` — the single source of truth for the plugin's public capabilities
+- TypeScript types (`src/types`) and Zod schemas (`src/schema`) for artifacts, commands, workflows, and API payloads
+- `parsePluginContracts` utility for runtime validation of the manifest and third-party contracts
 
-```
-DevLink Contracts
-    │
-    ├──► Contract Manifest
-    ├──► Zod Schemas
-    ├──► TypeScript Types
-    └──► Helper Parsers
-```
+## Versioning rules
 
-### Key Components
+- `contractsVersion` follows SemVer and is **independent** from the plugin's npm version.
+- **MAJOR** — breaking changes (removing/renaming artifacts, changing payload formats).
+- **MINOR** — backwards-compatible extensions (new artifacts, commands, fields).
+- **PATCH** — documentation/metadata updates without altering payload formats.
 
-1. **Contract Manifest** (`contract.ts`): Plugin contracts manifest
-2. **Schemas** (`schema/`): Zod validation schemas
-3. **Types** (`types.ts`): TypeScript type definitions
-4. **Parsers** (`schema.ts`): Helper parsers
+## Minimal manifest example
 
-## ✨ Features
+```ts
+import type { PluginContracts } from '@kb-labs/plugin-template-contracts';
 
-- **Contract Manifest**: Typed declaration of DevLink artifacts, commands, workflows, and REST routes
-- **Zod Schemas**: Validation schemas for CLI flag definitions, plan DTOs, REST responses, Studio widgets
-- **TypeScript Types**: Type definitions for command inputs/outputs
-- **Helper Parsers**: `parsePluginContracts` for runtime validation
-
-## 📦 API Reference
-
-### Main Exports
-
-#### Contract Manifest
-
-- `pluginContractsManifest`: Typed declaration of DevLink artifacts, commands, workflows, and REST routes
-- `contractsVersion`: SemVer version for contract coordination
-- `contractsSchemaId`: Schema ID for contract validation
-
-#### Schemas
-
-- `parsePluginContracts`: Parse plugin contracts
-- `pluginContractsSchema`: Plugin contracts schema
-
-#### Types
-
-- `PluginContracts`: Plugin contracts type
-- `ArtifactDecl`: Artifact declaration type
-- `CommandDecl`: Command declaration type
-
-## 🔧 Configuration
-
-### Configuration Options
-
-No configuration needed - pure contract definitions.
-
-## 🔗 Dependencies
-
-### Runtime Dependencies
-
-- `zod` (`^3.23.8`): Schema validation
-
-### Development Dependencies
-
-- `@kb-labs/devkit` (`link:../../../kb-labs-devkit`): DevKit presets
-- `@types/node` (`^24.7.0`): Node.js types
-- `semver` (`^7.6.3`): SemVer parsing
-- `tsup` (`^8.5.0`): TypeScript bundler
-- `typescript` (`^5.6.3`): TypeScript compiler
-- `vitest` (`^3.2.4`): Test runner
-
-## 🧪 Testing
-
-### Test Structure
-
-```
-tests/
-└── contracts.manifest.test.ts
+export const pluginContractsManifest: PluginContracts = {
+  schema: 'kb.plugin.contracts/1',
+  pluginId: '@kb-labs/my-plugin',
+  contractsVersion: '1.0.0',
+  artifacts: {
+    'my-plugin.result': {
+      id: 'my-plugin.result',
+      kind: 'json',
+      description: 'Primary output of the CLI command.'
+    }
+  }
+  // commands/workflows/api can be added later when needed
+};
 ```
 
-### Test Coverage
+## Optional sections
 
-- **Current Coverage**: ~70%
-- **Target Coverage**: 90%
+All additional sections are **optional** — include only what your plugin actually supports:
 
-## 📈 Performance
+- `commands` — define CLI or workflow commands that produce/consume artifacts.
+- `workflows` — describe composed workflows and their steps.
+- `api` — document REST (or future surfaces) when the plugin exposes them.
 
-### Performance Characteristics
+If your plugin only ships a CLI command, keep `commands` + `artifacts` and omit `workflows`/`api`. The Zod schema accepts missing sections.
 
-- **Time Complexity**: O(1) for type operations, O(n) for schema validation
-- **Space Complexity**: O(1)
-- **Bottlenecks**: Schema validation for large payloads
+## Usage in plugin code
 
-## 🔒 Security
+```ts
+import { pluginContractsManifest } from '@kb-labs/plugin-template-contracts';
 
-### Security Considerations
-
-- **Schema Validation**: Input validation via Zod schemas
-- **Type Safety**: TypeScript type safety
-
-### Known Vulnerabilities
-
-- None
-
-## 🐛 Known Issues & Limitations
-
-### Known Issues
-
-- None currently
-
-### Limitations
-
-- **Schema Validation**: Basic validation only
-
-### Future Improvements
-
-- **Enhanced Validation**: More validation rules
-
-## 🔄 Migration & Breaking Changes
-
-### Versioning Rules
-
-- **MAJOR** — breaking changes (removed fields, renamed IDs, incompatible schema updates)
-- **MINOR** — backwards-compatible additions (new flags, artifacts, optional fields)
-- **PATCH** — metadata/documentation tweaks that do not alter payload structure
-
-### Breaking Changes in Future Versions
-
-- None planned
-
-## 📚 Examples
-
-### Example 1: Use Contract Manifest
-
-```typescript
-import { pluginContractsManifest } from '@kb-labs/devlink-contracts';
-
-const planArtifactId = pluginContractsManifest.artifacts['devlink.plan.latest'].id;
+const helloArtifactId = pluginContractsManifest.artifacts['template.hello.greeting'].id;
 ```
 
-### Example 2: Parse Plugin Contracts
+Use the manifest to avoid magic strings, assert that required artifacts exist, or log which promises were fulfilled.
 
-```typescript
-import { parsePluginContracts } from '@kb-labs/devlink-contracts';
+## Who relies on the contract
 
-const contracts = parsePluginContracts(rawManifest);
-```
+- **Workflow Engine** — verifies allowed steps, required artifacts, and matches produced results with the contract.
+- **Studio** — builds UI and hints based on declared artifacts and commands.
+- **CLI / REST / other plugins** — reuse types and schemas as the source of truth, validate inputs/outputs.
+- **Marketplace & QA tooling** — checks plugin compatibility and correctness before publishing.
 
-## 🤝 Contributing
+## Looking ahead
 
-See [CONTRIBUTING.md](../../CONTRIBUTING.md) for development guidelines.
+- Generate JSON Schema / OpenAPI from the `api` contract surface.
+- Add automatic inspectors in Studio and validators for the marketplace.
 
-## 📄 License
-
-MIT © KB Labs

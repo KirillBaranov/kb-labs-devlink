@@ -1,19 +1,15 @@
 {
   "name": "@kb-labs/devlink-contracts",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Public contracts for the KB Labs DevLink plugin. Declares artifacts, commands and API guarantees.",
+  "description": "Contracts package for DevLink plugin — types, Zod schemas, flags.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    },
-    "./contract": {
-      "import": "./dist/contract.js",
-      "types": "./dist/contract.d.ts"
     },
     "./schema": {
       "import": "./dist/schema.js",
@@ -23,19 +19,17 @@
   },
   "files": [
     "dist",
-    "README.md",
-    "LICENSE"
+    "README.md"
   ],
   "sideEffects": false,
   "scripts": {
-    "pretype-check": "pnpm --filter @kb-labs/devlink-contracts build",
     "clean": "rimraf dist",
     "build": "tsup --config tsup.config.ts",
     "dev": "tsup --config tsup.config.ts --watch",
     "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
+    "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
   },
   "dependencies": {

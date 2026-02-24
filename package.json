@@ -1,22 +1,14 @@
 {
   "name": "@kb-labs/devlink",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "Developer linker and ecosystem orchestrator for KB Labs. A fast and flexible tool that automates local package linking, version sync, and publishing across multiple repositories using Yalc and PNPM — optimized for solo and team workflows.",
+  "description": "DevLink — manage cross-repo link: ↔ npm dependencies for KB Labs monorepos.",
   "type": "module",
   "author": {
     "name": "Kirill Baranov",
     "url": "https://github.com/kirill-baranov"
   },
-  "license": "SEE LICENSE IN LICENSE",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kirill-baranov/kb-labs-devlink.git"
-  },
-  "bugs": {
-    "url": "https://github.com/kirill-baranov/kb-labs-devlink/issues"
-  },
-  "homepage": "https://github.com/kirill-baranov/kb-labs-devlink#readme",
+  "license": "MIT",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -34,9 +26,9 @@
     "devkit:help": "node scripts/devkit-sync.mjs --help",
     "postinstall": "pnpm -s devkit:sync || true",
     "// ——— core": "────────────────────────────────────────",
-    "build": "pnpm -r run build",
-    "build:clean": "pnpm -r run clean && pnpm -r run build",
-    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm -r --filter ./packages/... run build",
+    "build:clean": "pnpm -r --filter ./packages/... run clean && pnpm run build",
+    "dev": "pnpm -r --parallel --filter ./packages/... run dev",
     "// ——— quality": "────────────────────────────────────────",
     "lint": "pnpm -r exec eslint .",
     "lint:fix": "pnpm -r exec eslint . --fix",
@@ -66,14 +58,13 @@
     "@typescript-eslint/eslint-plugin": "^8",
     "@typescript-eslint/parser": "^8",
     "@vitest/coverage-v8": "^3",
-    "@vue/eslint-config-typescript": "^14.6.0",
     "eslint": "^9",
-    "eslint-plugin-vue": "^10.5.0",
     "prettier": "^3",
     "rimraf": "^6",
     "tsup": "^8",
     "typescript": "^5",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@types/node": "^24.3.3"
   },
   "engines": {
     "node": ">=18.18.0",

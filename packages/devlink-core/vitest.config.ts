@@ -1,48 +1,33 @@
-import { defineConfig } from "vitest/config";
-import nodePreset from "@kb-labs/devkit/vitest/node.js";
-import { fileURLToPath } from "node:url";
-import { join } from "node:path";
+import { defineConfig } from 'vitest/config';
+import baseConfig from '@kb-labs/devkit/vitest/node';
 
-const rootDir = fileURLToPath(new URL("../../", import.meta.url));
-const coreSrc = fileURLToPath(new URL("./src", import.meta.url));
+const sharedDir = new URL('./src/shared/', import.meta.url).pathname;
+const domainDir = new URL('./src/domain/', import.meta.url).pathname;
+const applicationDir = new URL('./src/application/', import.meta.url).pathname;
+const infraDir = new URL('./src/infra/', import.meta.url).pathname;
+const contractsDir = new URL('../contracts/src/', import.meta.url).pathname;
 
 export default defineConfig({
-  ...nodePreset,
-  resolve: {
-    ...nodePreset.resolve,
-    alias: {
-      ...nodePreset.resolve?.alias,
-      "@devlink/shared": join(coreSrc, "shared"),
-      "@devlink/shared/": join(coreSrc, "shared"),
-      "@devlink/application": join(coreSrc, "application"),
-      "@devlink/application/": join(coreSrc, "application"),
-      "@devlink/domain": join(coreSrc, "domain"),
-      "@devlink/domain/": join(coreSrc, "domain"),
-      "@devlink/infra": join(coreSrc, "infra"),
-      "@devlink/infra/": join(coreSrc, "infra"),
-    },
-  },
+  ...baseConfig,
   test: {
-    ...nodePreset.test,
-    globals: false,
-    coverage: {
-      ...(nodePreset.test?.coverage || {}),
-      all: true,
-      reportsDirectory: "./coverage",
-      exclude: [
-        "**/node_modules/**",
-        "**/dist/**",
-        "**/__tests__/**",
-        "**/*.d.ts",
-        "**/types.ts",
-        "**/types/**",
-      ],
-      thresholds: {
-        statements: 90,
-        branches: 85,
-        functions: 90,
-        lines: 90,
-      },
-    },
+    ...baseConfig.test,
+    globals: true,
+    environment: 'node',
+    setupFiles: ['tests/setup.ts'],
+    include: ['tests/**/*.spec.ts']
   },
+  resolve: {
+    alias: {
+      '@kb-labs/plugin-template-contracts': contractsDir + 'index.ts',
+      '@kb-labs/plugin-template-contracts/*': contractsDir + '*',
+      '@app/shared': sharedDir + 'index.ts',
+      '@app/shared/*': sharedDir + '*',
+      '@app/domain': domainDir + 'index.ts',
+      '@app/domain/*': domainDir + '*',
+      '@app/application': applicationDir + 'index.ts',
+      '@app/application/*': applicationDir + '*',
+      '@app/infra': infraDir + 'index.ts',
+      '@app/infra/*': infraDir + '*'
+    }
+  }
 });

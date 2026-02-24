@@ -1,8 +1,5 @@
-export { pluginContractsManifest } from './contract';
-export { contractsVersion, contractsSchemaId } from './version';
+export * from './schema.js';
+export * from './flags.js';
 
-export * from './types';
-export * from './schema';
-export * from './events';
-export * from './utils';
-
+/** Cache namespace prefix for devlink — used in manifest and npm checker */
+export const DEVLINK_CACHE_PREFIX = 'devlink:' as const;

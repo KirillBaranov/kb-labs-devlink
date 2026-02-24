@@ -1,21 +1,25 @@
-import { describe, it, expect } from 'vitest';
-import semver from 'semver';
-
+import { describe, expect, it } from 'vitest';
 import { pluginContractsManifest } from '../src/contract';
-import { parsePluginContracts } from '../src/schema';
-import { contractsSchemaId, contractsVersion } from '../src/version';
+import { parsePluginContracts } from '../src/schema/contract.schema';
+import { contractsVersion } from '../src/version';
 
 describe('pluginContractsManifest', () => {
-  it('matches the published schema', () => {
+  it('is valid according to the schema', () => {
     expect(() => parsePluginContracts(pluginContractsManifest)).not.toThrow();
   });
 
-  it('declares the expected schema identifier', () => {
-    expect(pluginContractsManifest.schema).toBe(contractsSchemaId);
+  it('rejects malformed manifests', () => {
+    const malformed = {
+      ...pluginContractsManifest,
+      schema: 'kb.plugin.contracts/999'
+    };
+
+    expect(() => parsePluginContracts(malformed)).toThrowError();
   });
 
-  it('uses a valid SemVer contracts version', () => {
-    expect(semver.valid(contractsVersion)).toBeTruthy();
+  it('uses a semver-compatible contractsVersion', () => {
+    const semverPattern = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z-.]+)?(?:\+[0-9A-Za-z-.]+)?$/;
+    expect(semverPattern.test(contractsVersion)).toBe(true);
   });
 });
 

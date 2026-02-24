@@ -1,8 +1,9 @@
 {
   "name": "@kb-labs/devlink-core",
-  "version": "0.2.5",
-  "description": "Core engine for KB Labs DevLink — local linking and orchestration layer for multi-repository ecosystems.",
+  "version": "1.0.0",
   "type": "module",
+  "private": true,
+  "description": "Core business logic for DevLink plugin — discovery, plan, apply, state, backup.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -10,65 +11,61 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./types": "./dist/types/index.js"
+    "./discovery": {
+      "import": "./dist/discovery/index.js",
+      "types": "./dist/discovery/index.d.ts"
+    },
+    "./plan": {
+      "import": "./dist/plan/index.js",
+      "types": "./dist/plan/index.d.ts"
+    },
+    "./apply": {
+      "import": "./dist/apply/index.js",
+      "types": "./dist/apply/index.d.ts"
+    },
+    "./state": {
+      "import": "./dist/state/index.js",
+      "types": "./dist/state/index.d.ts"
+    },
+    "./backup": {
+      "import": "./dist/backup/index.js",
+      "types": "./dist/backup/index.d.ts"
+    },
+    "./dist/*": "./dist/*"
   },
-  "author": {
-    "name": "Kirill Baranov",
-    "url": "https://github.com/kirill-baranov"
-  },
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kirill-baranov/kb-labs-devlink.git",
-    "directory": "packages/core-framework"
-  },
-  "bugs": {
-    "url": "https://github.com/kirill-baranov/kb-labs-devlink/issues"
-  },
-  "homepage": "https://github.com/kirill-baranov/kb-labs-devlink#readme",
-  "keywords": [
-    "devlink",
-    "linking",
-    "yalc",
-    "pnpm",
-    "monorepo",
-    "dependency-management"
-  ],
   "files": [
     "dist",
-    "README.md",
-    "LICENSE"
+    "README.md"
   ],
   "sideEffects": false,
-  "dependencies": {
-    "@kb-labs/core-sys": "link:../../../kb-labs-core/packages/core-sys",
-    "@kb-labs/core-workspace": "link:../../../kb-labs-core/packages/core-framework",
-    "@kb-labs/devlink-contracts": "workspace:*",
-    "@kb-labs/devlink-adapters": "workspace:*",
-    "@kb-labs/plugin-manifest": "link:../../../kb-labs-plugin/packages/plugin-manifest",
-    "@kb-labs/plugin-runtime": "link:../../../kb-labs-plugin/packages/plugin-runtime",
-    "@kb-labs/shared-cli-ui": "link:../../../kb-labs-shared/packages/shared-cli-ui",
-    "@kb-labs/shared-command-kit": "link:../../../kb-labs-shared/packages/shared-command-kit",
-    "chokidar": "^4.0.3",
-    "glob": "^11.0.0",
-    "minimatch": "^9.0.4",
-    "p-queue": "^8.0.0",
-    "zod": "^3.23.8"
-  },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "type-check": "tsc --noEmit",
-    "lint": "eslint .",
+    "build": "tsup --config tsup.config.ts",
+    "dev": "tsup --config tsup.config.ts --watch",
+    "lint": "eslint src --ext .ts",
     "lint:fix": "eslint . --fix",
-    "test": "vitest run -c ../../vitest.config.ts",
-    "test:watch": "vitest -c ../../vitest.config.ts"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@kb-labs/devlink-contracts": "workspace:*",
+    "@kb-labs/sdk": "link:../../../kb-labs-sdk/packages/sdk",
+    "js-yaml": "^4.1.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@kb-labs/devkit": "link:../../../kb-labs-devkit",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.3.3",
+    "eslint": "^9",
+    "rimraf": "^6.0.1",
     "tsup": "^8.5.0",
+    "typescript": "^5.6.3",
     "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
   }
 }

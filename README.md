@@ -1,461 +1,490 @@
-# KB Labs DevLink (@kb-labs/devlink)
+# KB Labs Plugin Template
 
-> **Developer linker and ecosystem orchestrator for KB Labs.** A fast and flexible tool that automates local package linking, version sync, and publishing across multiple repositories using Yalc and PNPM — optimized for solo and team workflows.
+> **Gold standard reference template** for building production-ready KB Labs plugins with CLI, REST, and Studio surfaces.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-18.18.0+-green.svg)](https://nodejs.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-9.0.0+-orange.svg)](https://pnpm.io/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-9+-orange.svg)](https://pnpm.io/)
+[![Documentation](https://img.shields.io/badge/docs-7.7k_lines-blue.svg)](./docs)
 
-## 🎯 Vision
+**What makes this template special:**
+- ✅ **7,700+ lines** of comprehensive documentation
+- ✅ **100% canonical patterns** (no legacy code)
+- ✅ **Production-ready examples** (validation, testing, contracts, multi-tenancy)
+- ✅ **Complete error handling** with 8 custom error classes
+- ✅ **KB Labs standard structure** (cli, rest, studio, lifecycle, core, utils)
 
-KB Labs DevLink is a developer linker and ecosystem orchestrator for KB Labs. It automates local package linking, version sync, and publishing across multiple repositories using Yalc and PNPM, optimized for solo and team workflows.
-
-The project solves the problem of manual, error-prone package linking across multiple repositories in a local development environment by providing automated discovery, policy enforcement, state management, and team workflows. Instead of manually linking packages with `pnpm link` or `yalc`, developers can use `kb devlink plan` and `kb devlink apply` to automatically link packages based on dependency graphs and policies.
-
-This project is part of the **@kb-labs** ecosystem and integrates seamlessly with Core, CLI, Release Manager, and all other KB Labs tools.
-
-## 🚀 Quick Start
-
-### Installation
+## 🚀 Quick start
 
 ```bash
-pnpm add -D @kb-labs/devlink
-# or
-npm i -D @kb-labs/devlink
-```
-
-### Development
-
-```bash
-# Install dependencies
+# Clone and install
+git clone https://github.com/kb-labs/kb-labs-plugin-template.git
+cd kb-labs-plugin-template
 pnpm install
 
-# Build all packages
-pnpm build
+# Build the plugin
+pnpm --filter @kb-labs/plugin-template-core run build
 
-# Run tests
-pnpm test
-
-# Lint code
-pnpm lint
+# Run hello command
+kb template:hello --name Developer
+# Output: Hello, Developer!
 ```
 
-### Basic Usage
+## 🛠️ Using Shared Command Kit Helpers
 
-#### 1. Check Status
+This template demonstrates **86% boilerplate reduction** using helpers from `@kb-labs/shared-command-kit`. Instead of writing 400+ lines of repetitive code, use declarative helpers.
 
-```bash
-# Show current linking state
-kb devlink status
+### Error Handling (`defineError`)
 
-# Check for drift from saved state
-kb devlink status --check
+**Before** (400 lines of 8 custom error classes):
+```typescript
+export class ValidationError extends Error {
+  constructor(message: string, public field?: string, public details?: unknown) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+// ... 7 more classes × 50 lines each = 400 lines
 ```
 
-#### 2. Generate Linking Plan
+**After** (50 lines with `defineError`):
+```typescript
+import { defineError, commonErrors } from '@kb-labs/shared-command-kit';
 
-```bash
-# Auto mode: smart linking based on local availability
-kb devlink plan
-
-# Local mode: force all packages to use local versions
-kb devlink plan --mode=local
-
-# NPM mode: use registry versions only
-kb devlink plan --mode=npm
-```
-
-The plan shows what will be linked, where, and at what version.
-
-#### 3. Apply the Plan
-
-```bash
-# Link packages according to the plan
-kb devlink apply
-
-# Or skip confirmation prompts (for CI/CD)
-kb devlink apply --yes
-```
-
-#### 4. Freeze State (Optional)
-
-```bash
-# Create a lockfile for reproducible linking
-kb devlink freeze
-```
-
-#### 5. Watch for Changes (Optional)
-
-```bash
-# Start watch mode for automatic rebuild & refresh
-kb devlink watch
-
-# Watch detects changes → rebuilds providers → refreshes consumers
-```
-
-#### 6. Rollback if Needed
-
-```bash
-# Undo last operation
-kb devlink undo
-
-# Or list all backups and restore a specific one
-kb devlink backups --list
-kb devlink undo --backup=2025-10-30T20-25-33
-```
-
-## ✨ Features
-
-- **Auto-Discovery**: Automatically scans repositories and detects local packages with dependencies
-- **Smart Linking**: Intelligent linking strategies (`auto`, `local`, `npm`) with dependency graph analysis
-- **Watch Mode**: Live file watching with automatic rebuild and consumer refresh — zero manual steps
-- **Version Management**: Policy-driven version pinning, upgrades, and prerelease handling
-- **State Tracking**: Persistent state snapshots and rollback capabilities
-- **Yalc Integration**: Leverages Yalc for reliable local package publishing
-- **PNPM Optimized**: Built specifically for PNPM workspaces and monorepos
-- **Safety Features**: Git dirty detection, automatic backups, confirmation prompts, dry-run mode
-
-## 📁 Repository Structure
-
-```
-kb-labs-devlink/
-├── packages/                # Core packages
-│   └── core/                # Core engine (discovery, graph, planning, state management)
-├── docs/                    # Documentation
-│   └── adr/                 # Architecture Decision Records
-└── scripts/                 # Utility scripts
-```
-
-### Directory Descriptions
-
-- **`packages/core/`** - Core engine for discovery, graph building, planning, and state management
-- **`docs/`** - Documentation including ADRs and guides
-- **`scripts/`** - Utility scripts for development and maintenance
-
-## 📦 Packages
-
-| Package | Description |
-|---------|-------------|
-| [@kb-labs/devlink-core](./packages/core/) | Core engine: discovery, graph, planning, state management, watch mode, and CLI integration |
-
-### Package Details
-
-**@kb-labs/devlink-core** provides the complete DevLink engine:
-- **Discovery**: Scans repositories and detects local packages with dependencies
-- **Graph Building**: Builds dependency DAG and computes relations
-- **Planning**: Generates linking plans with policy enforcement
-- **State Management**: Persistent state snapshots with rollback capabilities
-- **Watch Mode**: Live file watching with automatic rebuild and refresh
-- **CLI Integration**: Manifest v2-driven registration via `packages/core/src/manifest.v2.ts`
-
-## 🛠️ Available Scripts
-
-| Script | Description |
-|--------|-------------|
-| `pnpm dev` | Start development mode for all packages |
-| `pnpm build` | Build all packages |
-| `pnpm build:clean` | Clean and build all packages |
-| `pnpm test` | Run all tests |
-| `pnpm test:coverage` | Run tests with coverage reporting |
-| `pnpm test:watch` | Run tests in watch mode |
-| `pnpm lint` | Lint all code |
-| `pnpm lint:fix` | Fix linting issues |
-| `pnpm format` | Format code with Prettier |
-| `pnpm type-check` | TypeScript type checking |
-| `pnpm check` | Run lint, type-check, and tests |
-| `pnpm ci` | Full CI pipeline (clean, build, check) |
-| `pnpm clean` | Clean build artifacts |
-| `pnpm clean:all` | Clean all node_modules and build artifacts |
-
-## 📋 Development Policies
-
-- **Code Style**: ESLint + Prettier, TypeScript strict mode
-- **Testing**: Vitest with comprehensive test coverage
-- **Versioning**: SemVer with automated releases through Changesets
-- **Architecture**: Document decisions in ADRs (see `docs/adr/`)
-- **Design Principles**: Deterministic, composable, isolated, observable, safe, fast
-
-## 🔧 Requirements
-
-- **Node.js**: >= 18.18.0
-- **pnpm**: >= 9.0.0
-
-## ⚙️ Configuration
-
-### DevLink Configuration
-
-Create `.devlink.config.json` in your project root to customize behavior:
-
-```json
-{
-  "roots": ["~/projects/repo-a", "~/projects/repo-b"],
-  "mode": "auto",
-  "policy": {
-    "pin": "exact",
-    "upgrade": "none",
-    "prerelease": "block"
+// Template-specific errors
+export const TemplateError = defineError('TEMPLATE', {
+  BusinessRuleViolation: {
+    code: 400,
+    message: (rule: string) => `Business rule violated: ${rule}`,
   },
-  "exclude": ["node_modules", "dist"],
-  "include": ["packages/*"]
+  QuotaExceeded: {
+    code: 429,
+    message: (resource: string) => `Quota exceeded for ${resource}`,
+  },
+});
+
+// Common errors (validation, not found, etc.)
+export const CommonError = defineError('COMMON', commonErrors);
+
+// Usage:
+throw new TemplateError.BusinessRuleViolation('Insufficient funds');
+throw new CommonError.ValidationFailed('Email must be valid');
+```
+
+**Savings**: 400 lines → 50 lines (87% reduction)
+
+### Permission Presets (`permissions.combine`)
+
+**Before** (25 lines of manual permission blocks):
+```typescript
+permissions: {
+  fs: {
+    mode: 'readWrite',
+    allow: ['.kb/template/**', 'package.json'],
+    deny: ['**/*.key', '**/*.secret', '**/node_modules/**'],
+  },
+  net: { allowHosts: ['localhost:*'] },
+  env: { allow: ['NODE_ENV', 'KB_LABS_*', 'TEMPLATE_*'] },
+  quotas: { timeoutMs: 60000, memoryMb: 512 },
 }
 ```
 
-### Core Concepts
+**After** (10 lines with presets):
+```typescript
+import { permissions } from '@kb-labs/shared-command-kit';
 
-#### Discovery Phase
-
-DevLink scans repositories to build a dependency graph:
-
-```
-┌──────────────────────┐
-│   discovery phase    │
-│  scan repositories   │
-│  detect packages     │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│     graph phase      │
-│ build dependency DAG │
-│ compute relations    │
-└──────────────────────┘
+permissions: permissions.combine(
+  permissions.presets.pluginWorkspace('template'),
+  permissions.presets.localhost(),
+  {
+    env: { allow: ['TEMPLATE_*'] }, // Template-specific env vars
+  }
+)
 ```
 
-#### Linking Modes
+**Savings**: 25 lines → 10 lines (60% reduction)
 
-- **`auto`** (default): Smart mode - uses `workspace:` for same-monorepo packages, `link:` for cross-repo packages
-- **`local`**: Forces all dependencies to use local versions with `link:` protocol (fails if not found)
-- **`workspace`**: Uses `workspace:` protocol for local packages, falls back to npm for others
-- **`npm`**: Uses only npm registry versions (no local linking)
+### Schema Builders (`schema.*`)
 
-#### Version Policies
+**Before** (manual Zod schemas):
+```typescript
+import { z } from 'zod';
 
-Control how versions are handled during linking:
+export const HelloRequestSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  cwd: z.string().optional(),
+});
+```
 
-- **Pin**: `exact`, `caret`, `tilde`, `none`
-- **Upgrade**: `none`, `patch`, `minor`, `major`
-- **Prerelease**: `allow`, `block`, `only`
+**After** (schema builders for clarity):
+```typescript
+import { z } from 'zod';
+import { schema } from '@kb-labs/shared-command-kit';
 
-Example:
+export const HelloRequestSchema = z.object({
+  name: schema.text({ min: 1, max: 100 }).optional(),
+  cwd: schema.cwd(),
+});
+```
+
+**Benefits**: Clearer intent, reusable validation patterns
+
+### Analytics Tracking (`withAnalytics`)
+
+**Before** (manual event tracking):
+```typescript
+async handler(ctx, argv, flags) {
+  ctx.logger?.info('Command started', { name: flags.name });
+
+  const greeting = createGreeting(flags.name);
+
+  ctx.logger?.info('Command completed', { message: greeting.message });
+  return { ok: true, result: greeting };
+}
+```
+
+**After** (automatic started/completed/failed events):
+```typescript
+import { withAnalytics } from '@kb-labs/shared-command-kit';
+
+async handler(ctx, argv, flags) {
+  return await withAnalytics(
+    ctx,
+    'template.hello',
+    {
+      started: { name: flags.name },
+      completed: (result) => ({ message: result.result?.message }),
+      failed: (error) => ({ error: error.message }),
+    },
+    async () => {
+      const greeting = createGreeting(flags.name);
+      return { ok: true, result: greeting };
+    }
+  );
+}
+```
+
+**Benefits**: Automatic event emission with duration tracking, consistent analytics
+
+### Available Helpers
+
+| Helper | Purpose | Savings |
+|--------|---------|---------|
+| `defineError()` | Error factory | 87% (400→50 lines) |
+| `permissions.combine()` | Permission presets | 60% (25→10 lines) |
+| `schema.*` | Validation builders | Clarity + reuse |
+| `defineSetupHandler()` | Declarative lifecycle | 84% (126→20 lines) |
+| `withAnalytics()` | Auto analytics | +10 lines (feature) |
+
+**See also:**
+- [Migration Guide](./docs/MIGRATION-helpers.md) - Migrate existing plugins
+- [shared-command-kit README](../kb-labs-shared/packages/shared-command-kit/README.md) - Full API reference
+- [utils/errors.ts](./packages/plugin-template-core/src/utils/errors.ts) - defineError example
+
+## 📖 Documentation (7,700+ lines!)
+
+### Getting started
+- 📘 [Getting Started](./docs/getting-started.md) - Setup, build, and first steps
+- 🏗️ [Architecture](./docs/architecture.md) - KB Labs folder structure and patterns
+- 📦 [Naming Convention](./docs/naming-convention.md) - The Pyramid Rule (mandatory!)
+- 🔄 [Refactoring Guide](./docs/REFACTORING.md) - Migration from old DDD structure
+
+### Surface guides
+- 🖥️ [CLI Guide](./docs/cli-guide.md) - Adding CLI commands with `defineCommand`
+- 🌐 [REST Guide](./docs/rest-guide.md) - Adding REST handlers with Zod validation
+- 🎨 [Studio Guide](./docs/studio-guide.md) - Creating React widgets for KB Labs UI
+
+### Comprehensive examples (2,500+ lines)
+- ✅ [Validation Examples](./docs/examples/validation-examples.md) - Zod schemas, custom validation, type inference
+- 🧪 [Test Examples](./docs/examples/test-examples.md) - CLI, REST, widget, and integration testing
+- 🔐 [Contracts Examples](./docs/examples/contracts-examples.md) - Type-safe IDs and hierarchical contracts
+- 🏢 [Multi-Tenancy Examples](./docs/examples/multi-tenancy-examples.md) - SaaS patterns, rate limiting, quotas
+
+### Folder-specific READMEs (2,000+ lines)
+- [cli/README.md](./packages/plugin-template-core/src/cli/README.md) - CLI patterns and best practices (324 lines)
+- [rest/README.md](./packages/plugin-template-core/src/rest/README.md) - REST handlers with Zod (358 lines)
+- [studio/README.md](./packages/plugin-template-core/src/studio/README.md) - React widgets and layouts (443 lines)
+- [lifecycle/README.md](./packages/plugin-template-core/src/lifecycle/README.md) - Setup, destroy, upgrade hooks (333 lines)
+- [core/README.md](./packages/plugin-template-core/src/core/README.md) - Pure business logic (240 lines)
+- [utils/README.md](./packages/plugin-template-core/src/utils/README.md) - Utilities and error handling (348 lines)
+
+## 🎯 What you get
+
+### KB Labs standard structure
+
+```
+packages/plugin-template-core/src/
+├── cli/              # CLI commands (defineCommand pattern)
+│   ├── commands/     # Command implementations
+│   ├── utils.ts      # getCommandId helper
+│   └── README.md     # 324 lines of CLI patterns
+├── rest/             # REST API handlers
+│   ├── handlers/     # definePluginHandler implementations
+│   ├── schemas/      # Zod request/response schemas
+│   └── README.md     # 358 lines of REST patterns
+├── studio/           # Studio React components
+│   ├── widgets/      # Widget implementations
+│   └── README.md     # 443 lines of widget patterns
+├── lifecycle/        # Plugin lifecycle hooks
+│   ├── setup.ts      # Installation handler
+│   └── README.md     # 333 lines of lifecycle patterns
+├── core/             # Pure business logic
+│   ├── greeting.ts   # Domain entities
+│   └── README.md     # 240 lines of core patterns
+└── utils/            # Shared utilities
+    ├── errors.ts     # defineError pattern (219 lines)
+    ├── constants.ts  # Shared constants
+    └── README.md     # 348 lines of utility patterns
+```
+
+### Streamlined error handling with `defineError`
+
+```typescript
+import {
+  TemplateError,         // Template-specific errors
+  CommonError,           // Common errors (validation, not found, etc.)
+  formatErrorForLogging, // For ctx.logger
+  formatErrorForUser     // For user-facing messages
+} from './utils/errors.js';
+
+// Template-specific errors
+throw new TemplateError.BusinessRuleViolation('Insufficient funds');
+throw new TemplateError.QuotaExceeded('api_requests');
+
+// Common errors
+throw new CommonError.ValidationFailed('Email must be valid');
+throw new CommonError.NotFound('User not found');
+```
+
+### Production-ready examples
+
+**Validation with Zod:**
+```typescript
+const UserSchema = z.object({
+  email: z.string().email('Invalid email'),
+  age: z.number().int().min(18, 'Must be 18+')
+});
+
+export const handleCreateUser = definePluginHandler({
+  schema: { input: UserSchema, output: UserResponseSchema },
+  async handle(input, ctx) {
+    // Input is already validated!
+    const user = await createUser(input);
+    return { userId: user.id };
+  }
+});
+```
+
+**Type-safe contracts:**
+```typescript
+export const CommandIds = {
+  HELLO: 'template:hello',
+  CREATE: 'template:create'
+} as const;
+
+// Use everywhere - autocomplete + type safety
+export const run = defineCommand({
+  name: CommandIds.HELLO,  // ✅ No typos!
+  //...
+});
+```
+
+**Multi-tenancy:**
+```typescript
+import { TenantRateLimiter } from '@kb-labs/tenant';
+
+const limiter = new TenantRateLimiter(broker);
+
+const result = await limiter.checkLimit(tenantId, 'api');
+if (!result.allowed) {
+  throw new QuotaExceededError('api', result.limit!, result.current!);
+}
+```
+
+## 🧱 Architecture highlights
+
+### Canonical patterns (100% compliant)
+
+**CLI commands:**
+```typescript
+export const run = defineCommand({
+  name: getCommandId('template:hello'),
+  flags: {
+    name: { type: 'string', default: 'World' }
+  },
+  async handler(ctx, argv, flags) {
+    ctx.logger?.info('Command started', { name: flags.name });
+    ctx.ui?.write(`Hello, ${flags.name}!\n`);
+    return { ok: true, message: `Hello, ${flags.name}!`, target: flags.name };
+  }
+});
+```
+
+**REST handlers:**
+```typescript
+export const handleHello = definePluginHandler({
+  schema: {
+    input: HelloRequestSchema,
+    output: HelloResponseSchema
+  },
+  async handle(input, ctx) {
+    ctx.logger?.info('REST handler started', { name: input.name });
+    const greeting = createGreeting(input.name);
+    return { message: greeting.message, target: greeting.target };
+  }
+});
+```
+
+**Studio widgets:**
+```typescript
+export function HelloWidget({ data, loading, error }: HelloWidgetProps) {
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!data) return <div>No data</div>;
+
+  return (
+    <div className="widget-container">
+      <h2>Hello from Plugin Template</h2>
+      <p>{data.message}</p>
+    </div>
+  );
+}
+```
+
+### No legacy code!
+
+- ❌ No `createConsoleLogger` (deprecated)
+- ❌ No DDD layers (domain/application/infrastructure)
+- ❌ No path aliases (@app/*, @domain/*)
+- ✅ 100% `ctx.logger` everywhere
+- ✅ Pure functions in `core/`
+- ✅ KB Labs standard folders
+
+## 📦 Repository layout
+
+```
+kb-labs-plugin-template/
+├── packages/
+│   ├── plugin-template-core/    # Main plugin package
+│   │   ├── src/
+│   │   │   ├── cli/            # CLI commands (324 line README)
+│   │   │   ├── rest/           # REST handlers (358 line README)
+│   │   │   ├── studio/         # React widgets (443 line README)
+│   │   │   ├── lifecycle/      # Plugin lifecycle (333 line README)
+│   │   │   ├── core/           # Business logic (240 line README)
+│   │   │   └── utils/          # Utilities + errors (348 line README)
+│   │   ├── tests/              # Vitest tests
+│   │   └── package.json        # @kb-labs/plugin-template-core
+│   └── contracts/              # Type-safe contracts
+├── docs/
+│   ├── getting-started.md      # Setup guide
+│   ├── architecture.md         # KB Labs structure
+│   ├── cli-guide.md            # CLI patterns (1,395 lines of guides)
+│   ├── rest-guide.md
+│   ├── studio-guide.md
+│   ├── examples/               # 2,500+ lines of examples
+│   │   ├── validation-examples.md
+│   │   ├── test-examples.md
+│   │   ├── contracts-examples.md
+│   │   └── multi-tenancy-examples.md
+│   └── adr/
+│       └── 0009-flatten-plugin-structure.md
+└── scripts/                    # Sandbox scripts
+```
+
+## 🧪 Testing
+
 ```bash
-# Pin exact versions, no upgrades, block prereleases
-kb devlink plan --pin=exact --upgrade=none --prerelease=block
+# Run all tests
+pnpm --filter @kb-labs/plugin-template-core run test
 
-# Allow caret ranges, upgrade to latest minor, allow prereleases
-kb devlink plan --pin=caret --upgrade=minor --prerelease=allow
+# Run with coverage
+pnpm test -- --coverage
+
+# Watch mode
+pnpm run test:watch
 ```
 
-#### State Management
+**Test examples included:**
+- ✅ CLI command tests (mocking context, validation)
+- ✅ REST handler tests (Zod validation, dependencies)
+- ✅ Widget tests (React Testing Library, states)
+- ✅ Core logic tests (pure functions, edge cases)
+- ✅ Integration tests (full flows)
 
-All DevLink operations produce explicit state files under `.kb/devlink/`:
+See [Test Examples](./docs/examples/test-examples.md) for comprehensive testing patterns.
 
-```
-.kb/devlink/
-├── state.json           # Current package graph and discovery results
-├── plan.json            # Generated linking plan (before execution)
-├── lock.json            # Frozen state (for reproducibility)
-├── last-apply.json      # Journal of last operation (for undo)
-└── backups/             # Timestamped backups of package.json files
-    └── 2025-10-11T18-54-53.261Z/
-        ├── packages/a/package.json
-        └── packages/b/package.json
-```
+## 🔧 Scripts
 
-#### Safety Features
+| Script | Description |
+|--------|-------------|
+| `pnpm build` | Build all packages |
+| `pnpm test` | Run test suites |
+| `pnpm lint` | Lint codebase |
+| `pnpm type-check` | TypeScript validation |
+| `pnpm --filter @kb-labs/plugin-template-core build` | Build core package |
 
-DevLink includes built-in safety mechanisms to prevent accidental data loss:
+## 🎓 Learning path
 
-- **Git Dirty Detection**: Warns when uncommitted changes exist in `package.json` or lockfiles (respects `.gitignore`)
-- **Automatic Backups**: Creates timestamped backups before mutating files with full metadata
-- **Confirmation Prompts**: Blocks operations unless `--yes` flag is provided (in CI/CD)
-- **Dry Run Mode**: Preview changes without executing (`--dry-run`)
-- **Undo Support**: Restore previous state with `kb devlink undo`
-- **Backup Management**: List, show, protect, and restore from any backup with `kb devlink backups`
+### New to KB Labs plugins?
 
-## 🏗️ Architecture
+1. **Start here:** [Getting Started](./docs/getting-started.md)
+2. **Understand structure:** [Architecture](./docs/architecture.md)
+3. **Add your first command:** [CLI Guide](./docs/cli-guide.md)
+4. **Add validation:** [Validation Examples](./docs/examples/validation-examples.md)
+5. **Write tests:** [Test Examples](./docs/examples/test-examples.md)
 
-### Architecture Flow
+### Building a SaaS plugin?
 
-```
-      ┌──────────────────────┐
-      │   discovery phase    │
-      │  scan repositories   │
-      │  detect packages     │
-      └──────────┬───────────┘
-                 │
-                 ▼
-      ┌──────────────────────┐
-      │     graph phase      │
-      │ build dependency DAG │
-      │ compute relations    │
-      └──────────┬───────────┘
-                 │
-                 ▼
-      ┌──────────────────────┐
-      │      plan phase      │
-      │ generate link plan   │
-      │ apply policy rules   │
-      └──────────┬───────────┘
-                 │
-                 ▼
-      ┌──────────────────────┐
-      │     freeze phase     │
-      │  lock versions & io  │
-      │   produce .kb lock   │
-      └──────────┬───────────┘
-                 │
-                 ▼
-      ┌──────────────────────┐
-      │      persist         │
-      │ save state snapshot  │
-      │ track drift & diffs  │
-      └──────────────────────┘
-```
+1. **Multi-tenancy:** [Multi-Tenancy Examples](./docs/examples/multi-tenancy-examples.md)
+2. **Type-safe IDs:** [Contracts Examples](./docs/examples/contracts-examples.md)
+3. **REST API:** [REST Guide](./docs/rest-guide.md)
+4. **Rate limiting:** See multi-tenancy examples
 
-## 💻 CLI Commands
+### Need specific patterns?
 
-| Command | Description |
-|---------|-------------|
-| `kb devlink scan [roots...]` | Discover packages and build dependency graph |
-| `kb devlink plan` | Generate linking plan based on current state |
-| `kb devlink apply` | Apply linking plan (uses Yalc under the hood) |
-| `kb devlink switch` | Switch between linking modes |
-| `kb devlink update` | Update dependencies and relink packages |
-| `kb devlink watch` | Watch providers and auto-rebuild/refresh consumers |
-| `kb devlink freeze` | Create lockfile for reproducible linking |
-| `kb devlink status` | Show current linking state |
-| `kb devlink undo` | Restore previous state from backup |
-| `kb devlink backups` | Manage backup snapshots |
-| `kb devlink clean` | Remove temporary files and caches |
-| `kb devlink clean --hard` | Also remove lock file |
-| `kb devlink clean --deep` | Deep clean including global yalc store |
+- **Validation?** → [Validation Examples](./docs/examples/validation-examples.md)
+- **Testing?** → [Test Examples](./docs/examples/test-examples.md)
+- **Error handling?** → [utils/errors.ts](./packages/plugin-template-core/src/utils/errors.ts)
+- **CLI commands?** → [CLI Guide](./docs/cli-guide.md) + [cli/README.md](./packages/plugin-template-core/src/cli/README.md)
+- **REST handlers?** → [REST Guide](./docs/rest-guide.md) + [rest/README.md](./packages/plugin-template-core/src/rest/README.md)
+- **React widgets?** → [Studio Guide](./docs/studio-guide.md) + [studio/README.md](./packages/plugin-template-core/src/studio/README.md)
 
-### CLI Options
+## 🌟 Highlights
 
-```bash
-# Linking modes
---mode=auto          # Smart linking (default)
---mode=local         # Force local only
---mode=npm           # Force npm registry only
+### 7,700+ lines of documentation
+- 6 comprehensive folder READMEs (2,061 lines)
+- 4 production-ready example guides (2,500 lines)
+- 4 updated surface guides (1,395 lines)
+- Architecture docs (ADR, REFACTORING, architecture.md)
 
-# Version policies
---pin=exact          # Exact version pinning
---pin=caret          # Caret ranges (^1.2.3)
---pin=tilde          # Tilde ranges (~1.2.3)
---pin=none           # No version constraints
+### Streamlined error handling
+- `defineError()` pattern (87% reduction vs custom classes)
+- Template-specific errors (BusinessRuleViolation, QuotaExceeded, MissingConfig)
+- Common errors (ValidationFailed, NotFound, PermissionDenied, etc.)
+- Formatting utilities (formatErrorForLogging, formatErrorForUser)
+- Assertions (assertNotNull, assertBusinessRule)
+- Error wrapping (wrapWithErrorHandling)
 
---upgrade=none       # No version upgrades (default)
---upgrade=patch      # Allow patch upgrades
---upgrade=minor      # Allow minor upgrades
---upgrade=major      # Allow major upgrades
+### Production patterns
+- Zod validation (advanced schemas, custom validation, type inference)
+- Testing (CLI, REST, widgets, core, integration)
+- Contracts (type-safe IDs, validation helpers)
+- Multi-tenancy (rate limiting, quotas, data isolation)
 
---prerelease=block   # Block prerelease versions (default)
---prerelease=allow   # Allow prereleases
---prerelease=only    # Only use prereleases
-
-# Safety options
---yes                # Skip confirmation prompts (for CI/CD)
---dry-run            # Show what would happen without executing
-
-# Other options
---verbose            # Detailed output
---json               # JSON output for scripting
-```
-
-## 💡 Use Cases
-
-- **Multi-repo development**: Work on multiple interdependent repositories simultaneously
-- **Library development**: Test library changes in consuming applications locally
-- **Monorepo workflows**: Manage dependencies across workspace packages
-- **Version testing**: Test different version combinations before publishing
-- **Team coordination**: Share reproducible linking states via lockfiles
-- **CI/CD integration**: Validate linking plans in continuous integration
-
-## ⚖️ Comparison
-
-### DevLink vs Yalc
-
-| Aspect | DevLink | Yalc |
-|--------|---------|------|
-| **Purpose** | High-level orchestrator with discovery, linking policies, and state tracking | Low-level package linker for local testing |
-| **Automation** | Full — scans, plans, freezes, and rolls back automatically | Manual — requires explicit link/unlink |
-| **State & Policies** | Maintains `.kb/devlink/state.json` and version policies | No state or version management |
-| **Integration** | Works with PNPM, DevKit, and KB Labs Studio | Standalone utility |
-
-> DevLink uses Yalc under the hood but extends it with orchestration, analytics, and reproducibility.
-
-### DevLink vs pnpm link
-
-| Aspect | DevLink | pnpm link |
-|--------|---------|-----------|
-| **Scope** | Cross-repository linking and version sync | Single-workspace symbolic linking |
-| **Governance** | Centralized policy engine | None |
-| **CI/CD Integration** | Deterministic builds with lock-state tracking | Local-only linking |
-| **Reversibility** | Rollback and drift detection | No rollback mechanism |
-
-### DevLink vs npm/yarn link
-
-| Aspect | DevLink | npm/yarn link |
-|--------|---------|---------------|
-| **Ecosystem** | PNPM-first, monorepo and polyrepo friendly | Legacy monorepo linking |
-| **Workflow** | Declarative (`devlink plan`, `devlink freeze`) | Manual linking |
-| **State** | Persisted lock and state files | None |
-| **Safety** | Version-aware, rollback-safe | Can break dependency tree |
-
-## 📚 Documentation
-
-- [Documentation Standard](./docs/DOCUMENTATION.md) - Full documentation guidelines
-- [Contributing Guide](./CONTRIBUTING.md) - How to contribute
-- [`@kb-labs/devlink-contracts` Guide](./packages/contracts/README.md) - Public API manifest and schemas
-- [Architecture Decisions](./docs/adr/) - ADRs for this project
-
-**Guides:**
-- [Watch Mode Guide](./docs/WATCH.md) - Complete guide to live watching and automatic rebuild
-
-## 🔗 Related Packages
-
-### Dependencies
-
-- [@kb-labs/core](https://github.com/KirillBaranov/kb-labs-core) - Core utilities
-
-### Used By
-
-- All KB Labs projects for local package linking
-- [@kb-labs/release-manager](https://github.com/KirillBaranov/kb-labs-release-manager) - Release orchestration
-
-### Ecosystem
-
-- [KB Labs](https://github.com/KirillBaranov/kb-labs) - Main ecosystem repository
-- [`@kb-labs/devlink-contracts`](./packages/contracts/README.md) - Canonical contract definitions (CLI, REST, Studio, artifacts)
-
-## ❓ FAQ
-
-### General
-
-- **Why DevLink instead of just using Yalc?** — DevLink adds auto-discovery, policy enforcement, state management, and team workflows on top of Yalc.
-- **Does this work with npm/yarn?** — DevLink is optimized for PNPM, but core concepts could be adapted.
-- **Can I use this in CI?** — Yes! Use `kb devlink freeze` to create a lockfile, then `kb devlink apply --yes` in CI for reproducible linking.
-- **What about security?** — DevLink only operates on local filesystems and doesn't make network calls (except via Yalc).
-
-### Workflow
-
-- **How do I update links after code changes?** — Use `kb devlink watch` for automatic rebuild and refresh. Or manually: rebuild your package and consumers will pick up changes (if using link: mode) or run `yalc update`.
-- **Can I mix local and npm packages?** — Yes! Use `auto` mode to link local packages when available and fall back to npm for others.
-- **How do I share linking state with my team?** — Use `kb devlink freeze` to create a lockfile, commit it, and teammates can `kb devlink apply` to replicate your setup.
-- **What is watch mode?** — `kb devlink watch` monitors provider packages, rebuilds them on changes, and automatically refreshes consumers. See [docs/WATCH.md](./docs/WATCH.md) for details.
-
-### Troubleshooting
-
-- **Links not working?** — Run `kb devlink status --check` to see if state has drifted.
-- **Version conflicts?** — Use `--pin=exact` to force exact versions, or adjust upgrade policy.
-- **Need to start fresh?** — Run `kb devlink clean` to remove all DevLink state, then re-scan.
-- **Stale artifacts?** — Run `kb devlink clean --deep` to remove yalc artifacts and protocol conflicts.
-- **Blocked by git warnings?** — Commit your changes or use `--yes` to proceed anyway.
-- **Need to restore a backup?** — Use `kb devlink backups --list` to see all backups, then `kb devlink undo` to restore the latest, or `kb devlink undo --backup=timestamp` for a specific backup.
+### No legacy code
+- 100% ctx.logger (createConsoleLogger deprecated)
+- 0 path aliases (simple imports)
+- 0 DDD layers (KB Labs standard folders)
+- Pure functions in core/ (no side effects)
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines and contribution process.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+- Coding standards
+- KB Labs folder structure rules
+- PR checklist
+- Testing requirements
 
 ## 📄 License
 
@@ -463,18 +492,12 @@ MIT © KB Labs
 
 ---
 
-**See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines and contribution process.**
+**Last updated:** 2025-11-30
+**Template version:** 2.0.0 (Flattened structure)
+**Documentation:** 7,735 lines
+**Status:** ✅ Production-ready gold standard
+
 
 ## License
 
-KB Public License v1.1 - see [LICENSE](LICENSE) for details.
-
-This is open source software with some restrictions on:
-- Offering as a hosted service (SaaS/PaaS)
-- Creating competing platform products
-
-For commercial licensing inquiries: contact@kblabs.dev
-
-**User Guides:**
-- [English Guide](../LICENSE-GUIDE.en.md)
-- [Русское руководство](../LICENSE-GUIDE.ru.md)
+MIT License - see [LICENSE](LICENSE) for details.

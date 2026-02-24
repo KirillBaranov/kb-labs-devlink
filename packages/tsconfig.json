@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./devlink-contracts" },
+    { "path": "./devlink-core" },
+    { "path": "./devlink-cli" }
+  ]
+}

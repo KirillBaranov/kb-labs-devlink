@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# DevLink post-push hook — managed by kb-labs-devkit, do not edit manually.
+# Restores local mode after push and clears plugin cache.
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+
+# Check if devlink is available
+if ! pnpm --prefix "$ROOT_DIR" kb devlink --help > /dev/null 2>&1; then
+  exit 0
+fi
+
+# Only restore if currently in npm mode
+STATUS=$(pnpm --prefix "$ROOT_DIR" kb devlink status --json 2>/dev/null | grep '"currentMode"' | grep -o '"npm"\|"local"\|null')
+if [ "$STATUS" != '"npm"' ]; then
+  exit 0
+fi
+
+echo "[devlink] restoring local mode after push..."
+pnpm --prefix "$ROOT_DIR" kb devlink undo
+pnpm --prefix "$ROOT_DIR" kb plugins clear-cache > /dev/null 2>&1 || true
