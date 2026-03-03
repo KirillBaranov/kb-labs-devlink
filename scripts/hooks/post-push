@@ -2,19 +2,32 @@
 # DevLink post-push hook — managed by kb-labs-devkit, do not edit manually.
 # Restores local mode after push and clears plugin cache.
 
-ROOT_DIR="$(git rev-parse --show-toplevel)"
+REPO_DIR="$(git rev-parse --show-toplevel)"
+
+# Walk up from repo to find the kb-labs monorepo root (has kb-labs-cli/packages/cli-bin)
+KB_ROOT="$REPO_DIR"
+while [ "$KB_ROOT" != "/" ]; do
+  if [ -f "$KB_ROOT/kb-labs-cli/packages/cli-bin/dist/bin.js" ]; then
+    break
+  fi
+  KB_ROOT="$(dirname "$KB_ROOT")"
+done
+
+if [ "$KB_ROOT" = "/" ]; then
+  KB_ROOT="$(dirname "$REPO_DIR")"
+fi
 
 # Check if devlink is available
-if ! pnpm --prefix "$ROOT_DIR" kb devlink --help > /dev/null 2>&1; then
+if ! pnpm --prefix "$KB_ROOT" kb devlink --help > /dev/null 2>&1; then
   exit 0
 fi
 
 # Only restore if currently in npm mode
-STATUS=$(pnpm --prefix "$ROOT_DIR" kb devlink status --json 2>/dev/null | grep '"currentMode"' | grep -o '"npm"\|"local"\|null')
+STATUS=$(pnpm --prefix "$KB_ROOT" kb devlink status --json 2>/dev/null | grep '"currentMode"' | grep -o '"npm"\|"local"\|null')
 if [ "$STATUS" != '"npm"' ]; then
   exit 0
 fi
 
 echo "[devlink] restoring local mode after push..."
-pnpm --prefix "$ROOT_DIR" kb devlink undo
-pnpm --prefix "$ROOT_DIR" kb plugins clear-cache > /dev/null 2>&1 || true
+pnpm --prefix "$KB_ROOT" kb devlink undo
+pnpm --prefix "$KB_ROOT" kb plugins clear-cache > /dev/null 2>&1 || true
