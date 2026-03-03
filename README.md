@@ -1,307 +1,306 @@
-# KB Labs DevLink
+# Standard Configuration Templates
 
-> Automate switching cross-repo dependencies between `link:` (local dev) and `^version` (npm/CI) across all KB Labs monorepos.
+This directory contains canonical configuration templates for all `@kb-labs` packages.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-9+-orange.svg)](https://pnpm.io/)
+## 📋 Available Templates
 
-**The problem it solves:** KB Labs spans 18 monorepos with 90+ packages. Cross-repo dependencies use `link:` for local development but must be `^version` when committed. Manually editing 534 entries across 55 files before every push is error-prone and slow.
+### Core Configs (All Packages)
 
-**The solution:** One command switches all of them. Git hooks do it automatically.
+| File | Purpose | Required | Customizable |
+|------|---------|----------|--------------|
+| **eslint.config.js** | Linting rules | ✅ Yes | ⚠️ Minimal |
+| **tsconfig.json** | TypeScript IDE config | ✅ Yes | ❌ No |
+| **tsconfig.build.json** | TypeScript build config | ✅ Yes | ❌ No |
 
----
+### Tsup Configs (Choose ONE based on package type)
 
-## Quick start
+| Template | Package Type | Use Cases |
+|----------|--------------|-----------|
+| **tsup.config.ts** | 📦 **Library** (default) | Most packages, importable libraries |
+| **tsup.config.bin.ts** | 🔧 **Binary** | Standalone executables, CLI bins |
+| **tsup.config.cli.ts** | ⌨️ **CLI** | CLI packages with commands |
+| **tsup.config.dual.ts** | 📦🔧 **Library + Binary** | Packages with both API and bin |
 
+### Package.json Examples
+
+| Template | Purpose |
+|----------|---------|
+| **package.json.lib** | Library package example |
+| **package.json.bin** | Binary package example |
+
+## 🎯 Philosophy
+
+**Convention over Configuration**
+
+All `@kb-labs` packages MUST use these exact templates with minimal customization. This ensures:
+
+- ✅ Consistent build output across all packages
+- ✅ Predictable dependency resolution
+- ✅ Unified linting standards
+- ✅ Easy maintenance and upgrades
+
+## 📦 Usage
+
+### For New Packages
+
+#### Step 1: Choose Package Type
+
+**Library Package** (most common):
 ```bash
-# See what would change (without touching anything)
-pnpm kb devlink plan
-
-# Switch all cross-repo deps to npm versions
-pnpm kb devlink switch --mode=npm
-
-# Switch back to local link: for development
-pnpm kb devlink switch --mode=local
-
-# Undo the last switch
-pnpm kb devlink undo
+cp kb-labs-devkit/templates/configs/tsup.config.ts your-package/
+cp kb-labs-devkit/templates/configs/eslint.config.js your-package/
+cp kb-labs-devkit/templates/configs/tsconfig*.json your-package/
+cp kb-labs-devkit/templates/configs/package.json.lib your-package/package.json
 ```
 
----
+**Binary Package** (standalone executables):
+```bash
+cp kb-labs-devkit/templates/configs/tsup.config.bin.ts your-package/tsup.config.ts
+cp kb-labs-devkit/templates/configs/eslint.config.js your-package/
+cp kb-labs-devkit/templates/configs/tsconfig*.json your-package/
+cp kb-labs-devkit/templates/configs/package.json.bin your-package/package.json
+```
 
-## How it works
+**CLI Package** (command handlers):
+```bash
+cp kb-labs-devkit/templates/configs/tsup.config.cli.ts your-package/tsup.config.ts
+cp kb-labs-devkit/templates/configs/eslint.config.js your-package/
+cp kb-labs-devkit/templates/configs/tsconfig*.json your-package/
+cp kb-labs-devkit/templates/configs/package.json.lib your-package/package.json
+```
 
-DevLink scans the root `pnpm-workspace.yaml`, walks all 18 submodule monorepos, builds a map of every `@kb-labs/*` package with its `link:` path and npm version. It then rewrites `dependencies`, `devDependencies`, and `peerDependencies` in every `package.json` that references a cross-repo package.
+**Dual Package** (library + binary):
+```bash
+cp kb-labs-devkit/templates/configs/tsup.config.dual.ts your-package/tsup.config.ts
+cp kb-labs-devkit/templates/configs/eslint.config.js your-package/
+cp kb-labs-devkit/templates/configs/tsconfig*.json your-package/
+cp kb-labs-devkit/templates/configs/package.json.lib your-package/package.json
+# Then add "bin" field to package.json
+```
 
-**Before switch (local mode):**
+#### Step 2: Customize Package Name
+```bash
+# Edit package.json and update name, description
+```
+
+### For Existing Packages
+
+```bash
+# Check for drift
+npx kb-devkit-check-configs
+
+# Auto-fix drift
+npx kb-devkit-check-configs --fix
+```
+
+## 🔧 Customization Rules
+
+### tsup.config.ts
+
+**Allowed customizations:**
+
+```typescript
+export default defineConfig({
+  ...nodePreset,
+  tsconfig: 'tsconfig.build.json', // ✅ Always required
+
+  // ✅ OK: Multiple entry points
+  entry: ['src/index.ts', 'src/cli.ts'],
+
+  // ✅ OK: Extra external deps (if really needed)
+  external: ['special-native-module'],
+
+  dts: true, // ✅ Always required
+});
+```
+
+**NOT allowed:**
+
+```typescript
+// ❌ WRONG: Don't override preset settings
+export default defineConfig({
+  format: ['esm'],        // Already in preset!
+  target: 'es2022',       // Already in preset!
+  sourcemap: true,        // Already in preset!
+  // ...
+});
+
+// ❌ WRONG: Don't disable types
+dts: false,
+
+// ❌ WRONG: Don't duplicate external deps
+external: [
+  '@kb-labs/core',  // Already in preset!
+  '@kb-labs/cli',   // Already in preset!
+],
+```
+
+### eslint.config.js
+
+**Allowed customizations:**
+
+```javascript
+export default [
+  ...nodePreset,
+  {
+    // ✅ OK: Project-specific ignores only
+    ignores: ['**/*.generated.ts']
+  }
+];
+```
+
+**NOT allowed:**
+
+```javascript
+// ❌ WRONG: Don't duplicate preset ignores
+export default [
+  ...nodePreset,
+  {
+    ignores: [
+      '**/dist/**',        // Already in preset!
+      '**/node_modules/**', // Already in preset!
+    ]
+  }
+];
+```
+
+### tsconfig.json & tsconfig.build.json
+
+**NOT customizable!**
+
+These files MUST remain identical to templates. All TypeScript configuration is standardized in DevKit presets.
+
 ```json
-"@kb-labs/sdk": "link:../kb-labs-sdk/packages/sdk"
+// ❌ WRONG: Don't override extends
+{
+  "extends": "./my-custom-base.json"
+}
+
+// ❌ WRONG: Don't add compilerOptions
+{
+  "extends": "@kb-labs/devkit/tsconfig/node.json",
+  "compilerOptions": {
+    "strict": false  // Don't override preset!
+  }
+}
 ```
 
-**After switch (npm mode):**
-```json
-"@kb-labs/sdk": "^1.2.0"
-```
+## 🔍 Drift Detection
 
-Only packages **published to npm** are managed — private packages (`"private": true`) and packages not found in the registry are left untouched.
-
----
-
-## Commands
-
-### `devlink switch`
-
-Switches all cross-repo dependencies to the target mode.
+DevKit automatically detects configuration drift:
 
 ```bash
-pnpm kb devlink switch --mode=local      # link: paths for local dev
-pnpm kb devlink switch --mode=npm        # ^version for CI/commit
+# Check all packages
+npx kb-devkit-check-configs
 
-# Preview without touching files
-pnpm kb devlink switch --mode=npm --dry-run
+# Check specific package
+npx kb-devkit-check-configs --package=@kb-labs/core
 
-# Limit to specific monorepos
-pnpm kb devlink switch --mode=npm --repos=kb-labs-cli,kb-labs-core
+# Auto-fix (creates backup)
+npx kb-devkit-check-configs --fix
 
-# JSON output
-pnpm kb devlink switch --mode=npm --json
+# CI mode (fail on drift)
+npx kb-devkit-check-configs --ci
 ```
 
-**Flags:**
+### Drift Detection Rules
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--mode` | `local\|npm` | required | Target mode |
-| `--dry-run` | boolean | false | Preview only, no writes |
-| `--repos` | string | all | Comma-separated list of monorepos to scope |
-| `--json` | boolean | false | Machine-readable output |
-| `--ttl` | number | 24 | npm registry cache TTL in hours |
+| Issue | Severity | Auto-fix |
+|-------|----------|----------|
+| Missing `dts: true` | 🔴 Error | ✅ Yes |
+| Using `dts: false` | 🔴 Error | ✅ Yes |
+| Not using `nodePreset` | 🔴 Error | ⚠️ Manual |
+| Duplicate `external` | 🟡 Warning | ✅ Yes |
+| Duplicate `ignores` | 🟡 Warning | ✅ Yes |
+| Missing templates | 🔴 Error | ✅ Yes |
+| Modified templates | 🔴 Error | ⚠️ Manual |
 
-**What happens:**
-1. Discovers all 18 monorepos via `pnpm-workspace.yaml`
-2. Checks npm registry for each package (cached 24h in `.kb/cache/`)
-3. Builds a plan of all changes
-4. Creates a backup of all affected `package.json` files
-5. Applies changes atomically
-6. Saves state to `.kb/devlink/state.json`
+## 📚 Examples
 
----
+### ✅ Good Example (Minimal Package)
 
-### `devlink status`
+```typescript
+// tsup.config.ts
+import { defineConfig } from 'tsup';
+import nodePreset from '@kb-labs/devkit/tsup/node.js';
 
-Shows current state of all cross-repo dependencies.
-
-```bash
-pnpm kb devlink status
-pnpm kb devlink status --json     # for scripts/hooks
+export default defineConfig({
+  ...nodePreset,
+  tsconfig: 'tsconfig.build.json',
+  entry: ['src/index.ts'],
+  dts: true,
+});
 ```
 
-**Output:**
-```
-┌── DevLink — Status
-│
-│ Current mode
-│  Mode: local
-│  Last applied: 2026-02-24T13:27:43.522Z
-│
-│ Dependency counts
-│  link: (local)   : 534
-│  npm (^version)  : 366
-│  workspace:*     : 1245
-│
-└── OK Success / 2ms
-```
+### ✅ Good Example (CLI Package with Multiple Entries)
 
----
+```typescript
+// tsup.config.ts
+import { defineConfig } from 'tsup';
+import nodePreset from '@kb-labs/devkit/tsup/node.js';
 
-### `devlink plan`
-
-Shows exactly what `switch` would change, without touching anything.
-
-```bash
-pnpm kb devlink plan              # preview opposite mode
-pnpm kb devlink plan --mode=npm   # explicit target mode
-pnpm kb devlink plan --json       # machine-readable
+export default defineConfig({
+  ...nodePreset,
+  tsconfig: 'tsconfig.build.json',
+  entry: [
+    'src/index.ts',
+    'src/cli/index.ts',
+    'src/cli/commands/build.ts',
+    'src/cli/commands/test.ts',
+  ],
+  dts: true,
+});
 ```
 
-Groups changes by monorepo and shows `from → to` for each dependency:
+### ❌ Bad Example (Over-configured)
 
-```
-kb-labs-cli (12 deps)
-  @kb-labs/sdk: link:../kb-labs-sdk/packages/sdk → ^1.2.0  ×8 files
-  @kb-labs/shared: link:../kb-labs-shared/packages/shared → ^0.3.1  ×4 files
+```typescript
+// tsup.config.ts
+import { defineConfig } from 'tsup';
 
-kb-labs-core (6 deps)
-  @kb-labs/contracts: link:../kb-labs-contracts → ^2.0.0  ×6 files
-```
-
----
-
-### `devlink undo`
-
-Restores the previous state from the last backup. No arguments needed.
-
-```bash
-pnpm kb devlink undo
+// ❌ Not using preset!
+export default defineConfig({
+  format: ['esm'],
+  target: 'es2022',
+  sourcemap: true,
+  clean: true,
+  dts: true,
+  entry: ['src/index.ts'],
+  external: [/^@kb-labs\/.*/],  // Manual external
+});
 ```
 
-Reads `.kb/devlink/backups/<last-id>/` and copies all backed-up `package.json` files back to their original locations. Updates state to the mode that was active before the backup.
+## 🚀 Migration Guide
 
----
+### From Custom Config to Standard Template
 
-### `devlink backups`
+1. **Backup your current config**
+   ```bash
+   cp tsup.config.ts tsup.config.ts.backup
+   ```
 
-Lists all available backups and allows restoring a specific one.
+2. **Copy standard template**
+   ```bash
+   cp kb-labs-devkit/templates/configs/tsup.config.ts .
+   ```
 
-```bash
-# List all backups
-pnpm kb devlink backups
+3. **Migrate customizations** (only if needed)
+   - Compare your backup with template
+   - Extract only truly necessary customizations
+   - Add them with comments explaining why
 
-# Restore a specific backup by ID
-pnpm kb devlink backups --restore 1771938550173-r3x7a
-```
+4. **Test build**
+   ```bash
+   pnpm run build
+   ```
 
-Backups are stored in `.kb/devlink/backups/` and created automatically before every `switch`.
+5. **Verify types**
+   ```bash
+   npx kb-devkit-check-types
+   ```
 
----
+## 🔗 Related
 
-### `devlink freeze`
-
-Saves the current dependency state to `.kb/devlink/lock.json`. Useful for CI to verify state hasn't drifted.
-
-```bash
-pnpm kb devlink freeze
-pnpm kb devlink freeze --json
-```
-
----
-
-## Git hooks automation
-
-DevLink ships with git hooks that automate the switching workflow. The hooks are managed by **devkit-sync** and distributed to all 18 monorepos automatically.
-
-### How it works
-
-**`pre-commit`** — runs before every `git commit` in any submodule:
-1. Finds the kb-labs root by walking up directories
-2. Checks if already in npm mode (skips if yes — instant on 2nd+ commit)
-3. Switches to npm mode (first commit in a session only)
-
-**`post-push`** — runs after every `git push`:
-1. Checks if currently in npm mode
-2. Restores to local mode + clears plugin cache
-
-### Typical session
-
-```
-$ git commit -m "feat: add something"
-[devlink] switching to npm mode...
-✓ Switched to npm mode (534 changes)
-[main abc1234] feat: add something
-
-$ git commit -m "fix: typo"
-# Hook detects npm mode → skips instantly
-[main def5678] fix: typo
-
-$ git push origin main
-# post-push hook
-[devlink] restoring local mode after push...
-✓ Undo: restored 55 files
-```
-
-### Hook source
-
-Hooks live in `kb-labs-devkit/scripts/hooks/` and are synced to all repos via:
-
-```bash
-pnpm --filter @kb-labs/devkit run devkit:sync
-# or in any subrepo:
-pnpm devkit:sync
-```
-
-New developers get hooks automatically on `pnpm install` (via `postinstall → devkit:sync`).
-
----
-
-## Package structure
-
-```
-kb-labs-devlink/
-├── packages/
-│   ├── devlink-contracts/      # Zod schemas + TypeScript types
-│   │   └── src/
-│   │       ├── schema.ts       # DevlinkMode, DevlinkPlan, DevlinkBackup, ...
-│   │       ├── flags.ts        # CLI flag definitions
-│   │       └── index.ts
-│   ├── devlink-core/           # Business logic (no CLI deps)
-│   │   └── src/
-│   │       ├── discovery/      # Monorepo scanning, package map building
-│   │       ├── plan/           # Change planning (buildPlan, groupByMonorepo)
-│   │       ├── apply/          # Writing changes to package.json
-│   │       ├── state/          # state.json + lock.json management
-│   │       ├── backup/         # Backup create/list/restore
-│   │       └── npm/            # npm registry check with caching
-│   └── devlink-cli/            # CLI commands + plugin manifest
-│       └── src/
-│           ├── manifest.ts     # KB Labs plugin registration
-│           └── cli/commands/
-│               ├── switch.ts
-│               ├── status.ts
-│               ├── plan.ts
-│               ├── undo.ts
-│               ├── backups.ts
-│               └── freeze.ts
-```
-
----
-
-## State files
-
-All state is stored under `.kb/devlink/` in the kb-labs root (gitignored):
-
-| File | Contents |
-|------|----------|
-| `.kb/devlink/state.json` | Current mode, last applied timestamp |
-| `.kb/devlink/lock.json` | Frozen snapshot (from `devlink freeze`) |
-| `.kb/devlink/backups/<id>/` | Per-backup directory with copied `package.json` files + `meta.json` |
-
----
-
-## npm registry caching
-
-To avoid slow registry lookups on every switch, DevLink caches which packages are published to npm.
-
-- Cache TTL: **24 hours** (default), configurable via `--ttl <hours>`
-- Cache location: `.kb/cache/` (uses platform `useCache()` API)
-- Reset: `pnpm kb plugins clear-cache` also clears this cache
-
-If a package is not found in the registry, it's excluded from switching (stays as-is). This prevents accidentally setting `^version` for packages that aren't published yet.
-
----
-
-## Build
-
-```bash
-cd kb-labs-devlink
-
-# Build all packages in order
-pnpm -r --filter ./packages/... run build
-
-# Or individually
-pnpm --filter @kb-labs/devlink-contracts run build
-pnpm --filter @kb-labs/devlink-core run build
-pnpm --filter @kb-labs/devlink-cli run build
-
-# Register with CLI
-pnpm kb plugins clear-cache
-
-# Verify
-pnpm kb devlink --help
-```
-
----
-
-## License
-
-MIT © KB Labs
+- [DevKit README](../../README.md)
+- [DevKit Usage Guide](../../USAGE_GUIDE.md)
+- [ADR-0009: Unified Build Convention](../../docs/adr/0009-unified-build-convention.md)

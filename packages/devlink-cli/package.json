@@ -38,7 +38,7 @@
   "dependencies": {
     "@kb-labs/devlink-contracts": "workspace:*",
     "@kb-labs/devlink-core": "workspace:*",
-    "@kb-labs/sdk": "link:../../../kb-labs-sdk/packages/sdk"
+    "@kb-labs/sdk": "^1.0.0"
   },
   "devDependencies": {
     "@kb-labs/devkit": "link:../../../kb-labs-devkit",
