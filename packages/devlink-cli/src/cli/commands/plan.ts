@@ -36,10 +36,10 @@ export default defineCommand<unknown, PlanInput, DevlinkPlan>({
 
       const state = loadState(rootDir);
       const monorepos = discoverMonorepos(rootDir);
-      const packageMap = await buildPackageMapFiltered(monorepos, rootDir, ttlMs);
 
-      // Determine target mode
+      // Determine target mode before building package map — local mode skips npm check
       const targetMode: DevlinkMode = flags.mode ?? (state.currentMode === 'npm' ? 'local' : 'npm');
+      const packageMap = await buildPackageMapFiltered(monorepos, rootDir, ttlMs, targetMode);
 
       const plan = buildPlan(targetMode, packageMap, monorepos, rootDir, { scopedRepos });
       loader.succeed(`Plan ready: ${plan.items.length} change(s)`);

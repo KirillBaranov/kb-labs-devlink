@@ -34,7 +34,7 @@ export function buildPlan(
 
   for (const monorepo of filteredMonorepos) {
     for (const pkgPath of monorepo.packagePaths) {
-      if (!existsSync(pkgPath)) continue;
+      if (!existsSync(pkgPath)) {continue;}
 
       let pkg: PackageJson;
       try {
@@ -46,19 +46,19 @@ export function buildPlan(
       const sections: DepSection[] = ['dependencies', 'devDependencies', 'peerDependencies'];
       for (const section of sections) {
         const deps = pkg[section];
-        if (!deps) continue;
+        if (!deps) {continue;}
 
         for (const [depName, currentValue] of Object.entries(deps)) {
           const entry = packageMap[depName];
-          if (!entry) continue; // Not a cross-repo dep
+          if (!entry) {continue;} // Not a cross-repo dep
 
           // Skip workspace: — those are intra-monorepo deps, never touch them
-          if (currentValue.startsWith('workspace:')) continue;
+          if (currentValue.startsWith('workspace:')) {continue;}
           // Skip bare * — ambiguous wildcard, not a versioned dep we manage
-          if (currentValue === '*') continue;
+          if (currentValue === '*') {continue;}
 
           const targetValue = getTargetValue(mode, entry.linkPath, entry.npmVersion, pkgPath, rootDir);
-          if (targetValue === currentValue) continue; // Already correct
+          if (targetValue === currentValue) {continue;} // Already correct
 
           items.push({
             packageJsonPath: pkgPath,
@@ -117,7 +117,7 @@ export function describeChange(item: DevlinkPlanItem): string {
 export function groupByMonorepo(items: DevlinkPlanItem[]): Map<string, DevlinkPlanItem[]> {
   const groups = new Map<string, DevlinkPlanItem[]>();
   for (const item of items) {
-    if (!groups.has(item.monorepo)) groups.set(item.monorepo, []);
+    if (!groups.has(item.monorepo)) {groups.set(item.monorepo, []);}
     groups.get(item.monorepo)!.push(item);
   }
   return groups;

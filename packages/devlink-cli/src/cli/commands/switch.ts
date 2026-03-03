@@ -49,7 +49,7 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
       discoverLoader.start();
 
       const monorepos = discoverMonorepos(rootDir);
-      const packageMap = await buildPackageMapFiltered(monorepos, rootDir, ttlMs);
+      const packageMap = await buildPackageMapFiltered(monorepos, rootDir, ttlMs, mode);
       discoverLoader.succeed(`Found ${monorepos.length} monorepos, ${Object.keys(packageMap).length} packages`);
       tracker.checkpoint('discovery');
 

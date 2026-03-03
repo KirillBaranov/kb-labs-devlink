@@ -1,7 +1,7 @@
 import { readFileSync, existsSync, readdirSync } from 'fs';
 import { resolve, join, relative, dirname } from 'path';
 import yaml from 'js-yaml';
-import type { PackageMap, PackageEntry } from '@kb-labs/devlink-contracts';
+import type { PackageMap, PackageEntry, DevlinkMode } from '@kb-labs/devlink-contracts';
 import { filterPublishedPackages } from '../npm/index.js';
 
 interface PnpmWorkspace {
@@ -48,7 +48,7 @@ export function discoverMonorepos(rootDir: string): MonorepoInfo[] {
     for (const repoPath of globbed) {
       const repoName = repoPath.split('/').pop() ?? repoPath;
       // Only include submodule repos that have their own pnpm-workspace.yaml
-      if (!existsSync(join(repoPath, 'pnpm-workspace.yaml'))) continue;
+      if (!existsSync(join(repoPath, 'pnpm-workspace.yaml'))) {continue;}
 
       const packagePaths = findPackageJsonFiles(repoPath);
       const repoWorkspace = yaml.load(
@@ -78,7 +78,7 @@ export function buildPackageMap(monorepos: MonorepoInfo[], rootDir: string): Pac
 
   for (const monorepo of monorepos) {
     for (const pkgPath of monorepo.packagePaths) {
-      if (!existsSync(pkgPath)) continue;
+      if (!existsSync(pkgPath)) {continue;}
 
       let pkg: PackageJson;
       try {
@@ -87,11 +87,11 @@ export function buildPackageMap(monorepos: MonorepoInfo[], rootDir: string): Pac
         continue;
       }
 
-      if (!pkg.name || !pkg.version) continue;
+      if (!pkg.name || !pkg.version) {continue;}
       // Only include @kb-labs/* packages
-      if (!pkg.name.startsWith('@kb-labs/')) continue;
+      if (!pkg.name.startsWith('@kb-labs/')) {continue;}
       // Skip private packages — they're not published to npm
-      if (pkg.private) continue;
+      if (pkg.private) {continue;}
 
       const pkgDir = dirname(pkgPath);
       // Relative path from rootDir to the package dir
@@ -113,19 +113,23 @@ export function buildPackageMap(monorepos: MonorepoInfo[], rootDir: string): Pac
 
 /**
  * Async version of buildPackageMap that verifies each package exists on npm.
- * Filters out packages not published to the registry (uses useCache() internally).
+ * For 'local' mode skips the npm check and returns all packages found on disk.
+ * For 'npm'/'auto'/undefined filters out packages not published to the registry.
  */
 export async function buildPackageMapFiltered(
   monorepos: MonorepoInfo[],
   rootDir: string,
-  ttlMs?: number
+  ttlMs?: number,
+  mode?: DevlinkMode
 ): Promise<PackageMap> {
   const rawMap = buildPackageMap(monorepos, rootDir);
+  // local mode: disk has priority, no npm check needed
+  if (mode === 'local') {return rawMap;}
   const packageNames = Object.keys(rawMap);
   const published = await filterPublishedPackages(packageNames, ttlMs);
   const filtered: PackageMap = {};
   for (const name of packageNames) {
-    if (published.has(name)) filtered[name] = rawMap[name]!;
+    if (published.has(name)) {filtered[name] = rawMap[name]!;}
   }
   return filtered;
 }
@@ -143,7 +147,7 @@ export function analyzePackageDeps(
   let workspaceCount = 0;
   let unknownCount = 0;
 
-  if (!existsSync(pkgPath)) return { linkCount, npmCount, workspaceCount, unknownCount };
+  if (!existsSync(pkgPath)) {return { linkCount, npmCount, workspaceCount, unknownCount };}
 
   let pkg: PackageJson;
   try {
@@ -154,9 +158,9 @@ export function analyzePackageDeps(
 
   const sections = [pkg.dependencies, pkg.devDependencies, pkg.peerDependencies];
   for (const section of sections) {
-    if (!section) continue;
+    if (!section) {continue;}
     for (const [depName, depValue] of Object.entries(section)) {
-      if (!packageMap[depName]) continue; // Not a cross-repo dep
+      if (!packageMap[depName]) {continue;} // Not a cross-repo dep
       if (depValue.startsWith('link:')) {
         linkCount++;
       } else if (depValue.startsWith('workspace:')) {
@@ -179,7 +183,7 @@ function findPackageJsonFiles(repoRoot: string): string[] {
   const results: string[] = [];
 
   function walk(dir: string, depth = 0) {
-    if (depth > 4) return;
+    if (depth > 4) {return;}
 
     let entries: import('fs').Dirent<string>[];
     try {
@@ -189,7 +193,7 @@ function findPackageJsonFiles(repoRoot: string): string[] {
     }
 
     for (const entry of entries) {
-      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.git') continue;
+      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.git') {continue;}
       const full = join(dir, entry.name);
       if (entry.isDirectory()) {
         walk(full, depth + 1);

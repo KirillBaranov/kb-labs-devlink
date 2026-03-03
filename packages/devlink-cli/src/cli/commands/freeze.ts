@@ -29,10 +29,10 @@ export default defineCommand<unknown, FreezeInput, LockFile>({
 
       const state = loadState(rootDir);
       const monorepos = discoverMonorepos(rootDir);
-      const packageMap = await buildPackageMapFiltered(monorepos, rootDir);
 
       // Build a plan that reflects current state (no-op plan for the current mode)
       const currentMode = state.currentMode ?? 'npm';
+      const packageMap = await buildPackageMapFiltered(monorepos, rootDir, undefined, currentMode);
       const plan = buildPlan(currentMode, packageMap, monorepos, rootDir);
 
       const lock = freeze(rootDir, plan);
