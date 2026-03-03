@@ -1,6 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
-import { dirname } from 'path';
 import type { DevlinkPlan } from '@kb-labs/devlink-contracts';
 
 type DepSection = 'dependencies' | 'devDependencies' | 'peerDependencies';
@@ -32,7 +31,7 @@ export async function applyPlan(plan: DevlinkPlan, options: ApplyOptions = {}): 
   // Group items by packageJsonPath
   const byFile = new Map<string, typeof plan.items>();
   for (const item of plan.items) {
-    if (!byFile.has(item.packageJsonPath)) byFile.set(item.packageJsonPath, []);
+    if (!byFile.has(item.packageJsonPath)) {byFile.set(item.packageJsonPath, []);}
     byFile.get(item.packageJsonPath)!.push(item);
   }
 

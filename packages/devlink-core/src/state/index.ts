@@ -24,7 +24,7 @@ function ensureDir(filePath: string): void {
 
 export function loadState(rootDir: string): DevlinkState {
   const statePath = getStatePath(rootDir);
-  if (!existsSync(statePath)) return { ...DEFAULT_STATE };
+  if (!existsSync(statePath)) {return { ...DEFAULT_STATE };}
 
   try {
     return JSON.parse(readFileSync(statePath, 'utf-8')) as DevlinkState;
@@ -65,7 +65,7 @@ export function freeze(rootDir: string, currentPlan: DevlinkPlan): LockFile {
 
 export function loadLock(rootDir: string): LockFile | null {
   const lockPath = getLockPath(rootDir);
-  if (!existsSync(lockPath)) return null;
+  if (!existsSync(lockPath)) {return null;}
 
   try {
     return JSON.parse(readFileSync(lockPath, 'utf-8')) as LockFile;

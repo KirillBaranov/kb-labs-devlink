@@ -17,7 +17,7 @@ export async function isPublishedOnNpm(
 
   if (cache) {
     const cached = await cache.get<boolean>(cacheKey);
-    if (cached !== undefined && cached !== null) return cached;
+    if (cached !== undefined && cached !== null) {return cached;}
   }
 
   let exists: boolean;

@@ -6,7 +6,7 @@ import {
   readdirSync,
   copyFileSync,
 } from 'fs';
-import { join, basename, dirname } from 'path';
+import { join, dirname } from 'path';
 import type { DevlinkBackup, DevlinkMode } from '@kb-labs/devlink-contracts';
 
 function getBackupsDir(rootDir: string): string {
@@ -34,7 +34,7 @@ export function createBackup(
   const backedUpFiles: string[] = [];
 
   for (const filePath of filePaths) {
-    if (!existsSync(filePath)) continue;
+    if (!existsSync(filePath)) {continue;}
 
     // Flatten the path for storage: replace / with __ to keep it flat
     const safeName = filePath.replace(/\//g, '__').replace(/:/g, '_');
@@ -61,15 +61,15 @@ export function createBackup(
  */
 export function listBackups(rootDir: string): DevlinkBackup[] {
   const backupsDir = getBackupsDir(rootDir);
-  if (!existsSync(backupsDir)) return [];
+  if (!existsSync(backupsDir)) {return [];}
 
   const entries = readdirSync(backupsDir, { withFileTypes: true });
   const backups: DevlinkBackup[] = [];
 
   for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
+    if (!entry.isDirectory()) {continue;}
     const metaPath = getMetaPath(join(backupsDir, entry.name));
-    if (!existsSync(metaPath)) continue;
+    if (!existsSync(metaPath)) {continue;}
 
     try {
       const meta = JSON.parse(readFileSync(metaPath, 'utf-8')) as DevlinkBackup;
