@@ -50,12 +50,12 @@
   },
   "dependencies": {
     "@kb-labs/devlink-contracts": "workspace:*",
-    "@kb-labs/sdk": "^1.0.0",
+    "@kb-labs/sdk": "workspace:*",
     "js-yaml": "^4.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@kb-labs/devkit": "link:../../../kb-labs-devkit",
+    "@kb-labs/devkit": "workspace:*",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.3.3",
     "eslint": "^9",

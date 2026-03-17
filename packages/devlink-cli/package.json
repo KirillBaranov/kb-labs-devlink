@@ -38,10 +38,10 @@
   "dependencies": {
     "@kb-labs/devlink-contracts": "workspace:*",
     "@kb-labs/devlink-core": "workspace:*",
-    "@kb-labs/sdk": "^1.0.0"
+    "@kb-labs/sdk": "workspace:*"
   },
   "devDependencies": {
-    "@kb-labs/devkit": "link:../../../kb-labs-devkit",
+    "@kb-labs/devkit": "workspace:*",
     "@types/node": "^24.3.3",
     "eslint": "^9",
     "rimraf": "^6.0.1",
