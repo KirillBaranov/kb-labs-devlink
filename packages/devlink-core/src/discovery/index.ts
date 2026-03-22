@@ -1,6 +1,7 @@
 import { readFileSync, existsSync, readdirSync } from 'fs';
-import { resolve, join, relative, dirname } from 'path';
+import { join, relative, dirname } from 'path';
 import yaml from 'js-yaml';
+import { discoverSubRepoPaths } from '@kb-labs/sdk';
 import type { PackageMap, PackageEntry, DevlinkMode } from '@kb-labs/devlink-contracts';
 import { filterPublishedPackages } from '../npm/index.js';
 
@@ -30,26 +31,19 @@ export interface MonorepoInfo {
 }
 
 /**
- * Discovers all kb-labs-* submodule monorepos from the root pnpm-workspace.yaml.
+ * Discovers all submodule repos via .gitmodules (layout-agnostic).
+ * Includes both monorepos (with pnpm-workspace.yaml) and standalone packages.
  */
 export function discoverMonorepos(rootDir: string): MonorepoInfo[] {
-  const workspaceFile = join(rootDir, 'pnpm-workspace.yaml');
-  if (!existsSync(workspaceFile)) {
-    throw new Error(`pnpm-workspace.yaml not found at ${workspaceFile}`);
-  }
-
-  const workspace = yaml.load(readFileSync(workspaceFile, 'utf-8')) as PnpmWorkspace;
-  const patterns = workspace.packages ?? [];
-
+  const subRepoPaths = discoverSubRepoPaths(rootDir);
   const monorepos: MonorepoInfo[] = [];
 
-  for (const pattern of patterns) {
-    const globbed = resolveWorkspacePattern(rootDir, pattern);
-    for (const repoPath of globbed) {
-      const repoName = repoPath.split('/').pop() ?? repoPath;
-      // Only include submodule repos that have their own pnpm-workspace.yaml
-      if (!existsSync(join(repoPath, 'pnpm-workspace.yaml'))) {continue;}
+  for (const repoPath of subRepoPaths) {
+    const repoName = repoPath.split('/').pop() ?? repoPath;
+    const hasWorkspace = existsSync(join(repoPath, 'pnpm-workspace.yaml'));
 
+    if (hasWorkspace) {
+      // Monorepo: scan all package.json files
       const packagePaths = findPackageJsonFiles(repoPath);
       const repoWorkspace = yaml.load(
         readFileSync(join(repoPath, 'pnpm-workspace.yaml'), 'utf-8')
@@ -61,6 +55,17 @@ export function discoverMonorepos(rootDir: string): MonorepoInfo[] {
         packagePaths,
         workspacePackages: repoWorkspace.packages ?? [],
       });
+    } else {
+      // Standalone package (e.g. devkit): treat root package.json as sole package
+      const rootPkgPath = join(repoPath, 'package.json');
+      if (existsSync(rootPkgPath)) {
+        monorepos.push({
+          name: repoName,
+          rootPath: repoPath,
+          packagePaths: [rootPkgPath],
+          workspacePackages: [],
+        });
+      }
     }
   }
 
@@ -88,13 +93,10 @@ export function buildPackageMap(monorepos: MonorepoInfo[], rootDir: string): Pac
       }
 
       if (!pkg.name || !pkg.version) {continue;}
-      // Only include @kb-labs/* packages
-      if (!pkg.name.startsWith('@kb-labs/')) {continue;}
-      // Skip private packages — they're not published to npm
-      if (pkg.private) {continue;}
+      // Only include @kb-labs/* packages (or non-scoped kb-labs-* packages)
+      if (!pkg.name.startsWith('@kb-labs/') && !pkg.name.startsWith('kb-labs-')) {continue;}
 
       const pkgDir = dirname(pkgPath);
-      // Relative path from rootDir to the package dir
       const linkPath = relative(rootDir, pkgDir);
 
       const entry: PackageEntry = {
@@ -102,6 +104,7 @@ export function buildPackageMap(monorepos: MonorepoInfo[], rootDir: string): Pac
         linkPath,
         npmVersion: `^${pkg.version}`,
         monorepo: monorepo.name,
+        private: pkg.private ?? false,
       };
 
       map[pkg.name] = entry;
@@ -208,23 +211,17 @@ function findPackageJsonFiles(repoRoot: string): string[] {
 }
 
 /**
- * Resolves a pnpm workspace pattern to actual directory paths.
- * Handles simple names and glob patterns like "kb-labs-*".
+ * Determines which MonorepoInfo a package.json belongs to.
+ * Uses rootPath prefix matching.
  */
-function resolveWorkspacePattern(rootDir: string, pattern: string): string[] {
-  if (pattern.includes('*') || pattern.includes('?')) {
-    const prefix = pattern.replace(/\*.*$/, '');
-    try {
-      const entries = readdirSync(rootDir, { withFileTypes: true, encoding: 'utf-8' });
-      return entries
-        .filter(e => e.isDirectory() && e.name.startsWith(prefix))
-        .map(e => join(rootDir, e.name));
-    } catch {
-      return [];
+export function resolvePackageMonorepo(
+  pkgPath: string,
+  monorepos: MonorepoInfo[]
+): MonorepoInfo | null {
+  for (const mono of monorepos) {
+    if (pkgPath.startsWith(mono.rootPath + '/') || pkgPath === join(mono.rootPath, 'package.json')) {
+      return mono;
     }
   }
-
-  // Direct path
-  const full = resolve(rootDir, pattern);
-  return existsSync(full) ? [full] : [];
+  return null;
 }

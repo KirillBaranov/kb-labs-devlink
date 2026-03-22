@@ -1,6 +1,9 @@
 import { defineCommand, useLoader, TimingTracker, type PluginContextV3, type CommandResult } from '@kb-labs/sdk';
-import { discoverMonorepos, buildPackageMapFiltered, buildPlan, applyPlan, createBackup, loadState, saveState, checkGitDirty } from '@kb-labs/devlink-core';
+import { discoverMonorepos, buildPackageMapFiltered, buildPlan, applyPlan, createBackup, loadState, saveState, checkGitDirty, updateWorkspaceYamls } from '@kb-labs/devlink-core';
 import type { DevlinkMode } from '@kb-labs/devlink-contracts';
+import { existsSync, unlinkSync } from 'node:fs';
+import { join } from 'node:path';
+import { execSync } from 'node:child_process';
 
 interface SwitchFlags {
   mode: DevlinkMode;
@@ -9,6 +12,8 @@ interface SwitchFlags {
   yes?: boolean;
   json?: boolean;
   ttl?: number;
+  install?: boolean;
+  'clean-locks'?: boolean;
 }
 
 interface SwitchInput {
@@ -108,14 +113,87 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
       applyLoader.succeed(`Applied ${applyResult.applied} change(s)`);
       tracker.checkpoint('apply');
 
-      // 7. Save state
+      // 7. Update sub-repo pnpm-workspace.yaml with correct cross-repo paths
+      const wsLoader = useLoader('Updating sub-repo workspace files...');
+      wsLoader.start();
+      const wsUpdates = updateWorkspaceYamls(monorepos, packageMap, rootDir);
+      const wsChanged = wsUpdates.reduce((sum, u) => sum + u.added.length + u.removed.length, 0);
+      wsLoader.succeed(wsChanged > 0
+        ? `Updated ${wsUpdates.length} workspace file(s) (${wsChanged} path changes)`
+        : 'Workspace files up to date'
+      );
+      tracker.checkpoint('workspace-yaml');
+
+      // 8. Save state
       saveState(rootDir, {
         currentMode: mode,
         lastApplied: new Date().toISOString(),
         frozenAt: currentState.frozenAt,
       });
 
-      // 8. Output
+      // 9. Clean stale lockfiles in affected sub-repos (default: true)
+      const shouldCleanLocks = flags['clean-locks'] !== false;
+      let cleanedLocks = 0;
+      if (shouldCleanLocks) {
+        const affectedRepos = new Set(plan.items.map(i => i.monorepo));
+        for (const mono of monorepos) {
+          if (!affectedRepos.has(mono.name)) {continue;}
+          const lockPath = join(mono.rootPath, 'pnpm-lock.yaml');
+          if (existsSync(lockPath)) {
+            try {
+              unlinkSync(lockPath);
+              cleanedLocks++;
+            } catch { /* skip */ }
+          }
+        }
+        if (cleanedLocks > 0) {
+          tracker.checkpoint('clean-locks');
+        }
+      }
+
+      // 10. Install: workspace root first, then per-sub-repo
+      const shouldInstall = flags.install === true;
+      let installedRepos = 0;
+      const installErrors: string[] = [];
+      if (shouldInstall) {
+        // Phase 1: workspace root install
+        const rootLoader = useLoader('Installing workspace root...');
+        rootLoader.start();
+        try {
+          execSync('pnpm install --no-frozen-lockfile', {
+            cwd: rootDir,
+            stdio: 'pipe',
+            timeout: 180_000,
+          });
+          rootLoader.succeed('Workspace root installed');
+        } catch (err) {
+          rootLoader.succeed('Workspace root install failed');
+          installErrors.push(`root: ${err instanceof Error ? err.message.split('\n')[0] : String(err)}`);
+        }
+        tracker.checkpoint('root-install');
+
+        // Phase 2: per-sub-repo install
+        const affectedRepos = new Set(plan.items.map(i => i.monorepo));
+        const affectedMonorepos = monorepos.filter(m => affectedRepos.has(m.name));
+        const repoLoader = useLoader(`Installing ${affectedMonorepos.length} sub-repo(s)...`);
+        repoLoader.start();
+        for (const mono of affectedMonorepos) {
+          try {
+            execSync('pnpm install --no-frozen-lockfile --prefer-offline', {
+              cwd: mono.rootPath,
+              stdio: 'pipe',
+              timeout: 120_000,
+            });
+            installedRepos++;
+          } catch (err) {
+            installErrors.push(`${mono.name}: ${err instanceof Error ? err.message.split('\n')[0] : String(err)}`);
+          }
+        }
+        repoLoader.succeed(`Installed ${installedRepos}/${affectedMonorepos.length} sub-repo(s)${installErrors.length > 0 ? `, ${installErrors.length} failed` : ''}`);
+        tracker.checkpoint('sub-repo-install');
+      }
+
+      // 11. Output
       const result: SwitchResult = {
         mode,
         changed: applyResult.applied,
@@ -124,24 +202,34 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
       };
 
       if (outputJson) {
-        ctx.ui?.json?.(result);
+        ctx.ui?.json?.({ ...result, cleanedLocks, wsUpdates: wsUpdates.length, installedRepos, installErrors });
       } else {
+        const summaryItems = [
+          `Mode: ${mode}`,
+          `Changed: ${applyResult.applied} dependencies`,
+          `Backup: ${backup.id}`,
+        ];
+        if (wsChanged > 0) {
+          summaryItems.push(`Workspace YAMLs: ${wsUpdates.length} updated`);
+        }
+        if (cleanedLocks > 0) {
+          summaryItems.push(`Cleaned: ${cleanedLocks} stale lockfile(s)`);
+        }
+        if (shouldInstall) {
+          summaryItems.push(`Installed: root + ${installedRepos} sub-repo(s)`);
+        }
+
         const sections = [
-          {
-            header: 'Summary',
-            items: [
-              `Mode: ${mode}`,
-              `Changed: ${applyResult.applied} dependencies`,
-              `Backup: ${backup.id}`,
-            ],
-          },
+          { header: 'Summary', items: summaryItems },
           ...(applyResult.errors.length > 0
             ? [{ header: 'Errors', items: applyResult.errors.map(e => `${e.file}: ${e.error}`) }]
             : []),
-          {
-            header: 'Next step',
-            items: ['Run pnpm install to apply changes'],
-          },
+          ...(installErrors.length > 0
+            ? [{ header: 'Install errors', items: installErrors }]
+            : []),
+          ...(!shouldInstall && applyResult.applied > 0
+            ? [{ header: 'Next step', items: ['Re-run with --install to complete setup'] }]
+            : []),
         ];
         ctx.ui?.success?.(`Switched to ${mode} mode`, {
           title: 'DevLink — Switch',

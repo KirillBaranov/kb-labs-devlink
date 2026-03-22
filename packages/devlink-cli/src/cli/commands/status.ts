@@ -1,25 +1,27 @@
 import { defineCommand, useLoader, TimingTracker, type PluginContextV3, type CommandResult } from '@kb-labs/sdk';
-import { discoverMonorepos, buildPackageMapFiltered, analyzePackageDeps, loadState } from '@kb-labs/devlink-core';
-import type { DevlinkStatus } from '@kb-labs/devlink-contracts';
+import { discoverMonorepos, buildPackageMapFiltered, analyzePackageDeps, loadState, diagnose } from '@kb-labs/devlink-core';
+import type { DevlinkStatus, DiagnosticIssue } from '@kb-labs/devlink-contracts';
 
 interface StatusFlags {
   json?: boolean;
-  verbose?: boolean;
 }
 
 interface StatusInput {
   argv?: string[];
   flags?: StatusFlags;
   json?: boolean;
-  verbose?: boolean;
 }
 
-export default defineCommand<unknown, StatusInput, DevlinkStatus>({
+interface StatusResult extends DevlinkStatus {
+  diagnostics: DiagnosticIssue[];
+}
+
+export default defineCommand<unknown, StatusInput, StatusResult>({
   id: 'devlink:status',
-  description: 'Show current state of cross-repo dependencies',
+  description: 'Show current state of cross-repo dependencies with diagnostics',
 
   handler: {
-    async execute(ctx: PluginContextV3, input: StatusInput): Promise<CommandResult<DevlinkStatus>> {
+    async execute(ctx: PluginContextV3, input: StatusInput): Promise<CommandResult<StatusResult>> {
       const tracker = new TimingTracker();
       const flags = (input.flags ?? input) as StatusFlags;
       const outputJson = flags.json ?? false;
@@ -36,7 +38,6 @@ export default defineCommand<unknown, StatusInput, DevlinkStatus>({
       let totalLink = 0;
       let totalNpm = 0;
       let totalWorkspace = 0;
-      const discrepancies: DevlinkStatus['discrepancies'] = [];
 
       for (const monorepo of monorepos) {
         for (const pkgPath of monorepo.packagePaths) {
@@ -47,33 +48,33 @@ export default defineCommand<unknown, StatusInput, DevlinkStatus>({
         }
       }
 
-      // Detect discrepancies: mixed modes
-      const detectedMode = totalLink > 0 && totalNpm > 0 ? null
-        : totalLink > 0 ? 'local' as const
-        : totalNpm > 0 ? 'npm' as const
-        : null;
+      // Run diagnostics
+      const diagnostics = diagnose(monorepos, packageMap, rootDir);
 
       loader.succeed('Analysis complete');
       tracker.checkpoint('analysis');
 
-      const status: DevlinkStatus = {
+      const errors = diagnostics.filter(d => d.severity === 'error');
+      const warnings = diagnostics.filter(d => d.severity === 'warning');
+
+      const result: StatusResult = {
         currentMode: state.currentMode,
         lastApplied: state.lastApplied,
         linkCount: totalLink,
         npmCount: totalNpm,
         workspaceCount: totalWorkspace,
-        discrepancies,
+        discrepancies: [],
+        diagnostics,
       };
 
       if (outputJson) {
-        ctx.ui?.json?.(status);
+        ctx.ui?.json?.(result);
       } else {
-        const modeStr = state.currentMode ? state.currentMode : detectedMode ?? 'mixed/unknown';
         const sections = [
           {
             header: 'Current mode',
             items: [
-              `Mode: ${modeStr}`,
+              `Mode: ${state.currentMode ?? 'unknown'}`,
               `Last applied: ${state.lastApplied ?? 'never'}`,
             ],
           },
@@ -85,10 +86,30 @@ export default defineCommand<unknown, StatusInput, DevlinkStatus>({
               `workspace:*     : ${totalWorkspace}`,
             ],
           },
-          ...(detectedMode !== state.currentMode && state.currentMode !== null
-            ? [{ header: '⚠ Warning', items: ['Detected mode differs from saved state — run switch to fix'] }]
-            : []),
         ];
+
+        if (errors.length > 0) {
+          sections.push({
+            header: `❌ Errors (${errors.length})`,
+            items: errors.slice(0, 10).map(d => `${d.dep ?? d.file}: ${d.message}`),
+          });
+        }
+
+        if (warnings.length > 0) {
+          sections.push({
+            header: `⚠ Warnings (${warnings.length})`,
+            items: warnings.slice(0, 10).map(d => `${d.dep ?? d.file}: ${d.message}`),
+          });
+        }
+
+        if (diagnostics.length === 0) {
+          sections.push({ header: '✅ Health', items: ['No issues detected'] });
+        } else {
+          sections.push({
+            header: 'Fix',
+            items: ['Run: kb devlink switch --mode=local --install'],
+          });
+        }
 
         ctx.ui?.success?.('Dependency status', {
           title: 'DevLink — Status',
@@ -97,7 +118,7 @@ export default defineCommand<unknown, StatusInput, DevlinkStatus>({
         });
       }
 
-      return { exitCode: 0, result: status, meta: { timing: tracker.total() } };
+      return { exitCode: 0, result, meta: { timing: tracker.total() } };
     },
   },
 });

@@ -4,6 +4,7 @@ export {
   buildPackageMap,
   buildPackageMapFiltered,
   analyzePackageDeps,
+  resolvePackageMonorepo,
   type MonorepoInfo,
 } from './discovery/index.js';
 
@@ -41,3 +42,14 @@ export {
   getLastBackup,
   restoreBackup,
 } from './backup/index.js';
+
+// Workspace YAML
+export {
+  updateWorkspaceYamls,
+  type WorkspaceYamlUpdate,
+} from './workspace-yaml/index.js';
+
+// Diagnostics
+export {
+  diagnose,
+} from './diagnostics/index.js';

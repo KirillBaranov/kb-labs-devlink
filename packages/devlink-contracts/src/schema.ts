@@ -16,6 +16,8 @@ export const PackageEntrySchema = z.object({
   npmVersion: z.string(),
   /** Source monorepo dir name e.g. kb-labs-core */
   monorepo: z.string(),
+  /** Whether package.json has "private": true (stays as link: in npm mode) */
+  private: z.boolean().optional(),
 });
 export type PackageEntry = z.infer<typeof PackageEntrySchema>;
 
@@ -72,6 +74,18 @@ export const DevlinkBackupSchema = z.object({
   modeAtBackup: DevlinkModeSchema.nullable(),
 });
 export type DevlinkBackup = z.infer<typeof DevlinkBackupSchema>;
+
+// ─── Diagnostics ─────────────────────────────────────────────────────────────
+
+export const DiagnosticIssueSchema = z.object({
+  type: z.enum(['broken-link', 'cross-repo-workspace', 'stale-lockfile', 'stale-workspace-yaml']),
+  severity: z.enum(['error', 'warning']),
+  file: z.string(),
+  dep: z.string().optional(),
+  message: z.string(),
+  fix: z.string(),
+});
+export type DiagnosticIssue = z.infer<typeof DiagnosticIssueSchema>;
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 

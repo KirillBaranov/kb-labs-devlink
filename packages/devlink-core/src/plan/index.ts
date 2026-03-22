@@ -4,9 +4,11 @@ import type {
   DevlinkMode,
   DevlinkPlan,
   DevlinkPlanItem,
+  PackageEntry,
   PackageMap,
 } from '@kb-labs/devlink-contracts';
 import type { MonorepoInfo } from '../discovery/index.js';
+import { resolvePackageMonorepo } from '../discovery/index.js';
 
 type DepSection = 'dependencies' | 'devDependencies' | 'peerDependencies';
 
@@ -52,12 +54,17 @@ export function buildPlan(
           const entry = packageMap[depName];
           if (!entry) {continue;} // Not a cross-repo dep
 
-          // Skip workspace: — those are intra-monorepo deps, never touch them
-          if (currentValue.startsWith('workspace:')) {continue;}
           // Skip bare * — ambiguous wildcard, not a versioned dep we manage
           if (currentValue === '*') {continue;}
 
-          const targetValue = getTargetValue(mode, entry.linkPath, entry.npmVersion, pkgPath, rootDir);
+          // workspace:* — only skip if intra-repo (same monorepo handles it via pnpm)
+          // Cross-repo workspace:* must be converted to link: or ^version
+          if (currentValue.startsWith('workspace:')) {
+            const consumerMono = resolvePackageMonorepo(pkgPath, monorepos);
+            if (consumerMono && consumerMono.name === entry.monorepo) {continue;}
+          }
+
+          const targetValue = getTargetValue(mode, entry, pkgPath, rootDir);
           if (targetValue === currentValue) {continue;} // Already correct
 
           items.push({
@@ -84,21 +91,22 @@ export function buildPlan(
 
 /**
  * Computes the target value for a dependency based on mode.
+ * Private packages always stay as link: (not published to npm).
  */
 function getTargetValue(
   mode: DevlinkMode,
-  linkPath: string,
-  npmVersion: string,
+  entry: PackageEntry,
   fromPackageJson: string,
   rootDir: string
 ): string {
-  if (mode === 'npm') {
-    return npmVersion;
+  // npm mode: use ^version, but private packages stay as link: (not on npm)
+  if (mode === 'npm' && !entry.private) {
+    return entry.npmVersion;
   }
 
-  // local or auto: use link: path relative from the consumer package.json to the target
+  // local, auto, or private in npm mode: use link: path
   const fromDir = dirname(fromPackageJson);
-  const targetDir = resolve(rootDir, linkPath);
+  const targetDir = resolve(rootDir, entry.linkPath);
   const relPath = relative(fromDir, targetDir);
   const normalized = relPath.startsWith('.') ? relPath : `./${relPath}`;
   return `link:${normalized}`;

@@ -1,2 +1,5 @@
 packages:
-  - "packages/*"
+  - packages/*
+  - ../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/apps/*
+  - ../../platform/kb-labs-sdk/packages/*
