@@ -1,306 +1,265 @@
-# Standard Configuration Templates
+# DevLink — Cross-Repo Dependency Manager
 
-This directory contains canonical configuration templates for all `@kb-labs` packages.
+DevLink управляет зависимостями между sub-repos в KB Labs монорепо. Одна команда — и все `link:` paths, `pnpm-workspace.yaml`, lockfiles в порядке.
 
-## 📋 Available Templates
-
-### Core Configs (All Packages)
-
-| File | Purpose | Required | Customizable |
-|------|---------|----------|--------------|
-| **eslint.config.js** | Linting rules | ✅ Yes | ⚠️ Minimal |
-| **tsconfig.json** | TypeScript IDE config | ✅ Yes | ❌ No |
-| **tsconfig.build.json** | TypeScript build config | ✅ Yes | ❌ No |
-
-### Tsup Configs (Choose ONE based on package type)
-
-| Template | Package Type | Use Cases |
-|----------|--------------|-----------|
-| **tsup.config.ts** | 📦 **Library** (default) | Most packages, importable libraries |
-| **tsup.config.bin.ts** | 🔧 **Binary** | Standalone executables, CLI bins |
-| **tsup.config.cli.ts** | ⌨️ **CLI** | CLI packages with commands |
-| **tsup.config.dual.ts** | 📦🔧 **Library + Binary** | Packages with both API and bin |
-
-### Package.json Examples
-
-| Template | Purpose |
-|----------|---------|
-| **package.json.lib** | Library package example |
-| **package.json.bin** | Binary package example |
-
-## 🎯 Philosophy
-
-**Convention over Configuration**
-
-All `@kb-labs` packages MUST use these exact templates with minimal customization. This ensures:
-
-- ✅ Consistent build output across all packages
-- ✅ Predictable dependency resolution
-- ✅ Unified linting standards
-- ✅ Easy maintenance and upgrades
-
-## 📦 Usage
-
-### For New Packages
-
-#### Step 1: Choose Package Type
-
-**Library Package** (most common):
-```bash
-cp kb-labs-devkit/templates/configs/tsup.config.ts your-package/
-cp kb-labs-devkit/templates/configs/eslint.config.js your-package/
-cp kb-labs-devkit/templates/configs/tsconfig*.json your-package/
-cp kb-labs-devkit/templates/configs/package.json.lib your-package/package.json
-```
-
-**Binary Package** (standalone executables):
-```bash
-cp kb-labs-devkit/templates/configs/tsup.config.bin.ts your-package/tsup.config.ts
-cp kb-labs-devkit/templates/configs/eslint.config.js your-package/
-cp kb-labs-devkit/templates/configs/tsconfig*.json your-package/
-cp kb-labs-devkit/templates/configs/package.json.bin your-package/package.json
-```
-
-**CLI Package** (command handlers):
-```bash
-cp kb-labs-devkit/templates/configs/tsup.config.cli.ts your-package/tsup.config.ts
-cp kb-labs-devkit/templates/configs/eslint.config.js your-package/
-cp kb-labs-devkit/templates/configs/tsconfig*.json your-package/
-cp kb-labs-devkit/templates/configs/package.json.lib your-package/package.json
-```
-
-**Dual Package** (library + binary):
-```bash
-cp kb-labs-devkit/templates/configs/tsup.config.dual.ts your-package/tsup.config.ts
-cp kb-labs-devkit/templates/configs/eslint.config.js your-package/
-cp kb-labs-devkit/templates/configs/tsconfig*.json your-package/
-cp kb-labs-devkit/templates/configs/package.json.lib your-package/package.json
-# Then add "bin" field to package.json
-```
-
-#### Step 2: Customize Package Name
-```bash
-# Edit package.json and update name, description
-```
-
-### For Existing Packages
+## Quick Start
 
 ```bash
-# Check for drift
-npx kb-devkit-check-configs
+# Посмотреть текущее состояние + диагностику
+pnpm kb devlink status
 
-# Auto-fix drift
-npx kb-devkit-check-configs --fix
+# Починить всё: deps + workspace files + lockfiles + install
+pnpm kb devlink switch --mode=local --install
+
+# Переключить на npm версии (для публикации)
+pnpm kb devlink switch --mode=npm
 ```
 
-## 🔧 Customization Rules
+## Что DevLink делает
 
-### tsup.config.ts
+DevLink владеет **всеми cross-repo зависимостями** — зависимостями между разными git submodules:
 
-**Allowed customizations:**
+| Ответственность | Что делает |
+|----------------|-----------|
+| **package.json deps** | `link:../../path` (local) ↔ `^1.0.0` (npm) |
+| **pnpm-workspace.yaml** | Cross-repo paths в sub-repo workspace файлах |
+| **Stale lockfiles** | Автоматическая очистка при switch |
+| **Диагностика** | Broken links, stale files, cross-repo workspace:* |
 
-```typescript
-export default defineConfig({
-  ...nodePreset,
-  tsconfig: 'tsconfig.build.json', // ✅ Always required
+**Что DevLink НЕ трогает:**
+- Intra-repo `workspace:*` (core-workspace → core-sys внутри kb-labs-core)
+- tsconfig.paths (это ответственность DevKit: `npx kb-devkit-paths`)
+- npm registry publishing
 
-  // ✅ OK: Multiple entry points
-  entry: ['src/index.ts', 'src/cli.ts'],
+## Команды
 
-  // ✅ OK: Extra external deps (if really needed)
-  external: ['special-native-module'],
+### `devlink status`
 
-  dts: true, // ✅ Always required
-});
+Показывает текущее состояние и проблемы:
+
+```bash
+pnpm kb devlink status
 ```
 
-**NOT allowed:**
+```
+DevLink — Status
 
-```typescript
-// ❌ WRONG: Don't override preset settings
-export default defineConfig({
-  format: ['esm'],        // Already in preset!
-  target: 'es2022',       // Already in preset!
-  sourcemap: true,        // Already in preset!
-  // ...
-});
+Current mode
+  Mode: local
+  Last applied: 2026-03-23T09:19:39.012Z
 
-// ❌ WRONG: Don't disable types
-dts: false,
+Dependency counts
+  link: (local)   : 316
+  npm (^version)  : 0
+  workspace:*     : 41
 
-// ❌ WRONG: Don't duplicate external deps
-external: [
-  '@kb-labs/core',  // Already in preset!
-  '@kb-labs/cli',   // Already in preset!
-],
+✅ Health
+  No issues detected
 ```
 
-### eslint.config.js
+С `--json` для автоматизации:
 
-**Allowed customizations:**
-
-```javascript
-export default [
-  ...nodePreset,
-  {
-    // ✅ OK: Project-specific ignores only
-    ignores: ['**/*.generated.ts']
-  }
-];
+```bash
+pnpm kb devlink status --json
 ```
 
-**NOT allowed:**
+Диагностика проверяет:
+- **broken-link** (error) — `link:` path указывает на несуществующую директорию
+- **cross-repo-workspace** (warning) — `workspace:*` между разными sub-repos (должен быть `link:`)
+- **stale-lockfile** (warning) — lockfile старше package.json
 
-```javascript
-// ❌ WRONG: Don't duplicate preset ignores
-export default [
-  ...nodePreset,
-  {
-    ignores: [
-      '**/dist/**',        // Already in preset!
-      '**/node_modules/**', // Already in preset!
-    ]
-  }
-];
+### `devlink switch`
+
+Переключает все cross-repo deps между режимами:
+
+```bash
+# Preview (ничего не меняет)
+pnpm kb devlink switch --mode=local --dry-run
+
+# Переключить на local (development)
+pnpm kb devlink switch --mode=local
+
+# Переключить + установить зависимости
+pnpm kb devlink switch --mode=local --install
+
+# Переключить на npm (CI/CD, publishing)
+pnpm kb devlink switch --mode=npm
 ```
 
-### tsconfig.json & tsconfig.build.json
+**Что делает `--install`:**
+1. Переключает deps в package.json
+2. Обновляет sub-repo pnpm-workspace.yaml (cross-repo paths)
+3. Чистит stale lockfiles
+4. `pnpm install` в workspace root
+5. `pnpm install --prefer-offline` в каждом affected sub-repo
 
-**NOT customizable!**
+**Флаги:**
 
-These files MUST remain identical to templates. All TypeScript configuration is standardized in DevKit presets.
+| Флаг | Default | Описание |
+|------|---------|----------|
+| `--mode` | required | `local` или `npm` |
+| `--dry-run` | false | Preview без изменений |
+| `--install` | false | Запустить pnpm install после switch |
+| `--clean-locks` | true | Удалить stale lockfiles |
+| `--repos` | all | Ограничить scope: `--repos=kb-labs-core,kb-labs-cli` |
+| `--json` | false | JSON output |
 
-```json
-// ❌ WRONG: Don't override extends
-{
-  "extends": "./my-custom-base.json"
-}
+### `devlink plan`
 
-// ❌ WRONG: Don't add compilerOptions
-{
-  "extends": "@kb-labs/devkit/tsconfig/node.json",
-  "compilerOptions": {
-    "strict": false  // Don't override preset!
-  }
+Preview изменений без применения:
+
+```bash
+# Что изменится при переключении на npm?
+pnpm kb devlink plan --mode=npm
+
+# Что изменится при переключении на local?
+pnpm kb devlink plan --mode=local
+```
+
+### `devlink freeze`
+
+Заморозить текущее состояние в lock-файл:
+
+```bash
+pnpm kb devlink freeze
+# → .kb/devlink/lock.json
+```
+
+### `devlink undo`
+
+Откатить последний switch:
+
+```bash
+pnpm kb devlink undo
+# → восстанавливает package.json из backup
+```
+
+### `devlink backups`
+
+Список и восстановление бекапов:
+
+```bash
+# Список всех бекапов
+pnpm kb devlink backups
+
+# Восстановить конкретный
+pnpm kb devlink backups --restore=1774257798817-m9b4m
+```
+
+## Режимы работы
+
+### Local mode (development)
+
+```
+@kb-labs/core-sys: link:../../../kb-labs-core/packages/core-sys
+```
+
+- Изменения в коде видны мгновенно (symlink → source)
+- Для ежедневной разработки
+- Sub-repos могут работать автономно (`cd sub-repo && pnpm install`)
+
+### NPM mode (publishing / CI)
+
+```
+@kb-labs/core-sys: ^1.2.0
+```
+
+- Зависимости из npm registry
+- Для публикации пакетов и CI/CD
+- Private пакеты (devkit) остаются как `link:` (не опубликованы)
+
+## Как это работает
+
+### Discovery
+
+DevLink находит все sub-repos через `.gitmodules` (layout-agnostic — работает с любой структурой директорий). Для каждого sub-repo сканирует все `package.json` и строит карту пакетов:
+
+```
+@kb-labs/core-sys → {
+  linkPath: "platform/kb-labs-core/packages/core-sys",
+  npmVersion: "^1.2.0",
+  monorepo: "kb-labs-core",
+  private: false
 }
 ```
 
-## 🔍 Drift Detection
+### Intra vs Cross-repo
 
-DevKit automatically detects configuration drift:
+DevLink различает:
+- **Intra-repo** (`workspace:*`) — core-workspace → core-sys внутри одного sub-repo → НЕ трогает
+- **Cross-repo** — cli → core-sys между разными sub-repos → управляет
+
+### Workspace YAML
+
+При `switch` DevLink автоматически обновляет `pnpm-workspace.yaml` в каждом sub-repo:
+- Сохраняет intra-repo patterns (`packages/*`, `apps/*`)
+- Вычисляет и добавляет cross-repo paths (из зависимостей)
+- Результат: `cd sub-repo && pnpm install` работает автономно
+
+## Типичные сценарии
+
+### После миграции / изменения структуры
 
 ```bash
-# Check all packages
-npx kb-devkit-check-configs
-
-# Check specific package
-npx kb-devkit-check-configs --package=@kb-labs/core
-
-# Auto-fix (creates backup)
-npx kb-devkit-check-configs --fix
-
-# CI mode (fail on drift)
-npx kb-devkit-check-configs --ci
+pnpm kb devlink switch --mode=local --install
 ```
 
-### Drift Detection Rules
+Пересчитает все paths, обновит workspace yaml, установит deps.
 
-| Issue | Severity | Auto-fix |
-|-------|----------|----------|
-| Missing `dts: true` | 🔴 Error | ✅ Yes |
-| Using `dts: false` | 🔴 Error | ✅ Yes |
-| Not using `nodePreset` | 🔴 Error | ⚠️ Manual |
-| Duplicate `external` | 🟡 Warning | ✅ Yes |
-| Duplicate `ignores` | 🟡 Warning | ✅ Yes |
-| Missing templates | 🔴 Error | ✅ Yes |
-| Modified templates | 🔴 Error | ⚠️ Manual |
+### Перед публикацией на npm
 
-## 📚 Examples
-
-### ✅ Good Example (Minimal Package)
-
-```typescript
-// tsup.config.ts
-import { defineConfig } from 'tsup';
-import nodePreset from '@kb-labs/devkit/tsup/node.js';
-
-export default defineConfig({
-  ...nodePreset,
-  tsconfig: 'tsconfig.build.json',
-  entry: ['src/index.ts'],
-  dts: true,
-});
+```bash
+pnpm kb devlink switch --mode=npm
+pnpm kb release:run --scope=@kb-labs/core
+pnpm kb devlink switch --mode=local --install
 ```
 
-### ✅ Good Example (CLI Package with Multiple Entries)
+### Проверка здоровья
 
-```typescript
-// tsup.config.ts
-import { defineConfig } from 'tsup';
-import nodePreset from '@kb-labs/devkit/tsup/node.js';
-
-export default defineConfig({
-  ...nodePreset,
-  tsconfig: 'tsconfig.build.json',
-  entry: [
-    'src/index.ts',
-    'src/cli/index.ts',
-    'src/cli/commands/build.ts',
-    'src/cli/commands/test.ts',
-  ],
-  dts: true,
-});
+```bash
+pnpm kb devlink status
 ```
 
-### ❌ Bad Example (Over-configured)
+Если есть issues — `switch --mode=local --install` их починит.
 
-```typescript
-// tsup.config.ts
-import { defineConfig } from 'tsup';
+### Добавление нового sub-repo
 
-// ❌ Not using preset!
-export default defineConfig({
-  format: ['esm'],
-  target: 'es2022',
-  sourcemap: true,
-  clean: true,
-  dts: true,
-  entry: ['src/index.ts'],
-  external: [/^@kb-labs\/.*/],  // Manual external
-});
+1. Клонировать/создать repo в нужной категории
+2. `pnpm sync:submodules:apply` (регистрация в .gitmodules)
+3. `pnpm kb devlink switch --mode=local --install`
+
+DevLink автоматически подхватит новый sub-repo и настроит все deps.
+
+## Troubleshooting
+
+### "workspace:* crosses sub-repo boundary"
+
+DevLink обнаружил `workspace:*` зависимость между разными sub-repos. Это не работает — pnpm не видит пакеты из других workspaces.
+
+**Fix:** `pnpm kb devlink switch --mode=local`
+
+### "link: target does not exist"
+
+Пакет был удалён или переименован, но зависимость осталась.
+
+**Fix:** Удалить зависимость из package.json вручную.
+
+### "stale lockfile"
+
+Lockfile старше package.json — deps изменились после последнего install.
+
+**Fix:** `pnpm kb devlink switch --mode=local --install` (чистит lockfiles автоматически)
+
+### DevLink сам сломался после switch
+
+DevLink CLI работает из собранного `dist/` — Node держит модули в памяти. Switch меняет только package.json на диске. Если что-то пошло не так:
+
+```bash
+# Откатить
+pnpm kb devlink undo
+
+# Или пересобрать
+pnpm --filter @kb-labs/devlink-core run build
+pnpm --filter @kb-labs/devlink-cli run build
+pnpm kb marketplace clear-cache
 ```
-
-## 🚀 Migration Guide
-
-### From Custom Config to Standard Template
-
-1. **Backup your current config**
-   ```bash
-   cp tsup.config.ts tsup.config.ts.backup
-   ```
-
-2. **Copy standard template**
-   ```bash
-   cp kb-labs-devkit/templates/configs/tsup.config.ts .
-   ```
-
-3. **Migrate customizations** (only if needed)
-   - Compare your backup with template
-   - Extract only truly necessary customizations
-   - Add them with comments explaining why
-
-4. **Test build**
-   ```bash
-   pnpm run build
-   ```
-
-5. **Verify types**
-   ```bash
-   npx kb-devkit-check-types
-   ```
-
-## 🔗 Related
-
-- [DevKit README](../../README.md)
-- [DevKit Usage Guide](../../USAGE_GUIDE.md)
-- [ADR-0009: Unified Build Convention](../../docs/adr/0009-unified-build-convention.md)
