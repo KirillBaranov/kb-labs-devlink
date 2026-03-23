@@ -1,7 +1,7 @@
 import { defineCommand, useLoader, TimingTracker, type PluginContextV3, type CommandResult } from '@kb-labs/sdk';
 import { discoverMonorepos, buildPackageMapFiltered, buildPlan, applyPlan, createBackup, loadState, saveState, checkGitDirty, updateWorkspaceYamls } from '@kb-labs/devlink-core';
 import type { DevlinkMode } from '@kb-labs/devlink-contracts';
-import { existsSync, unlinkSync } from 'node:fs';
+import { existsSync, unlinkSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 
@@ -68,7 +68,7 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
       const plan = buildPlan(mode, packageMap, monorepos, rootDir, { scopedRepos });
       tracker.checkpoint('plan');
 
-      if (plan.items.length === 0) {
+      if (plan.items.length === 0 && !flags.install) {
         ctx.ui?.info?.('No changes needed — dependencies are already in the requested mode.');
         return { exitCode: 0, result: { mode, changed: 0, dryRun }, meta: { timing: tracker.total() } };
       }
@@ -96,22 +96,25 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
         return { exitCode: 0, result, meta: { timing: tracker.total() } };
       }
 
-      // 5. Create backup
+      // 5. Create backup + Apply (skip if nothing to change)
       const currentState = loadState(rootDir);
-      // Detect actual current mode from plan items (reliable even before first switch)
-      const detectedMode: DevlinkMode = plan.items[0]?.from.startsWith('link:') ? 'local' : 'npm';
-      const modeAtBackup = currentState.currentMode ?? detectedMode;
-      const uniqueFiles = [...new Set(plan.items.map(i => i.packageJsonPath))];
-      const backup = createBackup(rootDir, uniqueFiles, `pre-switch to ${mode}`, modeAtBackup);
-      tracker.checkpoint('backup');
+      let backupId: string | undefined;
+      let applyResult = { applied: 0, skipped: 0, errors: [] as Array<{ file: string; error: string }> };
 
-      // 6. Apply
-      const applyLoader = useLoader(`Switching ${plan.items.length} dependencies to ${mode} mode...`);
-      applyLoader.start();
+      if (plan.items.length > 0) {
+        const detectedMode: DevlinkMode = plan.items[0]?.from.startsWith('link:') ? 'local' : 'npm';
+        const modeAtBackup = currentState.currentMode ?? detectedMode;
+        const uniqueFiles = [...new Set(plan.items.map(i => i.packageJsonPath))];
+        const backup = createBackup(rootDir, uniqueFiles, `pre-switch to ${mode}`, modeAtBackup);
+        backupId = backup.id;
+        tracker.checkpoint('backup');
 
-      const applyResult = await applyPlan(plan, { dryRun: false });
-      applyLoader.succeed(`Applied ${applyResult.applied} change(s)`);
-      tracker.checkpoint('apply');
+        const applyLoader = useLoader(`Switching ${plan.items.length} dependencies to ${mode} mode...`);
+        applyLoader.start();
+        applyResult = await applyPlan(plan, { dryRun: false });
+        applyLoader.succeed(`Applied ${applyResult.applied} change(s)`);
+        tracker.checkpoint('apply');
+      }
 
       // 7. Update sub-repo pnpm-workspace.yaml with correct cross-repo paths
       const wsLoader = useLoader('Updating sub-repo workspace files...');
@@ -131,24 +134,29 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
         frozenAt: currentState.frozenAt,
       });
 
-      // 9. Clean stale lockfiles in affected sub-repos (default: true)
-      const shouldCleanLocks = flags['clean-locks'] !== false;
+      // 9. Clean stale lockfiles + node_modules in all sub-repos (default: true)
+      const shouldClean = flags['clean-locks'] !== false;
       let cleanedLocks = 0;
-      if (shouldCleanLocks) {
-        const affectedRepos = new Set(plan.items.map(i => i.monorepo));
+      let cleanedNodeModules = 0;
+      if (shouldClean) {
+        const cleanLoader = useLoader('Cleaning stale lockfiles and node_modules...');
+        cleanLoader.start();
         for (const mono of monorepos) {
-          if (!affectedRepos.has(mono.name)) {continue;}
+          // Clean lockfile
           const lockPath = join(mono.rootPath, 'pnpm-lock.yaml');
           if (existsSync(lockPath)) {
-            try {
-              unlinkSync(lockPath);
-              cleanedLocks++;
-            } catch { /* skip */ }
+            try { unlinkSync(lockPath); cleanedLocks++; } catch { /* skip */ }
+          }
+          // Clean node_modules (contains stale shims with hardcoded paths)
+          const nmPath = join(mono.rootPath, 'node_modules');
+          if (existsSync(nmPath)) {
+            try { rmSync(nmPath, { recursive: true, force: true }); cleanedNodeModules++; } catch { /* skip */ }
           }
         }
-        if (cleanedLocks > 0) {
-          tracker.checkpoint('clean-locks');
-        }
+        cleanLoader.succeed(
+          `Cleaned ${cleanedLocks} lockfile(s), ${cleanedNodeModules} node_modules`
+        );
+        tracker.checkpoint('clean');
       }
 
       // 10. Install: workspace root first, then per-sub-repo
@@ -200,7 +208,7 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
         mode,
         changed: applyResult.applied,
         dryRun: false,
-        backupId: backup.id,
+        backupId,
       };
 
       if (outputJson) {
@@ -209,13 +217,13 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
         const summaryItems = [
           `Mode: ${mode}`,
           `Changed: ${applyResult.applied} dependencies`,
-          `Backup: ${backup.id}`,
+          ...(backupId ? [`Backup: ${backupId}`] : []),
         ];
         if (wsChanged > 0) {
           summaryItems.push(`Workspace YAMLs: ${wsUpdates.length} updated`);
         }
-        if (cleanedLocks > 0) {
-          summaryItems.push(`Cleaned: ${cleanedLocks} stale lockfile(s)`);
+        if (cleanedLocks > 0 || cleanedNodeModules > 0) {
+          summaryItems.push(`Cleaned: ${cleanedLocks} lockfile(s), ${cleanedNodeModules} node_modules`);
         }
         if (shouldInstall) {
           summaryItems.push(`Installed: root + ${installedRepos} sub-repo(s)`);

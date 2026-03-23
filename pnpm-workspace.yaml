@@ -3,120 +3,505 @@ packages:
   - ../../infra/kb-labs-devkit
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-devkit
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/../kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/apps/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/packages/plugin-adapters/*
-  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/packages/*
-  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-studio/apps/*
-  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-core/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-core/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-gateway/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-audit/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-devlink/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-mind
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-mind/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-plugin-template/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-release-manager/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-rest-api/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/../kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/../kb-labs-rest-api/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../../platform/kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../../platform/kb-labs-core/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../../platform/kb-labs-core/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/../../platform/kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/../kb-labs-gateway/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/../kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/*
   - ../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/plugin-adapters/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-devkit
-  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
-  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
-  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
-  - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/packages/plugin-adapters/*
-  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-core/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-studio/apps/*
-  - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/../kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-core/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-devkit
-  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
-  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-devkit
-  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
-  - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../../infra/kb-labs-plugin/packages/plugin-adapters/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/../kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-gateway/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-audit/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-devlink/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-mind
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-mind/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-plugin-template/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-release-manager/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-rest-api/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/../kb-labs-rest-api/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-shared/../kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-devkit
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/../kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../kb-labs-devkit
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-core/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-core/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/../kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-sdk/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/../kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/fixtures/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-agents/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/../kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/../../platform/kb-labs-sdk/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-commit-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/../kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/../../platform/kb-labs-sdk/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-qa-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/../kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/../../platform/kb-labs-sdk/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-quality-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/../kb-labs-studio/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/../../platform/kb-labs-sdk/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../../plugins/kb-labs-release-manager/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/../kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/../kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/../kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/../kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-core/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-devkit
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-gateway/apps/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-gateway/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../../platform/kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../../platform/kb-labs-core/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../../platform/kb-labs-core/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../../platform/kb-labs-shared/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../../platform/kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../kb-labs-gateway/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/../kb-labs-gateway/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../../infra/kb-labs-plugin/packages/plugin-adapters/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-audit/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../../plugins/kb-labs-devlink/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../../plugins/kb-labs-mind/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../../plugins/kb-labs-mind/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../../plugins/kb-labs-release-manager/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../../plugins/kb-labs-release-manager/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-core/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-devkit
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-devlink/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-mind
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-mind/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-plugin-template/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-release-manager/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-rest-api/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-shared/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-cli/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/../../infra/kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/../../infra/kb-labs-plugin/../kb-labs-devkit
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/../../infra/kb-labs-plugin/packages/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/../../infra/kb-labs-plugin/packages/plugin-adapters/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/../kb-labs-shared/apps/*
+  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/../kb-labs-shared/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-core/packages/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-studio/apps/*
-  - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/../kb-labs-studio/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/apps/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/../kb-labs-rest-api/packages/*
   - ../../platform/kb-labs-sdk/../kb-labs-studio/apps/*
