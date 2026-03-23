@@ -172,9 +172,11 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
         }
         tracker.checkpoint('root-install');
 
-        // Phase 2: per-sub-repo install
+        // Phase 2: per-sub-repo install (affected + repos missing lockfile)
         const affectedRepos = new Set(plan.items.map(i => i.monorepo));
-        const affectedMonorepos = monorepos.filter(m => affectedRepos.has(m.name));
+        const affectedMonorepos = monorepos.filter(m =>
+          affectedRepos.has(m.name) || !existsSync(join(m.rootPath, 'pnpm-lock.yaml'))
+        );
         const repoLoader = useLoader(`Installing ${affectedMonorepos.length} sub-repo(s)...`);
         repoLoader.start();
         for (const mono of affectedMonorepos) {
