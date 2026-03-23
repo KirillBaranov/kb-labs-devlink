@@ -41,6 +41,7 @@ export {
   listBackups,
   getLastBackup,
   restoreBackup,
+  pruneBackups,
 } from './backup/index.js';
 
 // Workspace YAML

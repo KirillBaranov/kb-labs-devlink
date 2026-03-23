@@ -5,6 +5,7 @@ import {
   existsSync,
   readdirSync,
   copyFileSync,
+  rmSync,
 } from 'fs';
 import { join, dirname } from 'path';
 import type { DevlinkBackup, DevlinkMode } from '@kb-labs/devlink-contracts';
@@ -52,6 +53,9 @@ export function createBackup(
   };
 
   writeFileSync(getMetaPath(backupDir), JSON.stringify(meta, null, 2) + '\n', 'utf-8');
+
+  // Auto-prune: keep only the 10 most recent backups
+  pruneBackups(rootDir, 10);
 
   return meta;
 }
@@ -124,4 +128,25 @@ export function restoreBackup(rootDir: string, backupId: string): { restored: nu
   }
 
   return { restored, errors };
+}
+
+/**
+ * Remove oldest backups beyond the retention limit.
+ */
+export function pruneBackups(rootDir: string, maxBackups = 10): number {
+  const backups = listBackups(rootDir); // sorted newest first
+  if (backups.length <= maxBackups) {return 0;}
+
+  const backupsDir = getBackupsDir(rootDir);
+  let pruned = 0;
+
+  for (const old of backups.slice(maxBackups)) {
+    const dir = join(backupsDir, old.id);
+    try {
+      rmSync(dir, { recursive: true, force: true });
+      pruned++;
+    } catch { /* skip */ }
+  }
+
+  return pruned;
 }

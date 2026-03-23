@@ -18,8 +18,8 @@ const pluginPermissions = combinePermissions()
     cache: [DEVLINK_CACHE_PREFIX],
   })
   .withQuotas({
-    timeoutMs: 120000, // 2 min — npm view for ~50 packages on cold cache
-    memoryMb: 256,
+    timeoutMs: 1800000, // 30 min — switch --install runs pnpm install in 29 sub-repos
+    memoryMb: 512,
   })
   .build();
 

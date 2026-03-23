@@ -96,19 +96,17 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
         return { exitCode: 0, result, meta: { timing: tracker.total() } };
       }
 
-      // 5. Create backup + Apply (skip if nothing to change)
+      // 5. Always create backup (even if no deps change — install cleans node_modules)
       const currentState = loadState(rootDir);
-      let backupId: string | undefined;
+      const modeAtBackup = currentState.currentMode ?? mode;
+      const allPackageJsons = monorepos.flatMap(m => m.packagePaths);
+      const backup = createBackup(rootDir, allPackageJsons, `pre-switch to ${mode}`, modeAtBackup);
+      const backupId = backup.id;
+      tracker.checkpoint('backup');
+
+      // 6. Apply dep changes (if any)
       let applyResult = { applied: 0, skipped: 0, errors: [] as Array<{ file: string; error: string }> };
-
       if (plan.items.length > 0) {
-        const detectedMode: DevlinkMode = plan.items[0]?.from.startsWith('link:') ? 'local' : 'npm';
-        const modeAtBackup = currentState.currentMode ?? detectedMode;
-        const uniqueFiles = [...new Set(plan.items.map(i => i.packageJsonPath))];
-        const backup = createBackup(rootDir, uniqueFiles, `pre-switch to ${mode}`, modeAtBackup);
-        backupId = backup.id;
-        tracker.checkpoint('backup');
-
         const applyLoader = useLoader(`Switching ${plan.items.length} dependencies to ${mode} mode...`);
         applyLoader.start();
         applyResult = await applyPlan(plan, { dryRun: false });
@@ -192,7 +190,7 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
             execSync('pnpm install --no-frozen-lockfile --prefer-offline', {
               cwd: mono.rootPath,
               stdio: 'pipe',
-              timeout: 120_000,
+              timeout: 300_000, // 5 min per sub-repo
             });
             installedRepos++;
           } catch (err) {
@@ -217,7 +215,7 @@ export default defineCommand<unknown, SwitchInput, SwitchResult>({
         const summaryItems = [
           `Mode: ${mode}`,
           `Changed: ${applyResult.applied} dependencies`,
-          ...(backupId ? [`Backup: ${backupId}`] : []),
+          `Backup: ${backupId}`,
         ];
         if (wsChanged > 0) {
           summaryItems.push(`Workspace YAMLs: ${wsUpdates.length} updated`);
