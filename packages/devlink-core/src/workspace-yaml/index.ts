@@ -6,7 +6,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join, relative, dirname } from 'path';
+import { join, relative } from 'path';
 import yaml from 'js-yaml';
 import type { PackageMap } from '@kb-labs/devlink-contracts';
 import type { MonorepoInfo } from '../discovery/index.js';
