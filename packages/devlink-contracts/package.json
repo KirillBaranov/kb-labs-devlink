@@ -1,8 +1,7 @@
 {
   "name": "@kb-labs/devlink-contracts",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "type": "module",
-  "private": true,
   "description": "Contracts package for DevLink plugin — types, Zod schemas, flags.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
