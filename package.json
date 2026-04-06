@@ -1,6 +1,6 @@
 {
   "name": "@kb-labs/devlink",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "DevLink — manage cross-repo link: ↔ npm dependencies for KB Labs monorepos.",
   "type": "module",
   "author": {
