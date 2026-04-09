@@ -3,7 +3,7 @@ import { join, relative, dirname } from 'path';
 import yaml from 'js-yaml';
 import { discoverSubRepoPaths } from '@kb-labs/sdk';
 import type { PackageMap, PackageEntry, DevlinkMode } from '@kb-labs/devlink-contracts';
-import { filterPublishedPackages } from '../npm/index.js';
+import { getLatestNpmVersion, filterPublishedPackages } from '../npm/index.js';
 
 interface PnpmWorkspace {
   packages?: string[];
@@ -49,11 +49,18 @@ export function discoverMonorepos(rootDir: string): MonorepoInfo[] {
         readFileSync(join(repoPath, 'pnpm-workspace.yaml'), 'utf-8')
       ) as PnpmWorkspace;
 
+      // Only keep intra-repo patterns (not cross-repo paths starting with ../)
+      // Cross-repo paths are computed fresh each run — keeping stale ones causes
+      // exponential growth where each run re-expands previously generated paths.
+      const intraPatterns = (repoWorkspace.packages ?? []).filter(
+        p => !p.startsWith('../') && !p.startsWith('..\\')
+      );
+
       monorepos.push({
         name: repoName,
         rootPath: repoPath,
         packagePaths,
-        workspacePackages: repoWorkspace.packages ?? [],
+        workspacePackages: intraPatterns,
       });
     } else {
       // Standalone package (e.g. devkit): treat root package.json as sole package
@@ -129,10 +136,18 @@ export async function buildPackageMapFiltered(
   // local mode: disk has priority, no npm check needed
   if (mode === 'local') {return rawMap;}
   const packageNames = Object.keys(rawMap);
-  const published = await filterPublishedPackages(packageNames, ttlMs);
+  // Fetch latest published versions concurrently
+  const versionResults = await Promise.all(
+    packageNames.map(async name => ({
+      name,
+      version: await getLatestNpmVersion(name, ttlMs),
+    }))
+  );
   const filtered: PackageMap = {};
-  for (const name of packageNames) {
-    if (published.has(name)) {filtered[name] = rawMap[name]!;}
+  for (const { name, version } of versionResults) {
+    if (version !== null) {
+      filtered[name] = { ...rawMap[name]!, npmVersion: `^${version}` };
+    }
   }
   return filtered;
 }
