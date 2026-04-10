@@ -3,7 +3,7 @@ import { join, relative, dirname } from 'path';
 import yaml from 'js-yaml';
 import { discoverSubRepoPaths } from '@kb-labs/sdk';
 import type { PackageMap, PackageEntry, DevlinkMode } from '@kb-labs/devlink-contracts';
-import { getLatestNpmVersion, filterPublishedPackages } from '../npm/index.js';
+import { getLatestNpmVersion } from '../npm/index.js';
 
 interface PnpmWorkspace {
   packages?: string[];
